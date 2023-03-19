@@ -17,6 +17,7 @@ from homeassistant.helpers.update_coordinator import (
 )
 
 from .const import DOMAIN, CONF_IP_ADDRESS
+from .coordinator import V2CTrydantDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -25,17 +26,6 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
         vol.Required(CONF_IP_ADDRESS): str,
     }
 )
-
-async def async_setup_entry(hass: HomeAssistant, config_entry, async_add_entities):
-    ip_address = config_entry.data[CONF_IP_ADDRESS]
-    coordinator = V2CTrydantDataUpdateCoordinator(hass, ip_address)
-    await coordinator.async_config_entry_first_refresh()
-
-    sensors = [
-        V2CTrydantSensor(coordinator, ip_address, key)
-        for key in coordinator.data.keys()
-    ]
-    async_add_entities(sensors)
 
 class V2CTrydantDataUpdateCoordinator(DataUpdateCoordinator):
     def __init__(self, hass, ip_address):
@@ -58,6 +48,17 @@ class V2CTrydantDataUpdateCoordinator(DataUpdateCoordinator):
                 return await response.json(content_type=None)
         except aiohttp.ClientError as err:
             raise UpdateFailed(f"Error communicating with API: {err}")
+
+async def async_setup_entry(hass: HomeAssistant, config_entry, async_add_entities):
+    ip_address = config_entry.data[CONF_IP_ADDRESS]
+    coordinator = V2CTrydantDataUpdateCoordinator(hass, ip_address)
+    await coordinator.async_config_entry_first_refresh()
+
+    sensors = [
+        V2CTrydantSensor(coordinator, ip_address, key)
+        for key in coordinator.data.keys()
+    ]
+    async_add_entities(sensors)
 
 class V2CTrydantSensor(CoordinatorEntity, SensorEntity):
     def __init__(self, coordinator, ip_address, data_key):
