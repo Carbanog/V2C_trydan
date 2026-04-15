@@ -2,7 +2,7 @@
   "domain": "v2c_trydan",
   "name": "V2C Trydan",
   "after_dependencies": [],
-  "codeowners": ["@Rain1971"],
+  "codeowners": ["@Carbanog"],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/Carbanog/V2C_trydan",
