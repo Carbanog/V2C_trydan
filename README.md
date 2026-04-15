@@ -1,5 +1,3 @@
-# Mi versión personalizada para V2C Trydan
-
 # CAR CHARGER V2C trydan component for HOME ASSISTANT
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration)
