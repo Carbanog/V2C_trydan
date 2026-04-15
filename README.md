@@ -32,7 +32,7 @@ If you want to use the price-based load control feature, you must install the fo
 
 # Setup:
 
-* Add this repository in HACS ( [https://github.com/Rain1971/V2C_trydant.git](https://github.com/Carbanog/V2C_trydan) )
+* Add this repository in HACS ( https://github.com/Carbanog/V2C_trydan )
 
 <img src="./images/install1.png" width="300">
 
