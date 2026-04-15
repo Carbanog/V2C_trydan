@@ -1,3 +1,14 @@
+# 🧪 V2C Trydan -  Versión de Pruebas Personal
+
+
+> [!IMPORTANT]
+> **Notice:** This repository is an **independent fork** maintained by **Carbanog**. It is primarily used as a personal testing and development environment for the V2C Trydan charger integration in Home Assistant.
+
+### 🛠️ Project Status
+* **Maintenance:** Active (for personal use and experimentation).
+* **Goal:** Sensor optimization, bug fixing, and testing new features within a virtual environment (VM).
+* **Original Base:** Based on the work by [Rain1971](https://github.com/Rain1971/V2C_trydant), which is currently discontinued by the original author.
+
 # CAR CHARGER V2C trydan component for HOME ASSISTANT
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration)
@@ -21,7 +32,7 @@ If you want to use the price-based load control feature, you must install the fo
 
 # Setup:
 
-* Add this repository in HACS ( [https://github.com/Rain1971/V2C_trydant.git](https://github.com/Rain1971/V2C_trydant.git) )
+* Add this repository in HACS ( [https://github.com/Rain1971/V2C_trydant.git](https://github.com/Carbanog/V2C_trydan) )
 
 <img src="./images/install1.png" width="300">
 
