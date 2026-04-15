@@ -1,16 +1,4 @@
-# [DEPRECATED] V2C Trydan
-
-> **Notice:** This project is no longer maintained.
-
-## Status: Discontinued
-Due to a hardware failure on the specific device this project was developed for, I am unable to continue testing, debugging, or providing updates. As I no longer have access to the physical environment required for development, this repository has been archived.
-
-### Can I still use this?
-Yes! The code remains available for educational purposes or as a reference. You are welcome to:
-* **Fork** the repository if you wish to continue development on your own.
-* Use the existing code under the project's license.
-
-Thank you to everyone who showed interest or contributed to this project.
+# Mi versión personalizada para V2C Trydan
 
 # CAR CHARGER V2C trydan component for HOME ASSISTANT
 
