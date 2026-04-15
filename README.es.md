@@ -1,16 +1,14 @@
-# [DEPRECATED] V2C Trydan
+🧪 V2C Trydan - Personal Testing Version / Versión de Pruebas Personal
+🇪s Español
+[!IMPORTANT]
+Aviso: Este repositorio es un fork independiente mantenido por Carbanog. Se utiliza principalmente como entorno de pruebas y desarrollo personal para la integración del cargador V2C Trydan en Home Assistant.
 
-> **Aviso:** Este proyecto ya no cuenta con soporte ni mantenimiento.
+🛠️ Estado del Proyecto
+Mantenimiento: Activo (para uso personal y experimentación).
 
-## Estado: Discontinuado
-Debido a un fallo de hardware en el dispositivo específico para el cual se desarrolló este proyecto, me es imposible continuar realizando pruebas, depuraciones o publicar actualizaciones. Al no tener ya acceso al entorno físico necesario para el desarrollo, este repositorio ha sido archivado.
+Objetivo: Optimización de sensores, corrección de errores y pruebas de nuevas funcionalidades en un entorno virtual (VM).
 
-### ¿Puedo seguir usándolo?
-¡Sí! El código permanece disponible con fines educativos o como referencia. Eres libre de:
-* Hacer un **Fork** del repositorio si deseas continuar el desarrollo por tu cuenta.
-* Utilizar el código existente bajo los términos de la licencia del proyecto.
-
-Gracias a todos los que mostraron interés o contribuyeron a este proyecto.
+Base Original: Basado en el trabajo de Rain1971, actualmente marcado como discontinuado por su autor original.
 
 # CARGADOR DE COCHE V2C TRYDAN para HOME ASSISTANT
 
