@@ -1,4 +1,4 @@
-# 🧪 V2C Trydan -  Versión de Pruebas Personal
+# 🧪 V2C Trydan -  Personal Testing Version
 
 
 > [!IMPORTANT]
