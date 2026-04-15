@@ -31,7 +31,7 @@ Si quieres usar la función de control de carga basada en el precio, debes insta
 
 # Instalación:
 
-* Añade este repositorio en HACS ( [https://github.com/Rain1971/V2C_trydant.git](https://github.com/Rain1971/V2C_trydant.git) )
+* Añade este repositorio en HACS ( https://github.com/Carbanog/V2C_trydan )
 ![Charts](./images/install1.png)
 ![Charts](./images/install2.png)
 * Reinicia Home Assistant
