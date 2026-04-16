@@ -13,6 +13,6 @@
   "quality_scale": "internal",
   "requirements": ["aiohttp>=3.8.0"],
   "ssdp": [],
-  "version": "4.1.0",
+  "version": "1.0.0",
   "zeroconf": []
 }
