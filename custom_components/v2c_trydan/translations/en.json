@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "V2C Trydan Configuration",
-        "description": "Configure your V2C Trydan charger",
+        "description": "Configure your V2C Trydan charger by entering its local IP address.",
         "data": {
           "ip_address": "IP Address"
         }
@@ -11,21 +11,10 @@
     },
     "error": {
       "cannot_connect": "Could not connect to device",
-      "unknown": "Unexpected error occurred"
+      "unknown": "An unexpected error occurred"
     },
     "abort": {
-      "already_configured": "Device is already configured"
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "V2C Trydan Options",
-        "description": "Configure additional settings",
-        "data": {
-          "kwh_per_100km": "kWh per 100km"
-        }
-      }
+      "already_configured": "This device is already configured"
     }
   },
   "entity": {
@@ -44,15 +33,15 @@
       "housepower": { "name": "House Power" },
       "fvpower": { "name": "Photovoltaic Power" },
       "batterypower": { "name": "Battery Power" },
-      "intensity": { "name": "Charge Intensity" },
-      "minintensity": { "name": "Minimum Intensity" },
-      "maxintensity": { "name": "Maximum Intensity" },
+      "intensity": { "name": "Charge Intensity (Reading)" },
+      "minintensity": { "name": "Minimum Intensity (Reading)" },
+      "maxintensity": { "name": "Maximum Intensity (Reading)" },
       "voltageinstallation": { "name": "Installation Voltage" },
       "contractedpower": { "name": "Contracted Power" },
-      "dynamic": { "name": "Dynamic Charge" },
-      "dynamicpowermode": { "name": "Dynamic Power Mode" },
-      "locked": { "name": "Charger Locked" },
-      "paused": { "name": "Charge Paused" },
+      "dynamic": { "name": "Dynamic Charge (Diagnostic)" },
+      "dynamicpowermode": { "name": "Dynamic Power Mode (Diagnostic)" },
+      "locked": { "name": "Charger Locked (Diagnostic)" },
+      "paused": { "name": "Charge Paused (Diagnostic)" },
       "pausedynamic": { "name": "Dynamic Pause" },
       "slaveerror": { "name": "Meter Error" },
       "timer": { "name": "Timer" },
@@ -79,7 +68,7 @@
         "state": {
           "enable_timed_power": "Enable Timed Power",
           "disable_timed_power": "Disable Timed Power",
-          "disable_timed_power_exclusive": "Exclusive Mode",
+          "disable_timed_power_exclusive": "Exclusive Mode (PV only)",
           "disable_timed_power_min": "Minimum Power Mode",
           "disable_timed_power_grid_fv": "Grid+PV Mode",
           "disable_timed_power_stop": "Stop Mode"
