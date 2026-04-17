@@ -1,7 +1,3 @@
-Aquí tienes la traducción exacta al inglés para tu archivo `README.md`, manteniendo el mismo formato profesional y la nota de transparencia:
-
------
-
 # 🧪 V2C Trydan - Personal Testing Version
 
 > [\!IMPORTANT]
