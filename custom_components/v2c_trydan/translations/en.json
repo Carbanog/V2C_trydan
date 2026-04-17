@@ -18,6 +18,11 @@
     }
   },
   "entity": {
+    "binary_sensor": {
+      "connected": { "name": "Cable Connected" },
+      "charging": { "name": "Charging" },
+      "ready": { "name": "Ready to Charge" }
+    },
     "sensor": {
       "chargepower": { "name": "Charge Power" },
       "chargeenergy": { "name": "Charge Energy" },
