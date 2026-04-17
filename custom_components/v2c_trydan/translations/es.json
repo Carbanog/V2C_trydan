@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Configuración V2C Trydan",
-        "description": "Configura tu cargador V2C Trydan",
+        "description": "Configura tu cargador V2C Trydan introduciendo la dirección IP local.",
         "data": {
           "ip_address": "Dirección IP"
         }
@@ -15,17 +15,6 @@
     },
     "abort": {
       "already_configured": "El dispositivo ya está configurado"
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Opciones V2C Trydan",
-        "description": "Configura ajustes adicionales",
-        "data": {
-          "kwh_per_100km": "kWh por 100km"
-        }
-      }
     }
   },
   "entity": {
@@ -44,15 +33,15 @@
       "housepower": { "name": "Potencia de Casa" },
       "fvpower": { "name": "Potencia Fotovoltaica" },
       "batterypower": { "name": "Potencia de Batería" },
-      "intensity": { "name": "Intensidad de Carga" },
-      "minintensity": { "name": "Intensidad Mínima" },
-      "maxintensity": { "name": "Intensidad Máxima" },
+      "intensity": { "name": "Intensidad de Carga (Lectura)" },
+      "minintensity": { "name": "Intensidad Mínima (Lectura)" },
+      "maxintensity": { "name": "Intensidad Máxima (Lectura)" },
       "voltageinstallation": { "name": "Voltaje de Instalación" },
       "contractedpower": { "name": "Potencia Contratada" },
-      "dynamic": { "name": "Carga Dinámica" },
-      "dynamicpowermode": { "name": "Modo de Potencia Dinámica" },
-      "locked": { "name": "Cargador Bloqueado" },
-      "paused": { "name": "Carga Pausada" },
+      "dynamic": { "name": "Carga Dinámica (Diagnóstico)" },
+      "dynamicpowermode": { "name": "Modo de Potencia Dinámica (Diagnóstico)" },
+      "locked": { "name": "Cargador Bloqueado (Diagnóstico)" },
+      "paused": { "name": "Carga Pausada (Diagnóstico)" },
       "pausedynamic": { "name": "Pausa Dinámica" },
       "slaveerror": { "name": "Error de Medidor" },
       "timer": { "name": "Temporizador" },
