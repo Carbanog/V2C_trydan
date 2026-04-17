@@ -1,118 +1,86 @@
-# 🧪 V2C Trydan -  Versión de Pruebas Personal
+# 🧪 V2C Trydan - Versión de Pruebas Personal
 
-
-> [!IMPORTANT]
-> **Aviso:** Este repositorio es un **fork independiente** mantenido por **Carbanog**. Se utiliza principalmente como entorno de pruebas y desarrollo personal para la integración del cargador V2C Trydan en Home Assistant.
+> [\!IMPORTANT]
+> **Aviso de Transparencia:** Este repositorio es un **fork independiente** mantenido por **Carbanog**. No soy programador profesional; soy un usuario con nociones básicas que ha desarrollado esta versión principalmente con la ayuda de **IA** para cubrir necesidades personales de estabilidad que no encontraba en otras versiones.
 
 ### 🛠️ Estado del Proyecto
-* **Mantenimiento:** Activo (para uso personal y experimentación).
-* **Objetivo:** Optimización de sensores, corrección de errores y pruebas de nuevas funcionalidades en un entorno virtual (VM).
-* **Base Original:** Basado en el trabajo de [Rain1971](https://github.com/Rain1971/V2C_trydant), actualmente marcado como discontinuado por su autor original.
 
+  * **Mantenimiento:** Activo (para uso personal y experimentación).
+  * **Objetivo principal:** Estabilidad total en redes PLC/WiFi mediante un **Data Coordinator** (una sola petición para todos los sensores).
+  * **Base Original:** Basado en el trabajo de [Rain1971](https://github.com/Rain1971/V2C_trydant), actualmente discontinuado.
 
-# CARGADOR DE COCHE V2C TRYDAN para HOME ASSISTANT
+-----
+
+# CARGADOR V2C TRYDAN para HOME ASSISTANT
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 [![GitHub release](https://img.shields.io/github/v/release/Carbanog/V2C_trydan.svg)](https://github.com/Carbanog/V2C_trydan/releases/)
 [![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/Carbanog/V2C_trydan/blob/main/README.md)
 [![es](https://img.shields.io/badge/lang-es-yellow.svg)](https://github.com/Carbanog/V2C_trydan/blob/main/README.es.md)
 
-Esta integración expone la información y funciones disponibles en [V2C trydan](https://v2charge.com/trydan/) directamente a través de la interfaz http en Home Assistant.
+Esta integración permite controlar y monitorizar tu cargador **V2C Trydan** de forma 100% local a través de su interfaz HTTP. Se ha reescrito el núcleo para minimizar las peticiones al cargador, evitando bloqueos y errores de conexión frecuentes en instalaciones con PLC.
 
-# Prerequisitos:
+## 📋 Requisitos Previos
 
-Esta integración soporta la conexión de red a V2C trydan directamente, por lo que toma nota de la dirección IP estática de V2C trydan previamente.
+  * **IP Estática:** Es **obligatorio** asignar una IP fija (estática) a tu cargador V2C Trydan desde la configuración de tu router. Si la IP cambia, la integración dejará de funcionar.
+  * **Firmware actualizado:** Se recomienda tener el cargador actualizado a la última versión oficial de V2C.
+  * 
+## 🚀 Instalación
 
-Para una configuración posterior, necesitarás conocer los datos de consumo eléctrico de tu coche expresados en Kwh por 100 km
+1.  **HACS:** Añade este repositorio como "Repositorio Personalizado" en HACS.
+2.  **Reinicia:** Reinicia Home Assistant.
+3.  **Configuración:** Ve a Ajustes -\> Dispositivos y Servicios -\> Añadir Integración -\> Busca **V2C Trydan**.
+4.  **IP:** Introduce la IP estática de tu cargador.
 
-Si quieres usar la función de control de carga basada en el precio, debes instalar las siguientes integraciones para lovelace, desde HACS:
-- [PVPC Hourly Pricing Card](https://github.com/danimart1991/pvpc-hourly-pricing-card) 
-- [multiple-entity-row](https://github.com/benct/lovelace-multiple-entity-row)
+-----
 
-# Instalación:
+## 📊 Entidades Disponibles
 
-* Añade este repositorio en HACS ( https://github.com/Carbanog/V2C_trydan )
-![Charts](./images/install1.png)
-![Charts](./images/install2.png)
-* Reinicia Home Assistant
-* Ve a Configuración -> Integraciones -> Añadir Integración
-![Charts](./images/install3.png)
-![Charts](./images/install4.png)
-* Añade la integración y pon la IP de tu dispositivo
-* Ve a la integración de V2C. Ahora hay 29 entidades. Pulsa en ajustes y configura:
-   - Kwh x 100Km de tu coche (por defecto: 22)
-   - Sensor.pvpc  ->( añade esto solo si quieres controlar la carga de tu coche en función del precio de la electricidad. Ver PVPC Hourly Pricing Card )
-   ![Charts](./images/install5.png)
-* Pulsa 'Enviar' y se creará una nueva entidad: sensor.v2c_precio_luz. Ahora hay 30 entidades.
-* Reinicia Home Assistant
-# Entities:
+Ahora las entidades están organizadas por categorías (Control, Sensores y Diagnóstico):
 
-Se crean las siguientes entidades:
+### Controles (Acción)
 
-| Name                               | Type    | R/W  | Units        | Description                                    |
-| :--------------------------------- | :------ | :--- | :----------- | :--------------------------------------------- |
-| v2c_trydan_sensor_chargeenergy     | Sensor | R   | N kWh      | Energía cargada en la sesión en kWh.        
-| v2c_trydan_sensor_chargekm  v2c_km_to_charge        | Sensor Number   | R \ W | N km     | Cantidad de Km cargados en la sesión en Km.
-| v2c_trydan_sensor_chargepower      | Sensor | R   | N W        | Potencia de carga atual en Watts.
-| v2c_trydan_sensor_chargestate      | Sensor | R   | S `values`    | Estado de la carga en texto: `Manguera no conectada`, `Manguera conectada (NO CARGA)`,`Manguera conectada (CARGANDO)`
-| v2c_trydan_numericalstatus         | Sensor | R   | N `values`    | Estado de la carga. En numero: `0`-Hose Not connected, `1`-Hose Connected (BUT NOT CHARGING),`2`-Hose Connected (CHARGING)
-| v2c_trydan_sensor_chargetime       | Sensor | R   | N s        | Tiempo desde que se conecto la manguera. 
-| v2c_trydan_sensor_contractedpower  | Sensor | R   | N W        | Potencia contratada Watts. Por defecto `-1`
-| vc2_trydan_sensor_dynamic          | Sensor | R   | N `values`    | Control de corriente dinámico: `0`-Desactivado, `1`-Activo
-| vc2_trydan_sensor_dynamicpowermode | Sensor | R   | N `values`    | Modo Dynamico: 0 Timed Power enabled; `1`-Timed Power Disabled, `2`-Timed Power Disabled and Exclusive Mode setted, `3`-Timed Power Disabled and Min Power Mode setted, `4`-Timed Power Disabled and Grid+FV mode setted, `5`-Timed Power Disabled and Stop Mode setted
-| v2c_dynamic_power_mode             | Select | R/W | `opciones`    | Selector de Modo de Potencia Dinámica con opciones: "Enable Timed Power", "Disable Timed Power", "Disable Timed Power and set Exclusive Mode", "Disable Timed Power and set Min Power Mode", "Disable Timed Power and set Grid+FV mode", "Disable Timed Power and set Stop Mode"
-| vc2_trydan_sensor_fvpower          | Sensor | R   | N W        | Generacion fotovoltaica en [w].
-| vc2_trydan_sensor_housepower       | Sensor | R   | N W        | Consumo total de casa en [w].
-| v2c_trydan_sensor_intensity \   v2c_intensity      | Sensor Number | R \ W | N A        | Intensity offered by Charge Point in Amps, **if Dynamic Charge is disabled**. 
-| v2c_trydan_sensor_locked           | Sensor | R   | N `values`    | Bloquear el punto de carga: `0`-Activo, `1`-Desactivado 
-| v2c_trydan_sensor_maxintensity  v2c_max_intensity   | Sensor Number   | R \ W | N A        | Corriente máxima en amperios [A], **Solo si carga dinámica está activa**. (por defecto 32A)
-| v2c_trydan_sensor_minintensity  v2c_min_intensity     | Sensor Number | R \ W | N A        | Corriente mínima en amperios [A], **Solo si carga dinámica está activa**. (por defecto 6A)
-| v2c_trydan_sensor_paused           | Sensor | R   | N `values`    | Estado de la pausa: `0`-Enabled, `1`-Disabled                
-| v2c_trydan_sensor_pausedynamic     | Sensor | R   | N `values`    | Estado de la carga dinámica: `0`-Modulando, `1`-No Modulando
-| v2c_trydan_sensor_slaveerror       | Sensor | R   | N `values`    | Estado comunicacion con esclavo: `0`-Sin error, `1`-Mensaje erroneo, `2`-Error de comunicación
-| v2c_trydan_sensor_timer            | Sensor | R   | N `values`    | Sensor de tiempo de carga: `1`-Timer Activo, `0`-Timer Parado
-| v2c_precio_luz                     | Sensor | R   | state `attributes` | Datos tomados api.esios.ree.es por REE. El `state` contiene el precio actual y los atributos: `state_class`, `measurement`, `tariff`, `period`, `available_power`, `next_period`, `hours_to_next_period`, `next_better_price`, `hours_to_better_price`,  `num_better_prices_ahead`, `price_position`, `price_ratio`, `max_price`, `max_price_at`, `min_price`, `min_price_at`, `next_best_at`, `price_00h` to `price_23h`, `unit_of_measurement`, `attribution`, `icon`, `friendly_name`, `ValidHours` (muestra a que horas cargará hoy si limitamos con este precio), `ValidHoursNextDay` (muestra a que horas cargará mañana si limitamos con este precio) and `TotalHours` (muestra el total de horas que cargará si limitamos con este precio). Estos 2 se actualiza cada 30s solo si number.v2c_maxprice > 0 
-| vc2_trydan_switch_dynamic          | Switch | R/W | `on` `off`    | Interruptor de carga dinamica. Por defecto `off`                       
-| v2c_trydan_switch_paused           | Switch | R/W | `on` `off`    | Interruptor de pausa. Por defecto `off`                        
-| v2c_trydan_switch_locked           | Switch | R/W | `on` `off`    | Interruptor de bloqueo. Por defecto `off`
-| v2c_trydan_switch_v2c_carga_pvpc   | Switch | R/W | `on` `off`    | Interruptor de para hacer la carga a un precio máximo. Por defecto `off`
+| Nombre | Tipo | Descripción |
+| :--- | :--- | :--- |
+| `Pausar Carga` | Switch | Pausa o reanuda la carga actual. |
+| `Bloquear Cargador` | Switch | Bloquea el hardware del cargador. |
+| `Carga Dinámica` | Switch | Activa/Desactiva la modulación dinámica de potencia. |
+| `Intensidad de Carga` | Number | Ajusta los Amperios manualmente (6A - 32A). |
+| `Intensidad Máxima` | Number | Límite superior para el modo dinámico. |
+| `Intensidad Mínima` | Number | Límite inferior para el modo dinámico. |
+| `Modo de Potencia Dinámica` | Select | Selector de modos (Exclusivo Solar, Red+FV, Mínimo, etc.). |
+
+### Monitoreo (Sensores)
+
+| Nombre | Clase | Descripción |
+| :--- | :--- | :--- |
+| `Potencia de Carga` | Power (W) | Potencia real que está entrando al coche. |
+| `Energía de Carga` | Energy (kWh) | Energía acumulada en la sesión actual. |
+| `Estado de Carga` | Texto | Manguera desconectada, Conectado o Cargando. |
+| `Tiempo de Carga` | Tiempo | Duración de la sesión actual. |
+| `Potencia de Casa` | Power (W) | Consumo total de la vivienda. |
+| `Potencia Fotovoltaica` | Power (W) | Producción de placas solares. |
+| `Voltaje de Instalación`| Voltage (V) | Voltaje real en la línea. |
+
+-----
+
+## 🛠️ Servicios para Automatizaciones
+
+Esta integración registra servicios que puedes usar en tus automatizaciones:
+
+  * `v2c_trydan.set_intensity`: Ajusta los amperios.
+  * `v2c_trydan.set_dynamic_power_mode`: Cambia el modo (0-5).
+  * `v2c_trydan.set_max_intensity` / `v2c_trydan.set_min_intensity`.
+
+## 📸 Interfaz
+
+Al estar categorizada, puedes crear paneles limpios usando tarjetas de entidades o tarjetas tipo "pila".
+
+## ⚖️ Créditos y Agradecimientos
+
+  * A **Rain1971** por crear la base original de esta integración.
+  * A la comunidad de Home Assistant y las herramientas de **IA** por ayudar a un "no programador" a mantener vivo este proyecto para uso personal.
+
+-----
 
 
-# Eventos:
-
-Los siguientes eventos son creados:
-
-| Event                              | Description                                   |
-| :--------------------------------- |:--------------------------------------------- |
-| v2c_trydan.charging_complete       | Evento que sucede si has marcado un numero total de Km a cargar y sucede cuando ha cargado. 
-
-# Ejemplos:
-
-* Puedes también usar una automatización para comprobar cuando el dispositivo ha cambiado el Km establecido:
-```
-alias: CARGA COCHE COMPLETA
-description: CARGA COMPLETA
-trigger:
-  - platform: event
-    event_type: v2c_trydan.charging_complete
-action:
-  - service: notify.notify
-    data:
-      message: La carga del vehículo ha alcanzado el límite de kilómetros.
-  - service: notify.pushover
-    data:
-      message: KM del coche CARGADOS
-      title: CARGADOR!
-      data:
-        priority: 1
-    enabled: true
-mode: single
-```
-
-# Ejemplos PANTALLA:
-
-* Usa [example.yaml](https://raw.githubusercontent.com/Rain1971/V2C_trydant/main/lovelance/example.yaml)
-* Para Control pvpc [example_pvpc.yaml](https://raw.githubusercontent.com/Rain1971/V2C_trydant/main/lovelance/example_pvpc.yaml)
-* Para Control pvpc, version compacta [example_pvpc_compact.yaml](https://raw.githubusercontent.com/Rain1971/V2C_trydant/main/lovelance/example_pvpc_compact.yaml)
-
-![Charts](./images/example_pvpc_compact.png)
