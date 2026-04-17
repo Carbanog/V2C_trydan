@@ -11,5 +11,5 @@
   "issue_tracker": "https://github.com/Carbanog/V2C_trydan/issues",
   "quality_scale": "internal",
   "requirements": ["aiohttp>=3.9.0"],
-  "version": "1.1.0"
+  "version": "1.1.1"
 }
