@@ -24,7 +24,7 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, CONF_IP_ADDRESS
+from .const import DOMAIN
 from .coordinator import V2CtrydanDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
