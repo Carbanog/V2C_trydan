@@ -20,14 +20,12 @@ PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.SWITCH, Platform.
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up V2C Trydan from a config entry."""
-    hass.data.setdefault(DOMAIN, {})
-
     ip_address = entry.data[CONF_IP_ADDRESS]
 
     coordinator = V2CtrydanDataUpdateCoordinator(hass, ip_address)
     await coordinator.async_config_entry_first_refresh()
 
-    hass.data[DOMAIN][entry.entry_id] = coordinator
+    entry.runtime_data = coordinator
 
     # Register device
     device_registry = dr.async_get(hass)
@@ -101,10 +99,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id, None)
-    return unload_ok
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 
 async def _async_write(hass: HomeAssistant, ip_address: str, key: str, value: int) -> None:
