@@ -6,7 +6,6 @@ import aiohttp
 
 from homeassistant.components.number import NumberEntity
 from homeassistant.components.sensor import SensorStateClass
-from homeassistant.const import CONF_IP_ADDRESS
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -25,7 +24,7 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up V2C Trydan number platform."""
-    coordinator = hass.data[DOMAIN][config_entry.entry_id]
+    coordinator = config_entry.runtime_data
 
     async_add_entities([
         MaxIntensityNumber(coordinator),
