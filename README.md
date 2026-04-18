@@ -13,10 +13,10 @@
 
 # V2C TRYDAN CHARGER for HOME ASSISTANT
 
-[](https://www.google.com/search?q=%5Bhttps://github.com/hacs/integration%5D\(https://github.com/hacs/integration\))
-[](https://github.com/Carbanog/V2C_trydan/releases/)
-[](https://github.com/Carbanog/V2C_trydan/blob/main/README.md)
-[](https://github.com/Carbanog/V2C_trydan/blob/main/README.es.md)
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+[![GitHub release](https://img.shields.io/github/v/release/Carbanog/V2C_trydan.svg)](https://github.com/Carbanog/V2C_trydan/releases/)
+[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/Carbanog/V2C_trydan/blob/main/README.md)
+[![es](https://img.shields.io/badge/lang-es-yellow.svg)](https://github.com/Carbanog/V2C_trydan/blob/main/README.es.md)
 
 This integration allows you to control and monitor your **V2C Trydan** charger 100% locally via its HTTP interface. The core has been rewritten to minimize requests to the charger, avoiding crashes and connection errors frequent in PLC-based installations.
 
