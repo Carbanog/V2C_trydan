@@ -50,6 +50,14 @@ Entities are now organized by categories (Control, Sensors, and Diagnostic):
 | `Minimum Intensity` | Number | Lower limit for dynamic mode. |
 | `Dynamic Power Mode` | Select | Mode selector (Exclusive Solar, Grid+PV, Minimum, etc.). |
 
+### 🔌 Binary Sensors (Status)
+Perfect for automation triggers (On/Off).
+| Name | Icon | Description |
+|---|---|---|
+| Cable Connected | 🔌 | On when the car is plugged in. |
+| Charging | ⚡ | On only when power is actively flowing. |
+| Ready to Charge | ✅ | On when the charger is ready and has no errors. |
+
 ### Monitoring (Sensors)
 
 | Name | Class | Description |
