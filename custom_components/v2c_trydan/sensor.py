@@ -37,7 +37,6 @@ class V2CSensorEntityDescription(SensorEntityDescription):
 
 
 TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
-    # Operacionales
     V2CSensorEntityDescription(
         key="charge_power",
         translation_key="chargepower",
@@ -133,7 +132,6 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.POWER,
         value_fn=lambda data: data.get("ContractedPower"),
     ),
-    # Control — valores que expone el cargador
     V2CSensorEntityDescription(
         key="dynamic",
         translation_key="dynamic",
@@ -176,7 +174,6 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda data: data.get("Timer"),
     ),
-    # Diagnósticos
     V2CSensorEntityDescription(
         key="firmware_version",
         translation_key="firmware_version",
@@ -223,7 +220,7 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up V2C Trydan sensor platform."""
-    coordinator = hass.data[DOMAIN][config_entry.entry_id]
+    coordinator = config_entry.runtime_data
 
     async_add_entities(
         V2CtrydanSensor(coordinator, description, config_entry.entry_id)
