@@ -50,6 +50,15 @@ Ahora las entidades están organizadas por categorías (Control, Sensores y Diag
 | `Intensidad Mínima` | Number | Límite inferior para el modo dinámico. |
 | `Modo de Potencia Dinámica` | Select | Selector de modos (Exclusivo Solar, Red+FV, Mínimo, etc.). |
 
+### 🔌 Sensores Binarios (Estados)
+Ideales para disparar automatizaciones (Encendido/Apagado).
+| Nombre | Icono | Descripción |
+|---|---|---|
+| Manguera Conectada | 🔌 | On cuando el coche está enchufado físicamente. |
+| Cargando | ⚡ | On solo cuando hay flujo de energía hacia el coche. |
+| Listo para Cargar | ✅ | On cuando el cargador está operativo y sin errores. |
+
+
 ### Monitoreo (Sensores)
 
 | Nombre | Clase | Descripción |
