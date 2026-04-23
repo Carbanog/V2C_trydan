@@ -32,6 +32,9 @@
           "0": "Manguera no conectada",
           "1": "Manguera conectada (sin carga)",
           "2": "Manguera conectada (cargando)"
+          "3": "Error",
+          "4": "No disponible (OCPP)",
+          "5": "Desconocido"
         }
       },
       "chargetime": { "name": "Tiempo de Carga" },
