@@ -31,7 +31,10 @@
         "state": {
           "0": "Hose not connected",
           "1": "Hose connected (not charging)",
-          "2": "Hose connected (charging)"
+          "2": "Hose connected (charging)",
+          "3": "Error",
+          "4": "Unavailable (OCPP)",
+          "5": "Unknown"
         }
       },
       "chargetime": { "name": "Charge Time" },
