@@ -44,7 +44,7 @@ This integration allows you to control and monitor your **V2C Trydan** charger 1
 -----
 
 ## 📊 Available Entities
-
+ 
 ### Controls (Action)
 
 | Name | Type | Description |
