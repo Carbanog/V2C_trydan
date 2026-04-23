@@ -57,7 +57,7 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         key="charge_state",
         translation_key="chargestate",
         device_class=SensorDeviceClass.ENUM,
-        options=["0", "1", "2"],
+        options=["0", "1", "2", "3", "4", "5"],
         value_fn=lambda data: str(data.get("ChargeState")) if data.get("ChargeState") is not None else None,
     ),
     V2CSensorEntityDescription(
