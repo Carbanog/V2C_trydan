@@ -113,8 +113,9 @@
           "1": "Hose connected (not charging)",
           "2": "Hose connected (charging)",
           "3": "Error",
-          "4": "Unavailable (OCPP)",
-          "5": "Unknown"
+          "4": "System failure or pilot short",
+          "5": "Control pilot, ground, or general fault",
+          "6": "Ventilation required"
         }
       },
       "chargetime": { "name": "Charge Time" },
@@ -131,7 +132,47 @@
       "locked": { "name": "Charger Locked" },
       "paused": { "name": "Charge Paused" },
       "pausedynamic": { "name": "Dynamic Pause" },
-      "slaveerror": { "name": "Meter Error" },
+      "slaveerror": { "name": "Meter Error Code" },
+      "meter_error": {
+        "name": "Meter Error",
+        "state": {
+          "0": "No error",
+          "1": "Communication error",
+          "2": "Reading error",
+          "3": "Meter error",
+          "4": "Waiting for Wi-Fi",
+          "5": "Waiting for communication",
+          "6": "Wrong IP address",
+          "7": "Meter not found",
+          "8": "Wrong meter",
+          "9": "No response",
+          "10": "Clamp not connected",
+          "21": "Illegal function",
+          "22": "Illegal data address",
+          "23": "Illegal data value",
+          "24": "Server device failure",
+          "25": "Acknowledged",
+          "26": "Server device busy",
+          "27": "Negative acknowledgement",
+          "28": "Memory parity error",
+          "30": "Gateway path unavailable",
+          "31": "Gateway target not responding",
+          "32": "RTU timeout",
+          "245": "Invalid server",
+          "246": "CRC error",
+          "247": "Function mismatch",
+          "248": "Server ID mismatch",
+          "249": "Packet length error",
+          "250": "Parameter count error",
+          "251": "Parameter limit error",
+          "252": "Request queue full",
+          "253": "Illegal IP address or port",
+          "254": "IP connection failed",
+          "255": "TCP header mismatch",
+          "256": "Empty message",
+          "257": "Undefined error"
+        }
+      },
       "timer": { "name": "Timer" },
       "firmware_version": { "name": "Firmware Version" },
       "ip": { "name": "IP Address" },
@@ -143,7 +184,9 @@
     "switch": {
       "dynamic": { "name": "Dynamic Charge" },
       "paused": { "name": "Pause Charge" },
-      "locked": { "name": "Lock Charger" }
+      "locked": { "name": "Lock Charger" },
+      "timer": { "name": "Charge Timer" },
+      "pause_dynamic": { "name": "Pause Dynamic Modulation" }
     },
     "number": {
       "max_intensity": { "name": "Maximum Intensity" },
@@ -162,6 +205,10 @@
           "disable_timed_power_stop": "Stop Mode"
         }
       }
+    },
+    "light": {
+      "light_led": { "name": "Charger Light" },
+      "logo_led": { "name": "Logo Light" }
     }
   }
 }

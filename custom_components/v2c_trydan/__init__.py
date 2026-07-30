@@ -37,6 +37,7 @@ PLATFORMS: tuple[Platform, ...] = (
     Platform.SWITCH,
     Platform.NUMBER,
     Platform.SELECT,
+    Platform.LIGHT,
 )
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)

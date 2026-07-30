@@ -32,6 +32,9 @@ predictable behavior on PLC and weak Wi-Fi networks over request throughput.
    existing entity IDs, names, areas, and dashboard references.
 6. The malformed-JSON workaround only inserts the known missing comma before
    `ReadyState`; it does not attempt to guess arbitrary corrupt responses.
+7. Optional firmware capabilities are detected through read-only endpoints,
+   refreshed less frequently, and cached. An optional failure never invalidates
+   the core `RealTimeData` snapshot.
 
 ## Development
 

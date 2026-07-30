@@ -16,6 +16,7 @@ from custom_components.v2c_trydan.api import (
     V2CTrydanInvalidResponseError,
     device_identifier,
     parse_realtime_data,
+    parse_scalar,
 )
 
 
@@ -81,6 +82,15 @@ def test_parse_repairs_missing_ready_state_comma() -> None:
     assert parse_realtime_data(payload)["ReadyState"] == 1
 
 
+@pytest.mark.parametrize(
+    ("payload", "expected"),
+    (("1", 1), ("1.5", 1.5), ("threephasic", "threephasic")),
+)
+def test_parse_scalar(payload: str, expected: int | float | str) -> None:
+    """Read endpoints may return integer, float, or text values."""
+    assert parse_scalar(payload) == expected
+
+
 @pytest.mark.parametrize("payload", ("[]", "not-json", '{"broken":}'))
 def test_parse_rejects_invalid_payload(payload: str) -> None:
     """Non-object and malformed payloads are rejected."""
@@ -105,12 +115,16 @@ async def test_read_retries_transient_failures(monkeypatch: pytest.MonkeyPatch) 
     session = FakeSession(
         (
             ClientConnectionError("offline"),
-            FakeResponse('{"ID":"charger"}'),
+            FakeResponse('{"ID":"charger","LightLED":0,"LogoLED":0}'),
         )
     )
     api = V2CTrydanApi(session, "192.0.2.10")  # type: ignore[arg-type]
 
-    assert await api.async_get_realtime_data() == {"ID": "charger"}
+    assert await api.async_get_realtime_data() == {
+        "ID": "charger",
+        "LightLED": 0,
+        "LogoLED": 0,
+    }
     assert len(session.urls) == 2
 
 
@@ -144,8 +158,88 @@ async def test_write_rejects_error_response() -> None:
 
 async def test_ipv6_host_is_bracketed_in_url() -> None:
     """IPv6 literal addresses produce valid HTTP URLs."""
-    session = FakeSession((FakeResponse('{"ID":"charger"}'),))
+    session = FakeSession((FakeResponse('{"ID":"charger","LightLED":0,"LogoLED":0}'),))
     api = V2CTrydanApi(session, "2001:db8::10")  # type: ignore[arg-type]
 
     await api.async_get_realtime_data()
     assert session.urls == ["http://[2001:db8::10]/RealTimeData"]
+
+
+async def test_optional_keywords_are_cached_between_poll_cycles() -> None:
+    """Optional reads are merged without being requested on every poll."""
+    session = FakeSession(
+        (
+            FakeResponse('{"ID":"charger"}'),
+            FakeResponse("0"),
+            FakeResponse("25"),
+            FakeResponse('{"ID":"charger"}'),
+        )
+    )
+    api = V2CTrydanApi(session, "192.0.2.10")  # type: ignore[arg-type]
+
+    first = await api.async_get_realtime_data()
+    second = await api.async_get_realtime_data()
+
+    assert first["LightLED"] == 0
+    assert first["LogoLED"] == 25
+    assert second["LightLED"] == 0
+    assert second["LogoLED"] == 25
+    assert session.urls == [
+        "http://192.0.2.10/RealTimeData",
+        "http://192.0.2.10/read/LightLED",
+        "http://192.0.2.10/read/LogoLED",
+        "http://192.0.2.10/RealTimeData",
+    ]
+
+
+async def test_unsupported_optional_keywords_are_not_retried() -> None:
+    """A read endpoint returning 404 is remembered as unsupported."""
+    session = FakeSession(
+        (
+            FakeResponse('{"ID":"charger"}'),
+            FakeResponse(status=404),
+            FakeResponse(status=404),
+            FakeResponse('{"ID":"charger"}'),
+        )
+    )
+    api = V2CTrydanApi(session, "192.0.2.10")  # type: ignore[arg-type]
+
+    assert await api.async_get_realtime_data() == {"ID": "charger"}
+    assert await api.async_get_realtime_data() == {"ID": "charger"}
+    assert len(session.urls) == 4
+
+
+async def test_optional_failure_does_not_fail_core_poll() -> None:
+    """A cosmetic endpoint failure must not make charger data unavailable."""
+    session = FakeSession(
+        (
+            FakeResponse('{"ID":"charger"}'),
+            ClientConnectionError("LED unavailable"),
+            FakeResponse("50"),
+        )
+    )
+    api = V2CTrydanApi(session, "192.0.2.10")  # type: ignore[arg-type]
+
+    assert await api.async_get_realtime_data() == {
+        "ID": "charger",
+        "LogoLED": 50,
+    }
+
+
+async def test_optional_write_updates_cached_value_immediately() -> None:
+    """A successful LED command is visible before the next slow refresh."""
+    session = FakeSession(
+        (
+            FakeResponse('{"ID":"charger"}'),
+            FakeResponse("0"),
+            FakeResponse("0"),
+            FakeResponse("OK"),
+            FakeResponse('{"ID":"charger"}'),
+        )
+    )
+    api = V2CTrydanApi(session, "192.0.2.10")  # type: ignore[arg-type]
+
+    await api.async_get_realtime_data()
+    await api.async_write("LogoLED", 40)
+
+    assert (await api.async_get_realtime_data())["LogoLED"] == 40
