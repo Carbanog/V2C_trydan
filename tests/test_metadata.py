@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ast
 import json
 import re
 from pathlib import Path
@@ -62,3 +63,25 @@ def test_service_translation_fields_match_service_metadata() -> None:
             re.fullmatch(r"[a-z0-9](?:[a-z0-9_-]*[a-z0-9])?", field)
             for field in translated_fields
         )
+
+
+def test_wifi_signal_sensor_keeps_measurement_state_class() -> None:
+    """Protect existing Wi-Fi signal statistics from metadata regressions."""
+    tree = ast.parse((INTEGRATION / "sensor.py").read_text(encoding="utf-8"))
+
+    for node in ast.walk(tree):
+        if not (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "V2CSensorEntityDescription"
+        ):
+            continue
+        keywords = {keyword.arg: keyword.value for keyword in node.keywords}
+        key = keywords.get("key")
+        if isinstance(key, ast.Constant) and key.value == "signal_status":
+            assert (
+                ast.unparse(keywords["state_class"]) == "SensorStateClass.MEASUREMENT"
+            )
+            return
+
+    raise AssertionError("signal_status sensor description not found")

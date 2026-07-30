@@ -212,6 +212,7 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         key="signal_status",
         translation_key="signalstatus",
         entity_category=EntityCategory.DIAGNOSTIC,
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("SignalStatus"),
     ),
     V2CSensorEntityDescription(

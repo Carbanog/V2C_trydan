@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here.
 
+## 1.3.0b2
+
+### Fixed
+
+* Restored the Wi-Fi signal sensor's `measurement` state class so Home
+  Assistant can continue its existing long-term statistics after upgrading.
+
 ## 1.3.0b1
 
 First public beta of the 1.3.0 refactor. Install it only on a test Home
