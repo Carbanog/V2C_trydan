@@ -30,6 +30,8 @@ verified against a physical V2C Trydan.
 
 ### Fixed
 
+* Service metadata now uses Home Assistant-compatible lowercase field names;
+  the legacy `DynamicPowerMode` action parameter remains accepted.
 * String values such as `"0"` are no longer interpreted as enabled switches.
 * Invalid or absent number values no longer report fabricated defaults.
 * Write responses containing `ERROR` are handled consistently on every control.

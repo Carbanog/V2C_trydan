@@ -9,6 +9,7 @@ from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import ServiceValidationError
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -36,6 +37,16 @@ PLATFORMS: tuple[Platform, ...] = (
     Platform.SWITCH,
     Platform.NUMBER,
     Platform.SELECT,
+)
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
+_DYNAMIC_POWER_MODE_VALIDATOR = vol.All(
+    vol.Coerce(int),
+    vol.Range(
+        min=MIN_DYNAMIC_POWER_MODE,
+        max=MAX_DYNAMIC_POWER_MODE,
+    ),
 )
 
 _SERVICE_DEFINITIONS: Mapping[str, tuple[str, str, vol.Schema]] = {
@@ -76,19 +87,23 @@ _SERVICE_DEFINITIONS: Mapping[str, tuple[str, str, vol.Schema]] = {
         ),
     ),
     SERVICE_SET_DYNAMIC_POWER_MODE: (
+        "dynamic_power_mode",
         "DynamicPowerMode",
-        "DynamicPowerMode",
-        vol.Schema(
-            {
-                vol.Required("DynamicPowerMode"): vol.All(
-                    vol.Coerce(int),
-                    vol.Range(
-                        min=MIN_DYNAMIC_POWER_MODE,
-                        max=MAX_DYNAMIC_POWER_MODE,
-                    ),
-                ),
-                vol.Optional(CONF_CONFIG_ENTRY_ID): str,
-            }
+        vol.Any(
+            vol.Schema(
+                {
+                    vol.Required("dynamic_power_mode"): _DYNAMIC_POWER_MODE_VALIDATOR,
+                    vol.Optional(CONF_CONFIG_ENTRY_ID): str,
+                }
+            ),
+            # Releases through 1.2.2 exposed this charger API key directly.
+            # Accept it as an alias so existing scripts and automations keep working.
+            vol.Schema(
+                {
+                    vol.Required("DynamicPowerMode"): _DYNAMIC_POWER_MODE_VALIDATOR,
+                    vol.Optional(CONF_CONFIG_ENTRY_ID): str,
+                }
+            ),
         ),
     ),
 }
@@ -137,9 +152,12 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         service_definition = _SERVICE_DEFINITIONS[call.service]
         field, charger_key, _schema = service_definition
         coordinator = _resolve_service_coordinator(hass, call)
+        value = call.data.get(field)
+        if field == "dynamic_power_mode" and value is None:
+            value = call.data["DynamicPowerMode"]
 
         try:
-            await coordinator.api.async_write(charger_key, call.data[field])
+            await coordinator.api.async_write(charger_key, value)
         except V2CTrydanError as err:
             raise ServiceValidationError(str(err)) from err
         await coordinator.async_request_refresh()

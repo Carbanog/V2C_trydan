@@ -74,7 +74,7 @@
       "name": "Establecer modo de potencia dinámica",
       "description": "Cambia la estrategia de potencia dinámica del cargador.",
       "fields": {
-        "DynamicPowerMode": {
+        "dynamic_power_mode": {
           "name": "Modo",
           "description": "Modo de potencia dinámica entre 0 y 5."
         },
