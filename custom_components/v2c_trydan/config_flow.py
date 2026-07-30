@@ -1,62 +1,126 @@
 """Config flow for V2C Trydan."""
+
 from __future__ import annotations
 
-import logging
-import aiohttp
+import ipaddress
+from typing import Any
 
 import voluptuous as vol
 from homeassistant import config_entries
+from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.const import CONF_IP_ADDRESS
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
+from .api import (
+    V2CTrydanApi,
+    V2CTrydanConnectionError,
+    V2CTrydanInvalidResponseError,
+    device_identifier,
+)
 from .const import DOMAIN
 
-_LOGGER = logging.getLogger(__name__)
 
-DATA_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_IP_ADDRESS): str,
-    }
-)
+def _normalize_ip_address(value: str) -> str:
+    """Validate and normalize an IPv4 or IPv6 address."""
+    return str(ipaddress.ip_address(value.strip()))
 
 
-class V2CtrydanConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+def _schema(default: str | None = None) -> vol.Schema:
+    """Return the config form schema."""
+    field = (
+        vol.Required(CONF_IP_ADDRESS, default=default)
+        if default
+        else vol.Required(CONF_IP_ADDRESS)
+    )
+    return vol.Schema({field: str})
+
+
+class V2CTrydanConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for V2C Trydan."""
 
-    VERSION = 1
+    VERSION = 2
 
-    async def async_step_user(self, user_input=None):
-        """Handle the initial step."""
-        errors = {}
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Create a new charger entry."""
+        errors: dict[str, str] = {}
 
         if user_input is not None:
-            ip_address = user_input[CONF_IP_ADDRESS]
-            try:
-                if await self._test_connection(ip_address):
-                    await self.async_set_unique_id(ip_address)
-                    self._abort_if_unique_id_configured()
-                    return self.async_create_entry(
-                        title=f"V2C Trydan ({ip_address})",
-                        data=user_input,
-                    )
-                else:
-                    errors["base"] = "cannot_connect"
-            except Exception:
-                errors["base"] = "unknown"
+            result = await self._async_validate_input(user_input, errors)
+            if result is not None:
+                host, unique_id = result
+                await self.async_set_unique_id(unique_id)
+                self._abort_if_unique_id_configured()
+                return self.async_create_entry(
+                    title=f"V2C Trydan ({host})",
+                    data={CONF_IP_ADDRESS: host},
+                )
 
         return self.async_show_form(
             step_id="user",
-            data_schema=DATA_SCHEMA,
+            data_schema=_schema(
+                user_input.get(CONF_IP_ADDRESS) if user_input else None
+            ),
             errors=errors,
         )
 
-    async def _test_connection(self, ip_address: str) -> bool:
-        """Test connection to the V2C Trydan device."""
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Update the charger IP address."""
+        entry = self._get_reconfigure_entry()
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            result = await self._async_validate_input(user_input, errors)
+            if result is not None:
+                host, unique_id = result
+                await self.async_set_unique_id(unique_id)
+                legacy_unique_id = entry.data[CONF_IP_ADDRESS]
+                if entry.unique_id != legacy_unique_id:
+                    self._abort_if_unique_id_mismatch()
+                return self.async_update_reload_and_abort(
+                    entry,
+                    unique_id=unique_id,
+                    data_updates={CONF_IP_ADDRESS: host},
+                )
+
+        default = (
+            user_input.get(CONF_IP_ADDRESS)
+            if user_input
+            else entry.data[CONF_IP_ADDRESS]
+        )
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=_schema(default),
+            errors=errors,
+        )
+
+    async def _async_validate_input(
+        self,
+        user_input: dict[str, Any],
+        errors: dict[str, str],
+    ) -> tuple[str, str] | None:
+        """Validate the address and return it with the hardware ID."""
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(
-                    f"http://{ip_address}/RealTimeData",
-                    timeout=aiohttp.ClientTimeout(total=10),
-                ) as response:
-                    return response.status == 200
-        except Exception:
-            return False
+            host = _normalize_ip_address(user_input[CONF_IP_ADDRESS])
+        except ValueError:
+            errors["base"] = "invalid_ip"
+            return None
+
+        api = V2CTrydanApi(async_get_clientsession(self.hass), host)
+        try:
+            data = await api.async_get_realtime_data()
+        except V2CTrydanConnectionError:
+            errors["base"] = "cannot_connect"
+            return None
+        except V2CTrydanInvalidResponseError:
+            errors["base"] = "invalid_response"
+            return None
+
+        identifier = device_identifier(data, "")
+        if not identifier:
+            errors["base"] = "invalid_response"
+            return None
+        return host, identifier

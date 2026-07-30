@@ -28,6 +28,12 @@ This integration allows you to control and monitor your **V2C Trydan** charger 1
 * **Documented services** — with sliders in HA UI
 * **Modern architecture** — uses `ConfigEntry.runtime_data`, no legacy `hass.data`
 * **JSON fix** — automatically repairs malformed firmware responses
+* **Serialized requests** — reads and commands never overlap, which protects weak
+  PLC and Wi-Fi links
+* **UI reconfiguration** — change the IP without deleting entities or losing
+  names, areas, and automations
+* **Multiple chargers** — legacy actions can explicitly target a config entry
+* **Privacy-safe diagnostics** — generated reports redact IP, SSID, and device ID
 
 ## 📋 Prerequisites
 
@@ -113,6 +119,9 @@ Perfect for automation triggers (On/Off).
 | `v2c_trydan.set_dynamic_power_mode` | Changes dynamic power mode (0-5). |
 
 All services appear with descriptions and sliders in **Developer Tools → Actions**.
+When multiple chargers are configured, use `config_entry_id` to select the
+target. New automations should normally call the `number`, `select`, and `switch`
+entities directly; these actions remain available for backwards compatibility.
 
 -----
 
@@ -123,7 +132,26 @@ All services appear with descriptions and sliders in **Developer Tools → Actio
 | Polling interval | 15 seconds |
 | Connection timeout | 20 seconds |
 | Retries per cycle | 3 (with 2s wait) |
-| Errors before alert | 5 consecutive |
+| Concurrency | One in-flight charger request |
+
+## 🔄 Changing the IP address
+
+Open **Settings → Devices & services → V2C Trydan**, open the integration menu,
+and select **Reconfigure**. The flow verifies that the new address belongs to the
+same charger before saving it.
+
+## 🩺 Diagnostics and troubleshooting
+
+* Confirm that `http://CHARGER_IP/RealTimeData` is reachable from the same network.
+* Reserve the address in DHCP. If it changes, reconfigure it instead of deleting
+  the integration.
+* Download diagnostics from the integration menu when opening an issue. Network
+  details and the hardware identifier are automatically redacted.
+* Temporary failures make entities unavailable and Home Assistant retries
+  automatically; a restart is not required.
+
+See [`docs/architecture.md`](docs/architecture.md) for the internal design and
+contribution rules.
 
 -----
 

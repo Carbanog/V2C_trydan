@@ -28,6 +28,13 @@ Esta integración permite controlar y monitorizar tu cargador **V2C Trydan** de 
 * **Services documentados** — con sliders en la UI de HA
 * **Arquitectura moderna** — usa `ConfigEntry.runtime_data`, sin `hass.data` legacy
 * **Fix de JSON** — repara respuestas malformadas del firmware del cargador automáticamente
+* **Peticiones serializadas** — las lecturas y órdenes nunca se solapan, algo
+  especialmente importante en enlaces PLC o WiFi débiles
+* **IP reconfigurable** — la dirección puede cambiarse desde la UI sin eliminar
+  la integración ni perder nombres, áreas o automatizaciones
+* **Varios cargadores** — las acciones permiten seleccionar el cargador de destino
+* **Diagnósticos seguros** — Home Assistant puede generar un informe que oculta
+  IP, SSID e identificador del equipo
 
 ## 📋 Requisitos Previos
 
@@ -36,7 +43,8 @@ Esta integración permite controlar y monitorizar tu cargador **V2C Trydan** de 
 
 ## 🚀 Instalación
 
-1. **HACS:** Añade este repositorio como "Repositorio Personalizado" en HACS.
+1. **HACS:** Añade este repositorio como "Repositorio Personalizado" de tipo
+   "Integración" en HACS.
 2. **Reinicia:** Reinicia Home Assistant.
 3. **Configuración:** Ve a Ajustes → Dispositivos y Servicios → Añadir Integración → Busca **V2C Trydan**.
 4. **IP:** Introduce la IP estática de tu cargador.
@@ -113,6 +121,10 @@ Ideales para disparar automatizaciones (Encendido/Apagado).
 | `v2c_trydan.set_dynamic_power_mode` | Cambia el modo de potencia dinámica (0-5). |
 
 Todos los servicios aparecen con descripción y sliders en **Herramientas para Desarrolladores → Acciones**.
+Cuando hay más de un cargador configurado, selecciona el cargador en el campo
+`config_entry_id`. Para automatizaciones nuevas se recomienda actuar directamente
+sobre las entidades `number`, `select` y `switch`; las acciones anteriores se
+mantienen por compatibilidad.
 
 -----
 
@@ -123,7 +135,26 @@ Todos los servicios aparecen con descripción y sliders en **Herramientas para D
 | Intervalo de polling | 15 segundos |
 | Timeout de conexión | 20 segundos |
 | Reintentos por ciclo | 3 (con 2s de espera) |
-| Errores para alerta | 5 consecutivos |
+| Concurrencia | Una única petición al cargador a la vez |
+
+## 🔄 Cambiar la IP
+
+En **Ajustes → Dispositivos y servicios → V2C Trydan**, abre el menú de la
+integración y selecciona **Reconfigurar**. La integración comprueba que la nueva
+dirección corresponde al mismo cargador antes de guardar el cambio.
+
+## 🩺 Diagnóstico y solución de problemas
+
+* Verifica que `http://IP_DEL_CARGADOR/RealTimeData` responde desde la misma red.
+* Reserva la IP en el servidor DHCP; no es necesario borrar la integración si la
+  dirección cambia, ya que puede reconfigurarse.
+* Desde el menú de la integración, descarga los diagnósticos para adjuntarlos a
+  una incidencia. Los datos de red y el identificador se ocultan automáticamente.
+* Los fallos temporales dejan las entidades como no disponibles y Home Assistant
+  vuelve a intentarlo; no es necesario reiniciar.
+
+La arquitectura y las reglas para contribuir están documentadas en
+[`docs/architecture.md`](docs/architecture.md).
 
 -----
 

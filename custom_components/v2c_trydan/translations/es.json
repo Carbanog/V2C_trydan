@@ -7,14 +7,94 @@
         "data": {
           "ip_address": "Dirección IP"
         }
+      },
+      "reconfigure": {
+        "title": "Actualizar dirección del V2C Trydan",
+        "description": "Introduce la nueva dirección IP estática del cargador.",
+        "data": {
+          "ip_address": "Dirección IP"
+        }
       }
     },
     "error": {
       "cannot_connect": "No se pudo conectar al dispositivo",
+      "invalid_ip": "Introduce una dirección IPv4 o IPv6 válida",
+      "invalid_response": "Ha respondido un dispositivo, pero no parece un V2C Trydan compatible",
       "unknown": "Ha ocurrido un error inesperado"
     },
     "abort": {
-      "already_configured": "El dispositivo ya está configurado"
+      "already_configured": "El dispositivo ya está configurado",
+      "reconfigure_successful": "La dirección del cargador se ha actualizado"
+    }
+  },
+  "services": {
+    "set_intensity": {
+      "name": "Establecer intensidad de carga",
+      "description": "Establece la intensidad de carga manual.",
+      "fields": {
+        "intensity": {
+          "name": "Intensidad",
+          "description": "Intensidad de carga entre 6 y 32 amperios."
+        },
+        "config_entry_id": {
+          "name": "Cargador",
+          "description": "Cargador que se controlará. Es opcional si solo hay uno configurado."
+        }
+      }
+    },
+    "set_min_intensity": {
+      "name": "Establecer intensidad mínima",
+      "description": "Establece el límite inferior de la carga dinámica.",
+      "fields": {
+        "min_intensity": {
+          "name": "Intensidad mínima",
+          "description": "Intensidad mínima entre 6 y 32 amperios."
+        },
+        "config_entry_id": {
+          "name": "Cargador",
+          "description": "Cargador que se controlará. Es opcional si solo hay uno configurado."
+        }
+      }
+    },
+    "set_max_intensity": {
+      "name": "Establecer intensidad máxima",
+      "description": "Establece el límite superior de la carga dinámica.",
+      "fields": {
+        "max_intensity": {
+          "name": "Intensidad máxima",
+          "description": "Intensidad máxima entre 6 y 32 amperios."
+        },
+        "config_entry_id": {
+          "name": "Cargador",
+          "description": "Cargador que se controlará. Es opcional si solo hay uno configurado."
+        }
+      }
+    },
+    "set_dynamic_power_mode": {
+      "name": "Establecer modo de potencia dinámica",
+      "description": "Cambia la estrategia de potencia dinámica del cargador.",
+      "fields": {
+        "DynamicPowerMode": {
+          "name": "Modo",
+          "description": "Modo de potencia dinámica entre 0 y 5."
+        },
+        "config_entry_id": {
+          "name": "Cargador",
+          "description": "Cargador que se controlará. Es opcional si solo hay uno configurado."
+        }
+      }
+    }
+  },
+  "selector": {
+    "dynamic_power_mode": {
+      "options": {
+        "0": "Activar potencia temporizada",
+        "1": "Desactivar potencia temporizada",
+        "2": "Modo exclusivo (solo FV)",
+        "3": "Modo de potencia mínima",
+        "4": "Modo red y FV",
+        "5": "Modo parada"
+      }
     }
   },
   "entity": {
