@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import yaml
@@ -40,3 +41,24 @@ def test_translation_files_have_the_same_keys() -> None:
         (INTEGRATION / "translations" / "es.json").read_text(encoding="utf-8")
     )
     assert _key_shape(english) == _key_shape(spanish)
+
+
+def test_service_translation_fields_match_service_metadata() -> None:
+    """Service field translations must use HA-valid keys and match services.yaml."""
+    services = yaml.safe_load(
+        (INTEGRATION / "services.yaml").read_text(encoding="utf-8")
+    )
+    translations = json.loads(
+        (INTEGRATION / "translations" / "en.json").read_text(encoding="utf-8")
+    )
+
+    for service_name, service in services.items():
+        service_fields = set(service.get("fields", {}))
+        translated_fields = set(
+            translations["services"][service_name].get("fields", {})
+        )
+        assert translated_fields == service_fields
+        assert all(
+            re.fullmatch(r"[a-z0-9](?:[a-z0-9_-]*[a-z0-9])?", field)
+            for field in translated_fields
+        )

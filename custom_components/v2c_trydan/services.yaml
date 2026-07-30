@@ -51,7 +51,7 @@ set_max_intensity:
 
 set_dynamic_power_mode:
   fields:
-    DynamicPowerMode:
+    dynamic_power_mode:
       required: true
       selector:
         select:

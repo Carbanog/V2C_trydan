@@ -74,7 +74,7 @@
       "name": "Set dynamic power mode",
       "description": "Changes the charger's dynamic power strategy.",
       "fields": {
-        "DynamicPowerMode": {
+        "dynamic_power_mode": {
           "name": "Mode",
           "description": "Dynamic power mode between 0 and 5."
         },
