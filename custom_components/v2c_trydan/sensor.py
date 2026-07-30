@@ -48,6 +48,48 @@ def _integer_string(value: Any) -> str | None:
     return str(converted) if converted is not None else None
 
 
+_METER_ERROR_CODES: tuple[str, ...] = tuple(
+    str(code)
+    for code in (
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        30,
+        31,
+        32,
+        245,
+        246,
+        247,
+        248,
+        249,
+        250,
+        251,
+        252,
+        253,
+        254,
+        255,
+        256,
+        257,
+    )
+)
+
+
 TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
     V2CSensorEntityDescription(
         key="charge_power",
@@ -69,14 +111,14 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         key="charge_state",
         translation_key="chargestate",
         device_class=SensorDeviceClass.ENUM,
-        options=["0", "1", "2", "3", "4", "5"],
+        options=[str(state) for state in range(7)],
         value_fn=lambda data: _integer_string(data.get("ChargeState")),
     ),
     V2CSensorEntityDescription(
         key="charge_time",
         translation_key="chargetime",
         native_unit_of_measurement=UnitOfTime.SECONDS,
-        state_class=SensorStateClass.MEASUREMENT,
+        state_class=SensorStateClass.TOTAL_INCREASING,
         device_class=SensorDeviceClass.DURATION,
         value_fn=lambda data: value_as_float(data.get("ChargeTime")),
     ),
@@ -149,6 +191,7 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         translation_key="dynamic",
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("Dynamic"),
     ),
     V2CSensorEntityDescription(
@@ -156,6 +199,7 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         translation_key="dynamicpowermode",
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("DynamicPowerMode"),
     ),
     V2CSensorEntityDescription(
@@ -163,6 +207,7 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         translation_key="locked",
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("Locked"),
     ),
     V2CSensorEntityDescription(
@@ -170,24 +215,39 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         translation_key="paused",
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("Paused"),
     ),
     V2CSensorEntityDescription(
         key="pause_dynamic",
         translation_key="pausedynamic",
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("PauseDynamic"),
     ),
     V2CSensorEntityDescription(
         key="slave_error",
         translation_key="slaveerror",
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("SlaveError"),
+    ),
+    V2CSensorEntityDescription(
+        key="meter_error",
+        translation_key="meter_error",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        device_class=SensorDeviceClass.ENUM,
+        options=list(_METER_ERROR_CODES),
+        value_fn=lambda data: _integer_string(data.get("SlaveError")),
     ),
     V2CSensorEntityDescription(
         key="timer",
         translation_key="timer",
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("Timer"),
     ),
     V2CSensorEntityDescription(
@@ -225,6 +285,8 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         key="ready_state",
         translation_key="readystate",
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("ReadyState"),
     ),
 )

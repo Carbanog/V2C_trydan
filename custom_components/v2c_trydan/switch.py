@@ -37,6 +37,17 @@ SWITCHES: tuple[V2CSwitchEntityDescription, ...] = (
         translation_key="locked",
         api_key="Locked",
     ),
+    V2CSwitchEntityDescription(
+        key="timer",
+        translation_key="timer",
+        api_key="Timer",
+    ),
+    V2CSwitchEntityDescription(
+        key="pause_dynamic",
+        translation_key="pause_dynamic",
+        api_key="PauseDynamic",
+        icon="mdi:pause",
+    ),
 )
 
 
@@ -48,7 +59,9 @@ async def async_setup_entry(
     """Set up V2C Trydan switches."""
     coordinator: V2CTrydanDataUpdateCoordinator = config_entry.runtime_data
     async_add_entities(
-        V2CTrydanSwitch(coordinator, description) for description in SWITCHES
+        V2CTrydanSwitch(coordinator, description)
+        for description in SWITCHES
+        if description.api_key in coordinator.data
     )
 
 

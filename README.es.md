@@ -60,10 +60,14 @@ Esta integración permite controlar y monitorizar tu cargador **V2C Trydan** de 
 | `Pausar Carga` | Switch | Pausa o reanuda la carga actual. |
 | `Bloquear Cargador` | Switch | Bloquea el hardware del cargador. |
 | `Carga Dinámica` | Switch | Activa/Desactiva la modulación dinámica de potencia. |
+| `Temporizador de Carga` | Switch | Activa el horario configurado en el cargador. |
+| `Pausar Modulación Dinámica` | Switch | Detiene o reanuda la modulación dinámica. |
 | `Intensidad de Carga` | Number | Ajusta los Amperios manualmente (6A - 32A). |
 | `Intensidad Máxima` | Number | Límite superior para el modo dinámico. |
 | `Intensidad Mínima` | Number | Límite inferior para el modo dinámico. |
 | `Modo de Potencia Dinámica` | Select | Selector de modos (Exclusivo Solar, Red+FV, Mínimo, etc.). |
+| `Luz del Cargador` | Light | Controla la luz principal cuando está disponible. |
+| `Luz del Logotipo` | Light | Controla el brillo del logotipo cuando está disponible. |
 
 ### 🔌 Sensores Binarios (Estados)
 Ideales para disparar automatizaciones (Encendido/Apagado).
@@ -101,7 +105,7 @@ Ideales para disparar automatizaciones (Encendido/Apagado).
 | `Estado de Señal WiFi` | Calidad de la señal. |
 | `ID del Dispositivo` | Identificador único del cargador. |
 | `Estado Listo` | Estado interno de preparación. |
-| `Error de Medidor` | Código de error del medidor. |
+| `Error de Medidor` | Estado descriptivo de comunicación con el medidor. |
 | `Carga Dinámica` | Estado del modo dinámico. |
 | `Modo de Potencia Dinámica` | Modo dinámico activo. |
 | `Cargador Bloqueado` | Estado de bloqueo. |
@@ -136,6 +140,7 @@ mantienen por compatibilidad.
 | Timeout de conexión | 20 segundos |
 | Reintentos por ciclo | 3 (con 2s de espera) |
 | Concurrencia | Una única petición al cargador a la vez |
+| Datos LED opcionales | Lectura cada 60 segundos con caché |
 
 ## 🔄 Cambiar la IP
 

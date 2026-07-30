@@ -113,8 +113,9 @@
           "1": "Manguera conectada (sin carga)",
           "2": "Manguera conectada (cargando)",
           "3": "Error",
-          "4": "No disponible (OCPP)",
-          "5": "Desconocido"
+          "4": "Fallo del sistema o cortocircuito del piloto",
+          "5": "Fallo del piloto de control, tierra o general",
+          "6": "Ventilación necesaria"
         }
       },
       "chargetime": { "name": "Tiempo de Carga" },
@@ -131,7 +132,47 @@
       "locked": { "name": "Cargador Bloqueado" },
       "paused": { "name": "Carga Pausada" },
       "pausedynamic": { "name": "Pausa Dinámica" },
-      "slaveerror": { "name": "Error de Medidor" },
+      "slaveerror": { "name": "Código de Error del Medidor" },
+      "meter_error": {
+        "name": "Error del Medidor",
+        "state": {
+          "0": "Sin error",
+          "1": "Error de comunicación",
+          "2": "Error de lectura",
+          "3": "Error del medidor",
+          "4": "Esperando Wi-Fi",
+          "5": "Esperando comunicación",
+          "6": "Dirección IP incorrecta",
+          "7": "Medidor no encontrado",
+          "8": "Medidor incorrecto",
+          "9": "Sin respuesta",
+          "10": "Pinza no conectada",
+          "21": "Función no permitida",
+          "22": "Dirección de datos no permitida",
+          "23": "Valor de datos no permitido",
+          "24": "Fallo del dispositivo servidor",
+          "25": "Confirmado",
+          "26": "Dispositivo servidor ocupado",
+          "27": "Confirmación negativa",
+          "28": "Error de paridad de memoria",
+          "30": "Ruta de pasarela no disponible",
+          "31": "Destino de pasarela sin respuesta",
+          "32": "Tiempo de espera RTU agotado",
+          "245": "Servidor no válido",
+          "246": "Error CRC",
+          "247": "Función no coincidente",
+          "248": "ID de servidor no coincidente",
+          "249": "Longitud de paquete incorrecta",
+          "250": "Número de parámetros incorrecto",
+          "251": "Límite de parámetros incorrecto",
+          "252": "Cola de solicitudes llena",
+          "253": "Dirección IP o puerto no permitido",
+          "254": "Falló la conexión IP",
+          "255": "Cabecera TCP no coincidente",
+          "256": "Mensaje vacío",
+          "257": "Error no definido"
+        }
+      },
       "timer": { "name": "Temporizador" },
       "firmware_version": { "name": "Versión de Firmware" },
       "ip": { "name": "Dirección IP" },
@@ -143,7 +184,9 @@
     "switch": {
       "dynamic": { "name": "Carga Dinámica" },
       "paused": { "name": "Pausar Carga" },
-      "locked": { "name": "Bloquear Cargador" }
+      "locked": { "name": "Bloquear Cargador" },
+      "timer": { "name": "Temporizador de Carga" },
+      "pause_dynamic": { "name": "Pausar Modulación Dinámica" }
     },
     "number": {
       "max_intensity": { "name": "Intensidad Máxima" },
@@ -162,6 +205,10 @@
           "disable_timed_power_stop": "Modo Parada"
         }
       }
+    },
+    "light": {
+      "light_led": { "name": "Luz del Cargador" },
+      "logo_led": { "name": "Luz del Logotipo" }
     }
   }
 }

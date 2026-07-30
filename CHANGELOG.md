@@ -2,6 +2,30 @@
 
 All notable changes to this project are documented here.
 
+## 1.3.0b3
+
+### Added
+
+* Optional charger-light and dimmable logo-light controls for firmware that
+  exposes `LightLED` and `LogoLED` through the local read API.
+* Writable timer and dynamic-modulation pause switches when those capabilities
+  are present in `RealTimeData`.
+* Human-readable charge-state faults and meter communication errors.
+
+### Changed
+
+* Optional LED values are refreshed once per minute and cached between the
+  normal 15-second polls. Their failure cannot make core charger data
+  unavailable, protecting PLC and weak Wi-Fi installations.
+* Legacy numeric diagnostic sensors retain their historical statistics metadata
+  for upgrade compatibility but are disabled by default on new installations;
+  a separate enum sensor provides readable meter errors.
+
+### Fixed
+
+* Restored the charge-time sensor's `total_increasing` state class used by
+  releases before the refactor and by Home Assistant's official integration.
+
 ## 1.3.0b2
 
 ### Fixed

@@ -65,8 +65,8 @@ def test_service_translation_fields_match_service_metadata() -> None:
         )
 
 
-def test_wifi_signal_sensor_keeps_measurement_state_class() -> None:
-    """Protect existing Wi-Fi signal statistics from metadata regressions."""
+def _sensor_description_keywords(entity_key: str) -> dict[str | None, ast.expr]:
+    """Return AST keywords for one sensor entity description."""
     tree = ast.parse((INTEGRATION / "sensor.py").read_text(encoding="utf-8"))
 
     for node in ast.walk(tree):
@@ -78,10 +78,42 @@ def test_wifi_signal_sensor_keeps_measurement_state_class() -> None:
             continue
         keywords = {keyword.arg: keyword.value for keyword in node.keywords}
         key = keywords.get("key")
-        if isinstance(key, ast.Constant) and key.value == "signal_status":
-            assert (
-                ast.unparse(keywords["state_class"]) == "SensorStateClass.MEASUREMENT"
-            )
-            return
+        if isinstance(key, ast.Constant) and key.value == entity_key:
+            return keywords
 
-    raise AssertionError("signal_status sensor description not found")
+    raise AssertionError(f"{entity_key} sensor description not found")
+
+
+def test_statistics_state_classes_do_not_regress() -> None:
+    """Protect long-term statistics created by releases before the refactor."""
+    measurement_keys = (
+        "signal_status",
+        "dynamic",
+        "dynamic_power_mode",
+        "locked",
+        "paused",
+        "pause_dynamic",
+        "slave_error",
+        "timer",
+        "ready_state",
+    )
+    for entity_key in measurement_keys:
+        description = _sensor_description_keywords(entity_key)
+        assert ast.unparse(description["state_class"]) == "SensorStateClass.MEASUREMENT"
+
+    charge_time = _sensor_description_keywords("charge_time")
+    assert (
+        ast.unparse(charge_time["state_class"]) == "SensorStateClass.TOTAL_INCREASING"
+    )
+
+
+def test_manifest_version_matches_latest_changelog() -> None:
+    """Release metadata and the top changelog section must remain aligned."""
+    manifest = json.loads((INTEGRATION / "manifest.json").read_text(encoding="utf-8"))
+    changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    latest_heading = next(
+        line.removeprefix("## ")
+        for line in changelog.splitlines()
+        if line.startswith("## ")
+    )
+    assert manifest["version"] == latest_heading

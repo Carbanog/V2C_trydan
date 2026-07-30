@@ -58,10 +58,14 @@ This integration allows you to control and monitor your **V2C Trydan** charger 1
 | `Pause Charge` | Switch | Pauses or resumes the current charging session. |
 | `Lock Charger` | Switch | Locks the charger hardware. |
 | `Dynamic Charge` | Switch | Enables/Disables dynamic power modulation. |
+| `Charge Timer` | Switch | Enables the schedule configured on the charger. |
+| `Pause Dynamic Modulation` | Switch | Pauses or resumes dynamic modulation. |
 | `Charge Intensity` | Number | Adjust Amps manually (6A - 32A). |
 | `Maximum Intensity` | Number | Upper limit for dynamic mode. |
 | `Minimum Intensity` | Number | Lower limit for dynamic mode. |
 | `Dynamic Power Mode` | Select | Mode selector (Exclusive Solar, Grid+PV, Minimum, etc.). |
+| `Charger Light` | Light | Controls the main charger light when supported. |
+| `Logo Light` | Light | Controls logo brightness when supported. |
 
 ### 🔌 Binary Sensors (Status)
 Perfect for automation triggers (On/Off).
@@ -99,7 +103,7 @@ Perfect for automation triggers (On/Off).
 | `WiFi Signal Status` | Signal quality. |
 | `Device ID` | Unique charger identifier. |
 | `Ready State` | Internal readiness state. |
-| `Meter Error` | Meter error code. |
+| `Meter Error` | Human-readable meter communication state. |
 | `Dynamic Charge` | Dynamic mode state. |
 | `Dynamic Power Mode` | Active dynamic mode. |
 | `Charger Locked` | Lock state. |
@@ -133,6 +137,7 @@ entities directly; these actions remain available for backwards compatibility.
 | Connection timeout | 20 seconds |
 | Retries per cycle | 3 (with 2s wait) |
 | Concurrency | One in-flight charger request |
+| Optional LED data | Read every 60 seconds and cached |
 
 ## 🔄 Changing the IP address
 
