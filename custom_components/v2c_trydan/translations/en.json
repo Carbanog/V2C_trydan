@@ -7,14 +7,94 @@
         "data": {
           "ip_address": "IP Address"
         }
+      },
+      "reconfigure": {
+        "title": "Update V2C Trydan address",
+        "description": "Enter the charger's new static IP address.",
+        "data": {
+          "ip_address": "IP Address"
+        }
       }
     },
     "error": {
       "cannot_connect": "Could not connect to device",
+      "invalid_ip": "Enter a valid IPv4 or IPv6 address",
+      "invalid_response": "A device responded, but it was not a compatible V2C Trydan charger",
       "unknown": "An unexpected error occurred"
     },
     "abort": {
-      "already_configured": "This device is already configured"
+      "already_configured": "This device is already configured",
+      "reconfigure_successful": "The charger address was updated"
+    }
+  },
+  "services": {
+    "set_intensity": {
+      "name": "Set charge intensity",
+      "description": "Sets the manual charging current.",
+      "fields": {
+        "intensity": {
+          "name": "Intensity",
+          "description": "Charging current between 6 and 32 amperes."
+        },
+        "config_entry_id": {
+          "name": "Charger",
+          "description": "Charger to control. Optional when only one is configured."
+        }
+      }
+    },
+    "set_min_intensity": {
+      "name": "Set minimum intensity",
+      "description": "Sets the lower current limit for dynamic charging.",
+      "fields": {
+        "min_intensity": {
+          "name": "Minimum intensity",
+          "description": "Minimum current between 6 and 32 amperes."
+        },
+        "config_entry_id": {
+          "name": "Charger",
+          "description": "Charger to control. Optional when only one is configured."
+        }
+      }
+    },
+    "set_max_intensity": {
+      "name": "Set maximum intensity",
+      "description": "Sets the upper current limit for dynamic charging.",
+      "fields": {
+        "max_intensity": {
+          "name": "Maximum intensity",
+          "description": "Maximum current between 6 and 32 amperes."
+        },
+        "config_entry_id": {
+          "name": "Charger",
+          "description": "Charger to control. Optional when only one is configured."
+        }
+      }
+    },
+    "set_dynamic_power_mode": {
+      "name": "Set dynamic power mode",
+      "description": "Changes the charger's dynamic power strategy.",
+      "fields": {
+        "DynamicPowerMode": {
+          "name": "Mode",
+          "description": "Dynamic power mode between 0 and 5."
+        },
+        "config_entry_id": {
+          "name": "Charger",
+          "description": "Charger to control. Optional when only one is configured."
+        }
+      }
+    }
+  },
+  "selector": {
+    "dynamic_power_mode": {
+      "options": {
+        "0": "Enable timed power",
+        "1": "Disable timed power",
+        "2": "Exclusive mode (PV only)",
+        "3": "Minimum power mode",
+        "4": "Grid and PV mode",
+        "5": "Stop mode"
+      }
     }
   },
   "entity": {

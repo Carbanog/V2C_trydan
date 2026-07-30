@@ -1,164 +1,133 @@
 """Number platform for V2C Trydan."""
+
 from __future__ import annotations
 
-import logging
-import aiohttp
-
 from homeassistant.components.number import NumberEntity
-from homeassistant.components.sensor import SensorStateClass
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import UnitOfElectricCurrent
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN
-from .coordinator import V2CtrydanDataUpdateCoordinator
-
-_LOGGER = logging.getLogger(__name__)
+from .const import MAX_INTENSITY, MIN_INTENSITY
+from .coordinator import V2CTrydanDataUpdateCoordinator
+from .entity import V2CTrydanEntity
+from .utils import value_as_float
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry,
+    config_entry: ConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Set up V2C Trydan number platform."""
-    coordinator = config_entry.runtime_data
+    """Set up V2C Trydan number entities."""
+    coordinator: V2CTrydanDataUpdateCoordinator = config_entry.runtime_data
+    async_add_entities(
+        (
+            MaxIntensityNumber(coordinator),
+            MinIntensityNumber(coordinator),
+            IntensityNumber(coordinator),
+        )
+    )
 
-    async_add_entities([
-        MaxIntensityNumber(coordinator),
-        MinIntensityNumber(coordinator),
-        IntensityNumber(coordinator),
-    ])
 
+class V2CNumberEntity(V2CTrydanEntity, NumberEntity):
+    """Base class for charger current controls."""
 
-class V2CNumberBase(CoordinatorEntity, NumberEntity):
-    """Base class for V2C Trydan number entities."""
-
-    _attr_has_entity_name = True
-    _attr_state_class = SensorStateClass.MEASUREMENT
-    _attr_native_unit_of_measurement = "A"
+    _attr_native_step = 1
+    _attr_native_unit_of_measurement = UnitOfElectricCurrent.AMPERE
     _attr_icon = "mdi:current-ac"
 
-    def __init__(self, coordinator: V2CtrydanDataUpdateCoordinator) -> None:
+    def __init__(
+        self,
+        coordinator: V2CTrydanDataUpdateCoordinator,
+        entity_key: str,
+    ) -> None:
         """Initialize the number entity."""
-        super().__init__(coordinator)
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, coordinator.ip_address)},
-            name=f"V2C Trydan ({coordinator.ip_address})",
-            manufacturer="V2C",
-            model="Trydan",
-            configuration_url=f"http://{coordinator.ip_address}",
-        )
-
-    @property
-    def available(self) -> bool:
-        """Return if entity is available."""
-        return self.coordinator.last_update_success and self.coordinator.data is not None
-
-    async def _send_value(self, key: str, value: int) -> None:
-        """Send value to device."""
-        session = async_get_clientsession(self.hass)
-        url = f"http://{self.coordinator.ip_address}/write/{key}={value}"
-        try:
-            async with session.get(
-                url, timeout=aiohttp.ClientTimeout(total=10)
-            ) as response:
-                response.raise_for_status()
-                response_text = await response.text()
-                if response_text.strip().upper() == "ERROR":
-                    raise ValueError(f"El dispositivo rechazó el valor {value} para {key}")
-                await self.coordinator.async_request_refresh()
-        except aiohttp.ClientError as err:
-            _LOGGER.error(f"Error enviando {key}={value}: {err}")
-            raise
+        super().__init__(coordinator, entity_key)
 
 
-class MaxIntensityNumber(V2CNumberBase):
-    """Maximum charging intensity."""
+class MaxIntensityNumber(V2CNumberEntity):
+    """Maximum dynamic charging intensity."""
 
     _attr_translation_key = "max_intensity"
+    _attr_native_max_value = MAX_INTENSITY
 
-    def __init__(self, coordinator: V2CtrydanDataUpdateCoordinator) -> None:
-        super().__init__(coordinator)
-        self._attr_unique_id = f"{coordinator.ip_address}_max_intensity"
-
-    @property
-    def native_value(self) -> float:
-        if self.coordinator.data:
-            return self.coordinator.data.get("MaxIntensity", 32)
-        return 32
+    def __init__(self, coordinator: V2CTrydanDataUpdateCoordinator) -> None:
+        """Initialize the maximum intensity control."""
+        super().__init__(coordinator, "max_intensity")
 
     @property
-    def native_max_value(self) -> float:
-        return 32
+    def native_value(self) -> float | None:
+        """Return the configured maximum intensity."""
+        return value_as_float(self.coordinator.data.get("MaxIntensity"))
 
     @property
     def native_min_value(self) -> float:
-        if self.coordinator.data:
-            return self.coordinator.data.get("MinIntensity", 6)
-        return 6
+        """Keep the maximum at or above the configured minimum."""
+        return (
+            value_as_float(self.coordinator.data.get("MinIntensity")) or MIN_INTENSITY
+        )
 
     async def async_set_native_value(self, value: float) -> None:
-        await self._send_value("MaxIntensity", int(value))
+        """Set the maximum intensity."""
+        await self._async_write("MaxIntensity", int(value))
 
 
-class MinIntensityNumber(V2CNumberBase):
-    """Minimum charging intensity."""
+class MinIntensityNumber(V2CNumberEntity):
+    """Minimum dynamic charging intensity."""
 
     _attr_translation_key = "min_intensity"
+    _attr_native_min_value = MIN_INTENSITY
 
-    def __init__(self, coordinator: V2CtrydanDataUpdateCoordinator) -> None:
-        super().__init__(coordinator)
-        self._attr_unique_id = f"{coordinator.ip_address}_min_intensity"
+    def __init__(self, coordinator: V2CTrydanDataUpdateCoordinator) -> None:
+        """Initialize the minimum intensity control."""
+        super().__init__(coordinator, "min_intensity")
 
     @property
-    def native_value(self) -> float:
-        if self.coordinator.data:
-            return self.coordinator.data.get("MinIntensity", 6)
-        return 6
+    def native_value(self) -> float | None:
+        """Return the configured minimum intensity."""
+        return value_as_float(self.coordinator.data.get("MinIntensity"))
 
     @property
     def native_max_value(self) -> float:
-        if self.coordinator.data:
-            return self.coordinator.data.get("MaxIntensity", 32)
-        return 32
-
-    @property
-    def native_min_value(self) -> float:
-        return 6
+        """Keep the minimum at or below the configured maximum."""
+        return (
+            value_as_float(self.coordinator.data.get("MaxIntensity")) or MAX_INTENSITY
+        )
 
     async def async_set_native_value(self, value: float) -> None:
-        await self._send_value("MinIntensity", int(value))
+        """Set the minimum intensity."""
+        await self._async_write("MinIntensity", int(value))
 
 
-class IntensityNumber(V2CNumberBase):
-    """Current charging intensity."""
+class IntensityNumber(V2CNumberEntity):
+    """Manual charging intensity."""
 
     _attr_translation_key = "intensity"
 
-    def __init__(self, coordinator: V2CtrydanDataUpdateCoordinator) -> None:
-        super().__init__(coordinator)
-        self._attr_unique_id = f"{coordinator.ip_address}_intensity"
+    def __init__(self, coordinator: V2CTrydanDataUpdateCoordinator) -> None:
+        """Initialize the manual intensity control."""
+        super().__init__(coordinator, "intensity")
 
     @property
-    def native_value(self) -> float:
-        if self.coordinator.data:
-            return self.coordinator.data.get("Intensity", 6)
-        return 6
-
-    @property
-    def native_max_value(self) -> float:
-        if self.coordinator.data:
-            return self.coordinator.data.get("MaxIntensity", 32)
-        return 32
+    def native_value(self) -> float | None:
+        """Return the current manual intensity."""
+        return value_as_float(self.coordinator.data.get("Intensity"))
 
     @property
     def native_min_value(self) -> float:
-        if self.coordinator.data:
-            return self.coordinator.data.get("MinIntensity", 6)
-        return 6
+        """Return the active lower limit."""
+        return (
+            value_as_float(self.coordinator.data.get("MinIntensity")) or MIN_INTENSITY
+        )
+
+    @property
+    def native_max_value(self) -> float:
+        """Return the active upper limit."""
+        return (
+            value_as_float(self.coordinator.data.get("MaxIntensity")) or MAX_INTENSITY
+        )
 
     async def async_set_native_value(self, value: float) -> None:
-        await self._send_value("Intensity", int(value))
+        """Set the manual intensity."""
+        await self._async_write("Intensity", int(value))
