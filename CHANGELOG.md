@@ -2,6 +2,43 @@
 
 All notable changes to this project are documented here.
 
+## 1.3.0b4
+
+### Added
+
+* Persistent whole-session energy that accumulates charger counter segments
+  across OCPP/app pauses, remains visible after disconnection, and resets on the
+  next cable connection.
+* Optional manual session reset button with a safe current-counter baseline.
+* Enabled meter-problem binary sensor for straightforward alerts.
+* Importable session-summary and high-power-alert automation blueprints.
+* Native Home Assistant and optional Mushroom/Mini Graph dashboard examples.
+
+### Changed
+
+* Reduced UI and Recorder noise for new installations by disabling solar,
+  home-battery, duplicated readback, installation, advanced dynamic-control, and
+  identifying diagnostic entities by default.
+* Classified writable device settings as configuration entities. Existing
+  entity-registry choices remain untouched during upgrades.
+* Rewrote both READMEs around the current architecture, session semantics,
+  safe OCPP/dynamic-charging behavior, optional blueprints, and dashboards.
+
+### Internal
+
+* Isolated session accumulation in a Home Assistant-independent state machine
+  with focused coverage for counter resets, disconnects, restarts, invalid
+  persisted data, and manual resets.
+* Persisted compact session checkpoints independently of Recorder while limiting
+  storage writes during long charges.
+
+### Fixed
+
+* Rejected non-finite charger numbers so `NaN` or infinity cannot become invalid
+  Home Assistant sensor or persisted session states.
+* Normalized the harmless shared-HTTP-session shutdown race instead of reporting
+  it as an unexpected coordinator exception.
+
 ## 1.3.0b3
 
 ### Added

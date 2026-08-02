@@ -13,6 +13,20 @@ ROOT = Path(__file__).parents[1]
 INTEGRATION = ROOT / "custom_components" / "v2c_trydan"
 
 
+class _BlueprintLoader(yaml.SafeLoader):
+    """Parse Home Assistant input tags without interpreting their values."""
+
+
+def _construct_blueprint_input(
+    loader: _BlueprintLoader, node: yaml.ScalarNode
+) -> str:
+    """Keep a blueprint input reference as a plain scalar for structure tests."""
+    return loader.construct_scalar(node)
+
+
+_BlueprintLoader.add_constructor("!input", _construct_blueprint_input)
+
+
 def test_json_files_are_valid() -> None:
     """All integration JSON metadata must be parseable."""
     for path in INTEGRATION.rglob("*.json"):
@@ -20,10 +34,18 @@ def test_json_files_are_valid() -> None:
 
 
 def test_yaml_files_are_valid() -> None:
-    """Actions and GitHub workflows must be parseable YAML."""
-    paths = [INTEGRATION / "services.yaml", *ROOT.glob(".github/workflows/*")]
+    """Integration metadata, examples, and workflows must be parseable YAML."""
+    paths = [
+        INTEGRATION / "services.yaml",
+        *ROOT.glob(".github/workflows/*"),
+        *ROOT.glob("blueprints/**/*.yaml"),
+        *ROOT.glob("dashboards/*.yaml"),
+    ]
     for path in paths:
-        assert isinstance(yaml.safe_load(path.read_text(encoding="utf-8")), dict)
+        loader = _BlueprintLoader if "blueprints" in path.parts else yaml.SafeLoader
+        assert isinstance(
+            yaml.load(path.read_text(encoding="utf-8"), Loader=loader), dict
+        )
 
 
 def _key_shape(value: object) -> object:
@@ -105,6 +127,52 @@ def test_statistics_state_classes_do_not_regress() -> None:
     assert (
         ast.unparse(charge_time["state_class"]) == "SensorStateClass.TOTAL_INCREASING"
     )
+
+
+def test_default_sensor_surface_remains_focused() -> None:
+    """New installs should not enable optional or duplicate readback sensors."""
+    tree = ast.parse((INTEGRATION / "sensor.py").read_text(encoding="utf-8"))
+    disabled: set[str] = set()
+    for node in ast.walk(tree):
+        if not (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "V2CSensorEntityDescription"
+        ):
+            continue
+        keywords = {keyword.arg: keyword.value for keyword in node.keywords}
+        key = keywords.get("key")
+        enabled_default = keywords.get("entity_registry_enabled_default")
+        if (
+            isinstance(key, ast.Constant)
+            and isinstance(enabled_default, ast.Constant)
+            and enabled_default.value is False
+        ):
+            disabled.add(str(key.value))
+
+    assert disabled == {
+        "battery_power",
+        "contracted_power",
+        "device_id",
+        "dynamic",
+        "dynamic_power_mode",
+        "firmware_version",
+        "fv_power",
+        "intensity",
+        "ip_address",
+        "locked",
+        "max_intensity",
+        "meter_error",
+        "min_intensity",
+        "pause_dynamic",
+        "paused",
+        "ready_state",
+        "signal_status",
+        "slave_error",
+        "ssid",
+        "timer",
+        "voltage_installation",
+    }
 
 
 def test_manifest_version_matches_latest_changelog() -> None:

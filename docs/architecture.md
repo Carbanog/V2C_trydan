@@ -8,7 +8,10 @@ predictable behavior on PLC and weak Wi-Fi networks over request throughput.
 * `api.py` owns HTTP, timeouts, retries, response validation, the narrow firmware
   JSON repair, and request serialization. It has no Home Assistant dependency.
 * `coordinator.py` translates API failures into Home Assistant update failures and
-  performs one shared poll for all entities.
+  performs one shared poll for all entities. It also owns the persistence boundary
+  for local charging-session state.
+* `session.py` is a Home Assistant-independent state machine that accumulates raw
+  energy counter deltas across pauses and resets. It contains no I/O.
 * `entity.py` owns device metadata, stable unique IDs, common command handling,
   and defensive value conversion.
 * Platform modules only describe entities and map coordinator values to Home
@@ -35,6 +38,23 @@ predictable behavior on PLC and weak Wi-Fi networks over request throughput.
 7. Optional firmware capabilities are detected through read-only endpoints,
    refreshed less frequently, and cached. An optional failure never invalidates
    the core `RealTimeData` snapshot.
+8. Session energy resets only on a new cable connection or an explicit user
+   action. Disconnection preserves the completed value for delayed automations.
+9. Session state is checkpointed outside Recorder. Connection transitions are
+   saved immediately; long-running charges are saved at a bounded cadence to
+   avoid unnecessary storage writes.
+
+## User-facing extensions
+
+Automation blueprints and dashboard YAML live outside `custom_components` and
+are opt-in examples. The integration never creates automations, helpers, or
+Lovelace resources on behalf of the user. Vehicle capacity, charging efficiency,
+energy price, and estimated range remain in those optional layers because they
+describe a vehicle or tariff rather than the charger hardware.
+
+Advanced charger settings remain represented as entities for capable users, but
+are categorized as configuration and disabled by default when accidental changes
+could conflict with V2C app schedules, load protection, or OCPP control.
 
 ## Development
 
@@ -47,8 +67,8 @@ pytest
 ```
 
 GitHub Actions additionally runs Home Assistant `hassfest` and HACS validation.
-Every behavior change should include focused tests. API behavior belongs in
-fast unit tests; config flows, entity setup, registry migrations, and actions
+Every behavior change should include focused tests. API and session-state behavior
+belong in fast unit tests; config flows, entity setup, registry migrations, and actions
 should use Home Assistant integration tests as coverage is expanded.
 
 ## Compatibility policy

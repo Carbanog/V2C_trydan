@@ -101,11 +101,16 @@
     "binary_sensor": {
       "connected": { "name": "Cable Connected" },
       "charging": { "name": "Charging" },
-      "ready": { "name": "Ready to Charge" }
+      "ready": { "name": "Ready to Charge" },
+      "meter_problem": { "name": "Meter Problem" }
+    },
+    "button": {
+      "reset_session_energy": { "name": "Reset Session Energy" }
     },
     "sensor": {
       "chargepower": { "name": "Charge Power" },
       "chargeenergy": { "name": "Charge Energy" },
+      "session_energy": { "name": "Session Energy" },
       "chargestate": {
         "name": "Charge State",
         "state": {

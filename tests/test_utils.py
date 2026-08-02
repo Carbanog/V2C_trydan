@@ -22,3 +22,10 @@ def test_numeric_conversion_rejects_bool_and_invalid_values() -> None:
     assert value_as_float("16.5") == 16.5
     assert value_as_int(True) is None
     assert value_as_float("invalid") is None
+
+
+def test_numeric_conversion_rejects_non_finite_values() -> None:
+    """NaN and infinity must never reach Home Assistant sensor states."""
+    assert value_as_float("nan") is None
+    assert value_as_float("inf") is None
+    assert value_as_int(float("inf")) is None
