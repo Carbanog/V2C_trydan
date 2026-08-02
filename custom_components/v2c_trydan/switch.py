@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
@@ -31,6 +32,8 @@ SWITCHES: tuple[V2CSwitchEntityDescription, ...] = (
         key="Dynamic",
         translation_key="dynamic",
         api_key="Dynamic",
+        entity_category=EntityCategory.CONFIG,
+        entity_registry_enabled_default=False,
     ),
     V2CSwitchEntityDescription(
         key="Locked",
@@ -41,12 +44,16 @@ SWITCHES: tuple[V2CSwitchEntityDescription, ...] = (
         key="timer",
         translation_key="timer",
         api_key="Timer",
+        entity_category=EntityCategory.CONFIG,
+        entity_registry_enabled_default=False,
     ),
     V2CSwitchEntityDescription(
         key="pause_dynamic",
         translation_key="pause_dynamic",
         api_key="PauseDynamic",
         icon="mdi:pause",
+        entity_category=EntityCategory.CONFIG,
+        entity_registry_enabled_default=False,
     ),
 )
 

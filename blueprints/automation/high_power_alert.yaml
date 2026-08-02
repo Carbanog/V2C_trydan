@@ -1,0 +1,52 @@
+blueprint:
+  name: V2C Trydan - High charging power alert
+  description: >-
+    Runs configurable actions when charging power remains above a chosen safety
+    threshold. The measured_power variable is available to action templates.
+  domain: automation
+  source_url: https://github.com/Carbanog/V2C_trydan/blob/main/blueprints/automation/high_power_alert.yaml
+  homeassistant:
+    min_version: 2024.10.0
+  input:
+    charge_power:
+      name: Charging power
+      selector:
+        entity:
+          filter:
+            domain: sensor
+            device_class: power
+    power_threshold:
+      name: Warning threshold
+      default: 3450
+      selector:
+        number:
+          min: 100
+          max: 22000
+          step: 50
+          unit_of_measurement: W
+          mode: box
+    duration:
+      name: Minimum duration
+      default:
+        seconds: 15
+      selector:
+        duration:
+    alert_actions:
+      name: Alert actions
+      description: Actions can use measured_power in templates.
+      selector:
+        action:
+
+triggers:
+  - trigger: numeric_state
+    entity_id: !input charge_power
+    above: !input power_threshold
+    for: !input duration
+
+variables:
+  charge_power_entity: !input charge_power
+  measured_power: "{{ states(charge_power_entity) | float(0) }}"
+
+actions: !input alert_actions
+
+mode: single

@@ -24,6 +24,7 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
+from .const import SESSION_ENERGY_KEY
 from .coordinator import V2CTrydanDataUpdateCoordinator
 from .entity import V2CTrydanEntity
 from .utils import value_as_float, value_as_int
@@ -108,6 +109,15 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         value_fn=lambda data: value_as_float(data.get("ChargeEnergy")),
     ),
     V2CSensorEntityDescription(
+        key="session_energy",
+        translation_key="session_energy",
+        native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        device_class=SensorDeviceClass.ENERGY,
+        suggested_display_precision=3,
+        value_fn=lambda data: value_as_float(data.get(SESSION_ENERGY_KEY)),
+    ),
+    V2CSensorEntityDescription(
         key="charge_state",
         translation_key="chargestate",
         device_class=SensorDeviceClass.ENUM,
@@ -136,6 +146,7 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfPower.WATT,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.POWER,
+        entity_registry_enabled_default=False,
         value_fn=lambda data: _rounded_float(data.get("FVPower")),
     ),
     V2CSensorEntityDescription(
@@ -144,6 +155,7 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfPower.WATT,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.POWER,
+        entity_registry_enabled_default=False,
         value_fn=lambda data: _rounded_float(data.get("BatteryPower")),
     ),
     V2CSensorEntityDescription(
@@ -152,6 +164,7 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.CURRENT,
+        entity_registry_enabled_default=False,
         value_fn=lambda data: value_as_float(data.get("Intensity")),
     ),
     V2CSensorEntityDescription(
@@ -160,6 +173,7 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.CURRENT,
+        entity_registry_enabled_default=False,
         value_fn=lambda data: value_as_float(data.get("MinIntensity")),
     ),
     V2CSensorEntityDescription(
@@ -168,6 +182,7 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.CURRENT,
+        entity_registry_enabled_default=False,
         value_fn=lambda data: value_as_float(data.get("MaxIntensity")),
     ),
     V2CSensorEntityDescription(
@@ -176,6 +191,7 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.VOLTAGE,
+        entity_registry_enabled_default=False,
         value_fn=lambda data: value_as_float(data.get("VoltageInstallation")),
     ),
     V2CSensorEntityDescription(
@@ -184,6 +200,7 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfPower.WATT,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.POWER,
+        entity_registry_enabled_default=False,
         value_fn=lambda data: value_as_float(data.get("ContractedPower")),
     ),
     V2CSensorEntityDescription(
@@ -238,6 +255,7 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         key="meter_error",
         translation_key="meter_error",
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
         device_class=SensorDeviceClass.ENUM,
         options=list(_METER_ERROR_CODES),
         value_fn=lambda data: _integer_string(data.get("SlaveError")),
@@ -254,24 +272,28 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         key="firmware_version",
         translation_key="firmware_version",
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
         value_fn=lambda data: data.get("FirmwareVersion"),
     ),
     V2CSensorEntityDescription(
         key="ip_address",
         translation_key="ip",
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
         value_fn=lambda data: data.get("IP"),
     ),
     V2CSensorEntityDescription(
         key="ssid",
         translation_key="ssid",
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
         value_fn=lambda data: data.get("SSID"),
     ),
     V2CSensorEntityDescription(
         key="signal_status",
         translation_key="signalstatus",
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("SignalStatus"),
     ),
@@ -279,6 +301,7 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         key="device_id",
         translation_key="id",
         entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
         value_fn=lambda data: data.get("ID"),
     ),
     V2CSensorEntityDescription(

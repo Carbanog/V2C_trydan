@@ -129,6 +129,16 @@ class V2CTrydanApi:
                     break
                 except V2CTrydanInvalidResponseError:
                     raise
+                except RuntimeError as err:
+                    # Home Assistant may close its shared client session while a
+                    # final coordinator refresh is being cancelled at shutdown.
+                    # Normalize only that known lifecycle condition; unrelated
+                    # programming errors must remain visible to developers.
+                    if getattr(self._session, "closed", False):
+                        raise V2CTrydanConnectionError(
+                            "Home Assistant HTTP session is closed"
+                        ) from err
+                    raise
                 except (
                     V2CTrydanConnectionError,
                     ClientError,
@@ -160,6 +170,12 @@ class V2CTrydanApi:
                 raise V2CTrydanConnectionError(
                     f"Unable to write {key} on {self.host}"
                 ) from err
+            except RuntimeError as err:
+                if getattr(self._session, "closed", False):
+                    raise V2CTrydanConnectionError(
+                        "Home Assistant HTTP session is closed"
+                    ) from err
+                raise
 
         if response_text.upper() == "ERROR":
             raise V2CTrydanCommandError(f"The charger rejected {key}={value}")

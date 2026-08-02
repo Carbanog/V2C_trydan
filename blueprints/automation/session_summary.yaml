@@ -1,0 +1,148 @@
+blueprint:
+  name: V2C Trydan - Charging session notifications
+  description: >-
+    Runs configurable actions when the first charge starts and when the cable is
+    disconnected. The finish action can use session_kwh, estimated_percent,
+    estimated_cost, and estimated_range_km as template variables. Repeated OCPP
+    pauses do not create repeated start notifications because the start path is
+    tied to a new cable connection.
+  domain: automation
+  source_url: https://github.com/Carbanog/V2C_trydan/blob/main/blueprints/automation/session_summary.yaml
+  homeassistant:
+    min_version: 2024.10.0
+  input:
+    cable_connected:
+      name: Cable connected
+      selector:
+        entity:
+          filter:
+            domain: binary_sensor
+            device_class: plug
+    charging:
+      name: Charging
+      selector:
+        entity:
+          filter:
+            domain: binary_sensor
+            device_class: battery_charging
+    session_energy:
+      name: Session energy
+      selector:
+        entity:
+          filter:
+            domain: sensor
+            device_class: energy
+    battery_capacity:
+      name: Usable battery capacity
+      description: Set to 0 to disable the estimated percentage.
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 250
+          step: 0.1
+          unit_of_measurement: kWh
+          mode: box
+    charging_efficiency:
+      name: Charging efficiency
+      default: 90
+      selector:
+        number:
+          min: 50
+          max: 100
+          step: 1
+          unit_of_measurement: "%"
+    electricity_price:
+      name: Electricity price
+      description: Set to 0 to disable the estimated cost.
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 2
+          step: 0.001
+          unit_of_measurement: EUR/kWh
+          mode: box
+    vehicle_efficiency:
+      name: Vehicle efficiency
+      description: Set to 0 to disable the estimated range.
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 15
+          step: 0.1
+          unit_of_measurement: km/kWh
+          mode: box
+    start_actions:
+      name: Charge started actions
+      description: Actions can use the standard trigger variables.
+      default: []
+      selector:
+        action:
+    finish_actions:
+      name: Session finished actions
+      description: >-
+        Actions can use session_kwh, estimated_percent, estimated_cost, and
+        estimated_range_km in templates.
+      default: []
+      selector:
+        action:
+
+triggers:
+  - trigger: state
+    entity_id: !input cable_connected
+    from: "off"
+    to: "on"
+    id: connected
+  - trigger: state
+    entity_id: !input cable_connected
+    from: "on"
+    to: "off"
+    for:
+      minutes: 2
+    id: disconnected
+
+variables:
+  cable_entity: !input cable_connected
+  charging_entity: !input charging
+  session_entity: !input session_energy
+  capacity_kwh: !input battery_capacity
+  efficiency_percent: !input charging_efficiency
+  price_per_kwh: !input electricity_price
+  range_per_kwh: !input vehicle_efficiency
+
+actions:
+  - choose:
+      - conditions: "{{ trigger.id == 'connected' }}"
+        sequence:
+          - wait_template: >-
+              {{ is_state(charging_entity, 'on') or
+                 is_state(cable_entity, 'off') }}
+            timeout:
+              hours: 24
+            continue_on_timeout: false
+          - condition: template
+            value_template: "{{ is_state(charging_entity, 'on') }}"
+          - sequence: !input start_actions
+      - conditions: "{{ trigger.id == 'disconnected' }}"
+        sequence:
+          - variables:
+              session_kwh: "{{ states(session_entity) | float(0) | round(3) }}"
+              estimated_percent: >-
+                {{ (((session_kwh | float(0)) *
+                     ((efficiency_percent | float(90)) / 100) /
+                     (capacity_kwh | float) * 100) | round(1))
+                   if capacity_kwh | float(0) > 0 else none }}
+              estimated_cost: >-
+                {{ (((session_kwh | float(0)) * (price_per_kwh | float)) | round(2))
+                   if price_per_kwh | float(0) > 0 else none }}
+              estimated_range_km: >-
+                {{ (((session_kwh | float(0)) *
+                     ((efficiency_percent | float(90)) / 100) *
+                     (range_per_kwh | float)) | round(0))
+                   if range_per_kwh | float(0) > 0 else none }}
+          - sequence: !input finish_actions
+
+mode: parallel
+max: 4

@@ -3,6 +3,10 @@
 from datetime import timedelta
 
 DOMAIN = "v2c_trydan"
+
+# Coordinator-only keys use a private prefix so they cannot be confused with
+# properties returned by the charger firmware.
+SESSION_ENERGY_KEY = "_session_energy"
 CONF_IP_ADDRESS = "ip_address"
 CONF_CONFIG_ENTRY_ID = "config_entry_id"
 

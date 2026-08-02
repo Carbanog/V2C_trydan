@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from math import isfinite
 from typing import Any
 
 
@@ -11,7 +12,7 @@ def value_as_int(value: Any) -> int | None:
         return None
     try:
         return int(value)
-    except (TypeError, ValueError):
+    except (OverflowError, TypeError, ValueError):
         return None
 
 
@@ -20,9 +21,10 @@ def value_as_float(value: Any) -> float | None:
     if value is None or isinstance(value, bool):
         return None
     try:
-        return float(value)
-    except (TypeError, ValueError):
+        converted = float(value)
+    except (OverflowError, TypeError, ValueError):
         return None
+    return converted if isfinite(converted) else None
 
 
 def value_as_bool(value: Any) -> bool | None:

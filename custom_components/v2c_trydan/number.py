@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from homeassistant.components.number import NumberEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import UnitOfElectricCurrent
+from homeassistant.const import EntityCategory, UnitOfElectricCurrent
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
@@ -51,6 +51,8 @@ class MaxIntensityNumber(V2CNumberEntity):
 
     _attr_translation_key = "max_intensity"
     _attr_native_max_value = MAX_INTENSITY
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_entity_registry_enabled_default = False
 
     def __init__(self, coordinator: V2CTrydanDataUpdateCoordinator) -> None:
         """Initialize the maximum intensity control."""
@@ -78,6 +80,8 @@ class MinIntensityNumber(V2CNumberEntity):
 
     _attr_translation_key = "min_intensity"
     _attr_native_min_value = MIN_INTENSITY
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_entity_registry_enabled_default = False
 
     def __init__(self, coordinator: V2CTrydanDataUpdateCoordinator) -> None:
         """Initialize the minimum intensity control."""

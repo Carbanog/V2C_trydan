@@ -3,19 +3,25 @@
 from __future__ import annotations
 
 import logging
+from time import monotonic
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
 )
 
 from .api import V2CTrydanApi, V2CTrydanError, device_identifier
-from .const import POLL_INTERVAL
+from .const import DOMAIN, POLL_INTERVAL, SESSION_ENERGY_KEY
+from .session import SessionEnergyState, SessionEnergyTracker
 
 _LOGGER = logging.getLogger(__name__)
+
+_SESSION_STORE_VERSION = 1
+_SESSION_SAVE_INTERVAL = 60
 
 
 class V2CTrydanDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
@@ -36,6 +42,14 @@ class V2CTrydanDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             else entry.entry_id
         )
         self._device_id_initialized = False
+        self._session_tracker = SessionEnergyTracker()
+        self._session_store: Store[dict[str, Any]] = Store(
+            hass,
+            _SESSION_STORE_VERSION,
+            f"{DOMAIN}.{entry.entry_id}.session_energy",
+            atomic_writes=True,
+        )
+        self._last_session_save = monotonic()
         super().__init__(
             hass,
             _LOGGER,
@@ -44,6 +58,14 @@ class V2CTrydanDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             update_interval=POLL_INTERVAL,
             always_update=False,
         )
+
+    async def async_initialize(self) -> None:
+        """Restore session accumulation before the first charger poll."""
+        stored_state = await self._session_store.async_load()
+        self._session_tracker = SessionEnergyTracker(
+            SessionEnergyState.from_dict(stored_state)
+        )
+        self._last_session_save = monotonic()
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch the complete realtime payload."""
@@ -57,4 +79,31 @@ class V2CTrydanDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if not self._device_id_initialized:
             self.device_id = device_identifier(data, self.device_id)
             self._device_id_initialized = True
+
+        session_update = self._session_tracker.update(
+            data.get("ChargeState"), data.get("ChargeEnergy")
+        )
+        data[SESSION_ENERGY_KEY] = self._session_tracker.energy
+        if session_update.changed and (
+            session_update.connection_changed
+            or monotonic() - self._last_session_save >= _SESSION_SAVE_INTERVAL
+        ):
+            await self._async_save_session()
         return data
+
+    async def async_reset_session_energy(self) -> None:
+        """Reset accumulated session energy and publish it immediately."""
+        self._session_tracker.reset(self.data.get("ChargeEnergy"))
+        await self._async_save_session()
+        self.async_set_updated_data(
+            {**self.data, SESSION_ENERGY_KEY: self._session_tracker.energy}
+        )
+
+    async def async_save_session_state(self) -> None:
+        """Save the latest checkpoint during a clean config-entry unload."""
+        await self._async_save_session()
+
+    async def _async_save_session(self) -> None:
+        """Persist the small session checkpoint without using the recorder."""
+        await self._session_store.async_save(self._session_tracker.state.as_dict())
+        self._last_session_save = monotonic()

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
@@ -37,6 +38,8 @@ class DynamicPowerModeSelect(V2CTrydanEntity, SelectEntity):
 
     _attr_translation_key = "dynamic_power_mode"
     _attr_options = DYNAMIC_POWER_MODE_OPTIONS
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_entity_registry_enabled_default = False
 
     def __init__(self, coordinator: V2CTrydanDataUpdateCoordinator) -> None:
         """Initialize the selector."""

@@ -53,10 +53,16 @@ class FakeResponse:
 class FakeSession:
     """Return a sequence of fake responses or exceptions."""
 
-    def __init__(self, results: Iterable[FakeResponse | Exception]) -> None:
+    def __init__(
+        self,
+        results: Iterable[FakeResponse | Exception],
+        *,
+        closed: bool = False,
+    ) -> None:
         """Initialize the session."""
         self._results = iter(results)
         self.urls: list[str] = []
+        self.closed = closed
 
     def get(self, url: str, **kwargs: Any) -> FakeResponse:
         """Return the next configured result."""
@@ -143,6 +149,17 @@ async def test_read_reports_exhausted_retries(
     with pytest.raises(V2CTrydanConnectionError):
         await api.async_get_realtime_data()
     assert len(session.urls) == 3
+
+
+async def test_closed_home_assistant_session_is_a_domain_error() -> None:
+    """A shutdown race must not escape as an unexpected RuntimeError."""
+    api = V2CTrydanApi(
+        FakeSession((RuntimeError("Session is closed"),), closed=True),  # type: ignore[arg-type]
+        "192.0.2.10",
+    )
+
+    with pytest.raises(V2CTrydanConnectionError, match="session is closed"):
+        await api.async_get_realtime_data()
 
 
 async def test_write_rejects_error_response() -> None:

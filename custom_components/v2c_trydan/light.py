@@ -11,6 +11,7 @@ from homeassistant.components.light import (
     LightEntityDescription,
 )
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util.color import brightness_to_value, value_to_brightness
@@ -35,12 +36,14 @@ LIGHTS: tuple[V2CLightEntityDescription, ...] = (
         key="light_led",
         translation_key="light_led",
         api_key="LightLED",
+        entity_category=EntityCategory.CONFIG,
     ),
     V2CLightEntityDescription(
         key="logo_led",
         translation_key="logo_led",
         api_key="LogoLED",
         supports_brightness=True,
+        entity_category=EntityCategory.CONFIG,
     ),
 )
 

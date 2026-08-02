@@ -34,6 +34,7 @@ from .coordinator import V2CTrydanDataUpdateCoordinator
 PLATFORMS: tuple[Platform, ...] = (
     Platform.SENSOR,
     Platform.BINARY_SENSOR,
+    Platform.BUTTON,
     Platform.SWITCH,
     Platform.NUMBER,
     Platform.SELECT,
@@ -181,6 +182,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # The coordinator converts an unavailable charger into ConfigEntryNotReady,
     # allowing Home Assistant to retry setup without requiring a restart.
+    await coordinator.async_initialize()
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
 
@@ -204,7 +206,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if unload_ok:
+        await entry.runtime_data.async_save_session_state()
+    return unload_ok
 
 
 async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

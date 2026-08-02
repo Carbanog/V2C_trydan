@@ -12,6 +12,7 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntityDescription,
 )
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
@@ -51,9 +52,21 @@ BINARY_SENSORS: tuple[V2CBinarySensorEntityDescription, ...] = (
     V2CBinarySensorEntityDescription(
         key="ready",
         translation_key="ready",
+        entity_registry_enabled_default=False,
         value_fn=lambda data: (
             value_as_int(data.get("ReadyState")) == 1
             if value_as_int(data.get("ReadyState")) is not None
+            else None
+        ),
+    ),
+    V2CBinarySensorEntityDescription(
+        key="meter_problem",
+        translation_key="meter_problem",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda data: (
+            value_as_int(data.get("SlaveError")) != 0
+            if value_as_int(data.get("SlaveError")) is not None
             else None
         ),
     ),

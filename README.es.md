@@ -1,171 +1,172 @@
 # V2C Trydan para Home Assistant
 
-> [!IMPORTANT]
-> **Aviso de Transparencia:** Este repositorio es un **fork independiente** mantenido por **Carbanog**. No soy programador profesional; soy un usuario con nociones básicas que ha desarrollado esta versión principalmente con la ayuda de **IA** para cubrir necesidades personales de estabilidad que no encontraba en otras versiones. Se ofrece tal cual, sin garantías ni soporte oficial. Úsala bajo tu propia responsabilidad.
-
-### 🛠️ Estado del Proyecto
-
-* **Mantenimiento:** Activo (para uso personal y experimentación).
-* **Objetivo principal:** Estabilidad total en redes PLC/WiFi mediante un **Data Coordinator** (una sola petición para todos los sensores).
-* **Base Original:** Basado en el trabajo de [Rain1971](https://github.com/Rain1971/V2C_trydant), actualmente discontinuado.
-
------
-
-# CARGADOR V2C TRYDAN para HOME ASSISTANT
-
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://www.hacs.xyz/)
 [![GitHub release](https://img.shields.io/github/v/release/Carbanog/V2C_trydan.svg)](https://github.com/Carbanog/V2C_trydan/releases/)
-[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/Carbanog/V2C_trydan/blob/main/README.md)
-[![es](https://img.shields.io/badge/lang-es-yellow.svg)](https://github.com/Carbanog/V2C_trydan/blob/main/README.es.md)
+[![English](https://img.shields.io/badge/lang-en-red.svg)](README.md)
+[![Español](https://img.shields.io/badge/lang-es-yellow.svg)](README.es.md)
 
-Esta integración permite controlar y monitorizar tu cargador **V2C Trydan** de forma 100% local a través de su interfaz HTTP. Se ha reescrito el núcleo para minimizar las peticiones al cargador, evitando bloqueos y errores de conexión frecuentes en instalaciones con PLC.
+Integración local para monitorizar y controlar cargadores **V2C Trydan** desde
+Home Assistant. Está diseñada especialmente para conexiones PLC o Wi-Fi que
+necesitan peticiones espaciadas, serializadas y tolerantes a fallos puntuales.
 
-## 🆚 Mejoras respecto a la integración oficial y al original
+> [!IMPORTANT]
+> Proyecto comunitario independiente, sin relación oficial con V2C. Deriva del
+> trabajo original de [Rain1971](https://github.com/Rain1971/V2C_trydant) y se
+> proporciona sin garantías. Prueba las versiones beta en una instalación de
+> Home Assistant de pruebas antes de utilizarlas en producción.
 
-* **Sin dependencias externas** — no usa `pytrydan`, va directo al dispositivo via HTTP
-* **Estabilidad en PLC** — reintentos nativos, timeouts de 20s, logs silenciosos en fallos puntuales
-* **Más entidades** — Binary Sensors, ContractedPower, ChargeState con texto descriptivo y más diagnósticos
-* **Services documentados** — con sliders en la UI de HA
-* **Arquitectura moderna** — usa `ConfigEntry.runtime_data`, sin `hass.data` legacy
-* **Fix de JSON** — repara respuestas malformadas del firmware del cargador automáticamente
-* **Peticiones serializadas** — las lecturas y órdenes nunca se solapan, algo
-  especialmente importante en enlaces PLC o WiFi débiles
-* **IP reconfigurable** — la dirección puede cambiarse desde la UI sin eliminar
-  la integración ni perder nombres, áreas o automatizaciones
-* **Varios cargadores** — las acciones permiten seleccionar el cargador de destino
-* **Diagnósticos seguros** — Home Assistant puede generar un informe que oculta
-  IP, SSID e identificador del equipo
+## Funciones destacadas
 
-## 📋 Requisitos Previos
+- Comunicación HTTP completamente local y sin dependencias Python externas.
+- Una lectura coordinada cada 15 segundos para todas las entidades.
+- Reintentos y peticiones serializadas para proteger conexiones débiles.
+- Controles de pausa, bloqueo, intensidad y luces compatibles.
+- **Energía completa de la sesión**, incluso cuando OCPP o la aplicación pausa,
+  reanuda y reinicia el contador parcial del cargador.
+- Persistencia de la sesión entre reinicios de Home Assistant.
+- Estado de carga descriptivo y detección inmediata de problemas del medidor.
+- Cambio de IP desde la interfaz sin recrear entidades ni automatizaciones.
+- Diagnósticos que ocultan IP, SSID e identificadores sensibles.
+- Blueprints y ejemplos de panel opcionales.
 
-* **IP Estática:** Es **obligatorio** asignar una IP fija (estática) a tu cargador V2C Trydan desde la configuración de tu router. Si la IP cambia, la integración dejará de funcionar.
-* **Firmware actualizado:** Se recomienda tener el cargador actualizado a la última versión oficial de V2C.
+## Instalación
 
-## 🚀 Instalación
+1. En HACS, añade `https://github.com/Carbanog/V2C_trydan` como repositorio
+   personalizado de tipo **Integración**.
+2. Instala V2C Trydan y reinicia Home Assistant.
+3. Abre **Ajustes → Dispositivos y servicios → Añadir integración**.
+4. Busca **V2C Trydan** e introduce la dirección IP local del cargador.
 
-1. **HACS:** Añade este repositorio como "Repositorio Personalizado" de tipo
-   "Integración" en HACS.
-2. **Reinicia:** Reinicia Home Assistant.
-3. **Configuración:** Ve a Ajustes → Dispositivos y Servicios → Añadir Integración → Busca **V2C Trydan**.
-4. **IP:** Introduce la IP estática de tu cargador.
+Es muy recomendable reservar esa dirección en el DHCP del router. Si cambia,
+utiliza **Reconfigurar** en el menú de la integración; no es necesario borrarla.
 
------
+## Experiencia inicial deliberadamente sencilla
 
-## 📊 Entidades Disponibles
+Una instalación nueva habilita únicamente las entidades de uso habitual. Los
+ajustes internos, datos solares, batería doméstica y diagnóstico detallado siguen
+disponibles desde la página del dispositivo, pero comienzan deshabilitados.
 
-### Controles (Acción)
+Deshabilitar una entidad en Home Assistant **no cambia la configuración del
+cargador**. Por ejemplo, la carga dinámica continuará activa si así está
+configurada en la aplicación V2C.
 
-| Nombre | Tipo | Descripción |
-| :--- | :--- | :--- |
-| `Pausar Carga` | Switch | Pausa o reanuda la carga actual. |
-| `Bloquear Cargador` | Switch | Bloquea el hardware del cargador. |
-| `Carga Dinámica` | Switch | Activa/Desactiva la modulación dinámica de potencia. |
-| `Temporizador de Carga` | Switch | Activa el horario configurado en el cargador. |
-| `Pausar Modulación Dinámica` | Switch | Detiene o reanuda la modulación dinámica. |
-| `Intensidad de Carga` | Number | Ajusta los Amperios manualmente (6A - 32A). |
-| `Intensidad Máxima` | Number | Límite superior para el modo dinámico. |
-| `Intensidad Mínima` | Number | Límite inferior para el modo dinámico. |
-| `Modo de Potencia Dinámica` | Select | Selector de modos (Exclusivo Solar, Red+FV, Mínimo, etc.). |
-| `Luz del Cargador` | Light | Controla la luz principal cuando está disponible. |
-| `Luz del Logotipo` | Light | Controla el brillo del logotipo cuando está disponible. |
+### Habilitadas inicialmente
 
-### 🔌 Sensores Binarios (Estados)
-Ideales para disparar automatizaciones (Encendido/Apagado).
+| Entidad | Tipo | Uso |
+| --- | --- | --- |
+| Potencia de carga | Sensor | Potencia entregada al vehículo. |
+| Energía de carga | Sensor | Contador parcial informado por el firmware. |
+| Energía de la sesión | Sensor | Total local que suma todos los tramos hasta la siguiente conexión. |
+| Estado de carga | Sensor | Estado detallado del cargador. |
+| Tiempo de carga | Sensor | Tiempo indicado por el firmware. |
+| Potencia de casa | Sensor | Consumo medido por el sistema dinámico. |
+| Manguera conectada | Sensor binario | Disparador fiable para automatizaciones de sesión. |
+| Cargando | Sensor binario | Indica flujo de carga activo. |
+| Problema del medidor | Sensor binario | Advierte de cualquier código de error del medidor. |
+| Pausar carga | Interruptor | Pausa o reanuda manualmente. |
+| Bloquear cargador | Interruptor | Controla el bloqueo del cargador. |
+| Intensidad de carga | Número | Ajusta la intensidad manual entre 6 y 32 A. |
+| Luz del cargador | Luz | Encendido y apagado, si el firmware lo permite. |
+| Luz del logotipo | Luz | Encendido y brillo, si el firmware lo permite. |
 
-| Nombre | Icono | Descripción |
-|---|---|---|
-| `Manguera Conectada` | 🔌 | On cuando el coche está enchufado físicamente. |
-| `Cargando` | ⚡ | On solo cuando hay flujo de energía hacia el coche. |
-| `Listo para Cargar` | ✅ | On cuando el cargador está operativo y sin errores. |
+### Avanzadas o de diagnóstico
 
-### 📈 Monitoreo (Sensores)
+Permanecen deshabilitadas inicialmente: potencia fotovoltaica y de batería,
+tensión, potencia contratada, intensidad mínima y máxima, carga dinámica, modo
+dinámico, temporizador, pausa dinámica, estados internos duplicados, código del
+medidor, firmware, IP, SSID, señal Wi-Fi e identificador del dispositivo.
 
-| Nombre | Clase | Descripción |
-| :--- | :--- | :--- |
-| `Potencia de Carga` | Power (W) | Potencia real que está entrando al coche. |
-| `Energía de Carga` | Energy (kWh) | Energía acumulada en la sesión actual. |
-| `Estado de Carga` | Enum | Manguera desconectada, Conectada o Cargando. |
-| `Tiempo de Carga` | Tiempo (s) | Duración de la sesión actual. |
-| `Potencia de Casa` | Power (W) | Consumo total de la vivienda. |
-| `Potencia Fotovoltaica` | Power (W) | Producción de placas solares. |
-| `Potencia de Batería` | Power (W) | Potencia de batería doméstica. |
-| `Intensidad de Carga` | Current (A) | Intensidad actual de carga. |
-| `Intensidad Mínima` | Current (A) | Límite inferior configurado. |
-| `Intensidad Máxima` | Current (A) | Límite superior configurado. |
-| `Voltaje de Instalación` | Voltage (V) | Voltaje real en la línea. |
-| `Potencia Contratada` | Power (W) | Potencia contratada con la compañía eléctrica. |
+Se pueden habilitar individualmente en **Ajustes → Dispositivos y servicios →
+Entidades**. Los cambios de valores predeterminados no deshabilitan entidades que
+un usuario ya hubiera activado en una versión anterior.
 
-### 🔧 Diagnóstico
+## Energía de la sesión
 
-| Nombre | Descripción |
-| :--- | :--- |
-| `Versión de Firmware` | Versión del firmware del cargador. |
-| `Dirección IP` | IP actual del cargador. |
-| `Red WiFi` | SSID de la red conectada. |
-| `Estado de Señal WiFi` | Calidad de la señal. |
-| `ID del Dispositivo` | Identificador único del cargador. |
-| `Estado Listo` | Estado interno de preparación. |
-| `Error de Medidor` | Estado descriptivo de comunicación con el medidor. |
-| `Carga Dinámica` | Estado del modo dinámico. |
-| `Modo de Potencia Dinámica` | Modo dinámico activo. |
-| `Cargador Bloqueado` | Estado de bloqueo. |
-| `Carga Pausada` | Estado de pausa. |
-| `Pausa Dinámica` | Estado de pausa dinámica. |
-| `Temporizador` | Estado del temporizador interno. |
+`Energía de Carga` reproduce el valor `ChargeEnergy` del cargador. Algunos
+controladores externos, incluido OCPP, pueden dividir una conexión física en
+varios tramos y reiniciar ese valor entre pausas.
 
------
+`Energía de la Sesión` suma los incrementos de todos esos tramos mientras la
+manguera permanece conectada. El resultado se conserva al desconectar para que
+una automatización pueda leerlo posteriormente y se reinicia al conectar un
+nuevo vehículo. Su estado se guarda periódicamente sin depender del Recorder.
 
-## 🛠️ Servicios para Automatizaciones
+El botón avanzado `Reiniciar Energía de Sesión` permite corregir manualmente un
+caso excepcional sin volver a contar el valor parcial anterior.
 
-| Servicio | Descripción |
-| :--- | :--- |
-| `v2c_trydan.set_intensity` | Ajusta los amperios de carga (6-32A). |
-| `v2c_trydan.set_min_intensity` | Ajusta la intensidad mínima (6-32A). |
-| `v2c_trydan.set_max_intensity` | Ajusta la intensidad máxima (6-32A). |
-| `v2c_trydan.set_dynamic_power_mode` | Cambia el modo de potencia dinámica (0-5). |
+> [!NOTE]
+> Si Home Assistant permanece apagado durante varios tramos completos que el
+> cargador posteriormente borra, la integración no puede recuperar esa energía.
 
-Todos los servicios aparecen con descripción y sliders en **Herramientas para Desarrolladores → Acciones**.
-Cuando hay más de un cargador configurado, selecciona el cargador en el campo
-`config_entry_id`. Para automatizaciones nuevas se recomienda actuar directamente
-sobre las entidades `number`, `select` y `switch`; las acciones anteriores se
-mantienen por compatibilidad.
+## Automatizaciones reutilizables
 
------
+Los blueprints no se instalan ni activan automáticamente. Se importan desde
+**Ajustes → Automatizaciones y escenas → Blueprints → Importar blueprint**:
 
-## ⚙️ Parámetros Técnicos
+- [Resumen y avisos de sesión](blueprints/automation/session_summary.yaml):
+  acciones configurables al iniciar y finalizar, con variables para kWh,
+  porcentaje añadido estimado, coste y autonomía.
+- [Alerta de potencia elevada](blueprints/automation/high_power_alert.yaml):
+  umbral, duración y acciones configurables.
+
+La capacidad de batería, eficiencia, precio y autonomía pertenecen al vehículo o
+al contrato, no al cargador. Por eso forman parte del blueprint y no de las
+entidades principales de la integración. Los porcentajes calculados representan
+**energía añadida estimada**, no el estado real de carga comunicado por el coche.
+
+## Paneles de ejemplo
+
+- [Panel nativo](dashboards/native.es.yaml): solo utiliza tarjetas incluidas en
+  Home Assistant.
+- [Panel Mushroom](dashboards/mushroom.es.yaml): requiere Mushroom y Mini Graph
+  Card.
+
+Copia el YAML en una tarjeta manual y adapta los identificadores si Home
+Assistant generó nombres diferentes. Estos ejemplos no modifican ningún panel
+automáticamente.
+
+## Acciones compatibles
+
+| Acción | Descripción |
+| --- | --- |
+| `v2c_trydan.set_intensity` | Establece la intensidad manual. |
+| `v2c_trydan.set_min_intensity` | Establece el límite dinámico inferior. |
+| `v2c_trydan.set_max_intensity` | Establece el límite dinámico superior. |
+| `v2c_trydan.set_dynamic_power_mode` | Cambia la estrategia dinámica entre 0 y 5. |
+
+Para automatizaciones nuevas se recomienda controlar directamente las entidades
+`number`, `select` y `switch`. Las acciones se conservan por compatibilidad y
+permiten seleccionar el cargador cuando existe más de uno.
+
+> [!WARNING]
+> La aplicación V2C ofrece configuraciones que la API local no expone, como
+> límites horarios de potencia. No cambies carga dinámica, temporizador o modos
+> avanzados desde Home Assistant si forman parte de la protección de tu
+> instalación o si un proveedor controla la carga mediante OCPP.
+
+## Parámetros técnicos
 
 | Parámetro | Valor |
-| :--- | :--- |
-| Intervalo de polling | 15 segundos |
-| Timeout de conexión | 20 segundos |
-| Reintentos por ciclo | 3 (con 2s de espera) |
-| Concurrencia | Una única petición al cargador a la vez |
-| Datos LED opcionales | Lectura cada 60 segundos con caché |
+| --- | --- |
+| Actualización principal | 15 segundos |
+| Timeout de lectura | 20 segundos |
+| Reintentos | 3, con 2 segundos entre intentos |
+| Concurrencia | Una petición por cargador |
+| Lecturas LED opcionales | Cada 60 segundos y con caché |
+| Persistencia de sesión | Al cambiar la conexión y durante cargas prolongadas |
 
-## 🔄 Cambiar la IP
+## Diagnóstico
 
-En **Ajustes → Dispositivos y servicios → V2C Trydan**, abre el menú de la
-integración y selecciona **Reconfigurar**. La integración comprueba que la nueva
-dirección corresponde al mismo cargador antes de guardar el cambio.
+- Comprueba `http://IP_DEL_CARGADOR/RealTimeData` desde la misma red.
+- Los fallos temporales dejan las entidades no disponibles y Home Assistant
+  vuelve a intentarlo automáticamente.
+- Descarga el informe desde el menú de la integración para adjuntarlo a una
+  incidencia; los datos sensibles se ocultan.
+- Consulta [`docs/architecture.md`](docs/architecture.md) para conocer módulos,
+  invariantes, compatibilidad y criterios de contribución.
 
-## 🩺 Diagnóstico y solución de problemas
+## Créditos
 
-* Verifica que `http://IP_DEL_CARGADOR/RealTimeData` responde desde la misma red.
-* Reserva la IP en el servidor DHCP; no es necesario borrar la integración si la
-  dirección cambia, ya que puede reconfigurarse.
-* Desde el menú de la integración, descarga los diagnósticos para adjuntarlos a
-  una incidencia. Los datos de red y el identificador se ocultan automáticamente.
-* Los fallos temporales dejan las entidades como no disponibles y Home Assistant
-  vuelve a intentarlo; no es necesario reiniciar.
-
-La arquitectura y las reglas para contribuir están documentadas en
-[`docs/architecture.md`](docs/architecture.md).
-
------
-
-## ⚖️ Créditos y Agradecimientos
-
-* A **Rain1971** por crear la base original de esta integración.
-* A la comunidad de Home Assistant y las herramientas de **IA** por ayudar a un "no programador" a mantener vivo este proyecto para uso personal.
-
------
+- [Rain1971](https://github.com/Rain1971/V2C_trydant), autor de la base original.
+- La comunidad de Home Assistant y las herramientas de IA utilizadas durante el
+  desarrollo y la revisión del proyecto.
