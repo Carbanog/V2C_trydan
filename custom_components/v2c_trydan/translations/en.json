@@ -105,12 +105,13 @@
       "meter_problem": { "name": "Meter Problem" }
     },
     "button": {
-      "reset_session_energy": { "name": "Reset Session Energy" }
+      "reset_session_energy": { "name": "Reset Session Statistics" }
     },
     "sensor": {
       "chargepower": { "name": "Charge Power" },
       "chargeenergy": { "name": "Charge Energy" },
       "session_energy": { "name": "Session Energy" },
+      "session_active_time": { "name": "Session Active Charging Time" },
       "chargestate": {
         "name": "Charge State",
         "state": {
@@ -210,10 +211,6 @@
           "disable_timed_power_stop": "Stop Mode"
         }
       }
-    },
-    "light": {
-      "light_led": { "name": "Charger Light" },
-      "logo_led": { "name": "Logo Light" }
     }
   }
 }

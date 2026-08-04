@@ -13,6 +13,7 @@ from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.storage import Store
 from homeassistant.helpers.typing import ConfigType
 
 from .api import V2CTrydanApi, V2CTrydanError
@@ -29,7 +30,11 @@ from .const import (
     SERVICE_SET_MAX_INTENSITY,
     SERVICE_SET_MIN_INTENSITY,
 )
-from .coordinator import V2CTrydanDataUpdateCoordinator
+from .coordinator import (
+    SESSION_STORE_VERSION,
+    V2CTrydanDataUpdateCoordinator,
+    session_store_key,
+)
 
 PLATFORMS: tuple[Platform, ...] = (
     Platform.SENSOR,
@@ -38,7 +43,6 @@ PLATFORMS: tuple[Platform, ...] = (
     Platform.SWITCH,
     Platform.NUMBER,
     Platform.SELECT,
-    Platform.LIGHT,
 )
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
@@ -187,6 +191,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.runtime_data = coordinator
 
     _migrate_legacy_registry_entries(hass, entry, coordinator.device_id)
+    _remove_retired_beta_lights(hass, entry, coordinator.device_id)
     _migrate_config_entry_unique_id(hass, entry, coordinator.device_id)
 
     device_registry = dr.async_get(hass)
@@ -210,6 +215,17 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if unload_ok:
         await entry.runtime_data.async_save_session_state()
     return unload_ok
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Remove private session storage when the charger is deleted permanently."""
+    store: Store[dict[str, object]] = Store(
+        hass,
+        SESSION_STORE_VERSION,
+        session_store_key(entry.entry_id),
+        atomic_writes=True,
+    )
+    await store.async_remove()
 
 
 async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -298,3 +314,23 @@ def _migrate_legacy_registry_entries(
                     entity_id,
                     new_unique_id=new_unique_id,
                 )
+
+
+def _remove_retired_beta_lights(
+    hass: HomeAssistant, entry: ConfigEntry, device_id: str
+) -> None:
+    """Remove only the two unreliable light entities shipped in b3 and b4.
+
+    Firmware 2.4.6 did not report their state consistently, so keeping the
+    registry entries would leave unavailable controls after the platform is
+    retired. No other entity or user customization is touched.
+    """
+    entity_registry = er.async_get(hass)
+    identifiers = {device_id, entry.data[CONF_IP_ADDRESS]}
+    for identifier in identifiers:
+        for suffix in ("light_led", "logo_led"):
+            entity_id = entity_registry.async_get_entity_id(
+                Platform.LIGHT, DOMAIN, f"{identifier}_{suffix}"
+            )
+            if entity_id is not None:
+                entity_registry.async_remove(entity_id)

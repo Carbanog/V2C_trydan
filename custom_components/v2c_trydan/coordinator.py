@@ -15,13 +15,19 @@ from homeassistant.helpers.update_coordinator import (
 )
 
 from .api import V2CTrydanApi, V2CTrydanError, device_identifier
-from .const import DOMAIN, POLL_INTERVAL, SESSION_ENERGY_KEY
-from .session import SessionEnergyState, SessionEnergyTracker
+from .const import DOMAIN, POLL_INTERVAL, SESSION_ACTIVE_TIME_KEY, SESSION_ENERGY_KEY
+from .session import SessionState, SessionTracker
 
 _LOGGER = logging.getLogger(__name__)
 
-_SESSION_STORE_VERSION = 1
+SESSION_STORE_VERSION = 1
 _SESSION_SAVE_INTERVAL = 60
+
+
+def session_store_key(entry_id: str) -> str:
+    """Return the stable storage key first introduced for session energy."""
+    # Keep the legacy suffix so upgrading from b4 preserves its checkpoint.
+    return f"{DOMAIN}.{entry_id}.session_energy"
 
 
 class V2CTrydanDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
@@ -42,11 +48,11 @@ class V2CTrydanDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             else entry.entry_id
         )
         self._device_id_initialized = False
-        self._session_tracker = SessionEnergyTracker()
+        self._session_tracker = SessionTracker()
         self._session_store: Store[dict[str, Any]] = Store(
             hass,
-            _SESSION_STORE_VERSION,
-            f"{DOMAIN}.{entry.entry_id}.session_energy",
+            SESSION_STORE_VERSION,
+            session_store_key(entry.entry_id),
             atomic_writes=True,
         )
         self._last_session_save = monotonic()
@@ -62,9 +68,7 @@ class V2CTrydanDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     async def async_initialize(self) -> None:
         """Restore session accumulation before the first charger poll."""
         stored_state = await self._session_store.async_load()
-        self._session_tracker = SessionEnergyTracker(
-            SessionEnergyState.from_dict(stored_state)
-        )
+        self._session_tracker = SessionTracker(SessionState.from_dict(stored_state))
         self._last_session_save = monotonic()
 
     async def _async_update_data(self) -> dict[str, Any]:
@@ -81,9 +85,12 @@ class V2CTrydanDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             self._device_id_initialized = True
 
         session_update = self._session_tracker.update(
-            data.get("ChargeState"), data.get("ChargeEnergy")
+            data.get("ChargeState"),
+            data.get("ChargeEnergy"),
+            data.get("ChargeTime"),
         )
         data[SESSION_ENERGY_KEY] = self._session_tracker.energy
+        data[SESSION_ACTIVE_TIME_KEY] = self._session_tracker.active_time
         if session_update.changed and (
             session_update.connection_changed
             or monotonic() - self._last_session_save >= _SESSION_SAVE_INTERVAL
@@ -91,12 +98,18 @@ class V2CTrydanDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             await self._async_save_session()
         return data
 
-    async def async_reset_session_energy(self) -> None:
-        """Reset accumulated session energy and publish it immediately."""
-        self._session_tracker.reset(self.data.get("ChargeEnergy"))
+    async def async_reset_session_statistics(self) -> None:
+        """Reset accumulated session statistics and publish immediately."""
+        self._session_tracker.reset(
+            self.data.get("ChargeEnergy"), self.data.get("ChargeTime")
+        )
         await self._async_save_session()
         self.async_set_updated_data(
-            {**self.data, SESSION_ENERGY_KEY: self._session_tracker.energy}
+            {
+                **self.data,
+                SESSION_ENERGY_KEY: self._session_tracker.energy,
+                SESSION_ACTIVE_TIME_KEY: self._session_tracker.active_time,
+            }
         )
 
     async def async_save_session_state(self) -> None:

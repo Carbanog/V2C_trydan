@@ -20,9 +20,9 @@ necesitan peticiones espaciadas, serializadas y tolerantes a fallos puntuales.
 - Comunicación HTTP completamente local y sin dependencias Python externas.
 - Una lectura coordinada cada 15 segundos para todas las entidades.
 - Reintentos y peticiones serializadas para proteger conexiones débiles.
-- Controles de pausa, bloqueo, intensidad y luces compatibles.
-- **Energía completa de la sesión**, incluso cuando OCPP o la aplicación pausa,
-  reanuda y reinicia el contador parcial del cargador.
+- Controles de pausa, bloqueo e intensidad.
+- **Energía y tiempo activo completos de la sesión**, incluso cuando OCPP o la
+  aplicación pausa, reanuda y reinicia los contadores parciales del cargador.
 - Persistencia de la sesión entre reinicios de Home Assistant.
 - Estado de carga descriptivo y detección inmediata de problemas del medidor.
 - Cambio de IP desde la interfaz sin recrear entidades ni automatizaciones.
@@ -57,8 +57,8 @@ configurada en la aplicación V2C.
 | Potencia de carga | Sensor | Potencia entregada al vehículo. |
 | Energía de carga | Sensor | Contador parcial informado por el firmware. |
 | Energía de la sesión | Sensor | Total local que suma todos los tramos hasta la siguiente conexión. |
+| Tiempo activo de la sesión | Sensor | Tiempo activo local que suma todos los tramos. |
 | Estado de carga | Sensor | Estado detallado del cargador. |
-| Tiempo de carga | Sensor | Tiempo indicado por el firmware. |
 | Potencia de casa | Sensor | Consumo medido por el sistema dinámico. |
 | Manguera conectada | Sensor binario | Disparador fiable para automatizaciones de sesión. |
 | Cargando | Sensor binario | Indica flujo de carga activo. |
@@ -66,33 +66,33 @@ configurada en la aplicación V2C.
 | Pausar carga | Interruptor | Pausa o reanuda manualmente. |
 | Bloquear cargador | Interruptor | Controla el bloqueo del cargador. |
 | Intensidad de carga | Número | Ajusta la intensidad manual entre 6 y 32 A. |
-| Luz del cargador | Luz | Encendido y apagado, si el firmware lo permite. |
-| Luz del logotipo | Luz | Encendido y brillo, si el firmware lo permite. |
 
 ### Avanzadas o de diagnóstico
 
 Permanecen deshabilitadas inicialmente: potencia fotovoltaica y de batería,
 tensión, potencia contratada, intensidad mínima y máxima, carga dinámica, modo
-dinámico, temporizador, pausa dinámica, estados internos duplicados, código del
-medidor, firmware, IP, SSID, señal Wi-Fi e identificador del dispositivo.
+dinámico, temporizador, pausa dinámica, estados internos duplicados (incluido el
+`Tiempo de Carga` parcial del firmware), código del medidor, firmware, IP, SSID,
+señal Wi-Fi e identificador del dispositivo.
 
 Se pueden habilitar individualmente en **Ajustes → Dispositivos y servicios →
 Entidades**. Los cambios de valores predeterminados no deshabilitan entidades que
 un usuario ya hubiera activado en una versión anterior.
 
-## Energía de la sesión
+## Estadísticas de la sesión
 
 `Energía de Carga` reproduce el valor `ChargeEnergy` del cargador. Algunos
 controladores externos, incluido OCPP, pueden dividir una conexión física en
 varios tramos y reiniciar ese valor entre pausas.
 
-`Energía de la Sesión` suma los incrementos de todos esos tramos mientras la
-manguera permanece conectada. El resultado se conserva al desconectar para que
-una automatización pueda leerlo posteriormente y se reinicia al conectar un
-nuevo vehículo. Su estado se guarda periódicamente sin depender del Recorder.
+`Energía de la Sesión` y `Tiempo Activo de la Sesión` suman los incrementos de
+todos esos tramos mientras la manguera permanece conectada. Los resultados se
+conservan al desconectar para que una automatización pueda leerlos posteriormente
+y se reinician al conectar un nuevo vehículo. Se guardan periódicamente sin
+depender del Recorder.
 
-El botón avanzado `Reiniciar Energía de Sesión` permite corregir manualmente un
-caso excepcional sin volver a contar el valor parcial anterior.
+El botón avanzado `Reiniciar Estadísticas de Sesión` permite corregir
+manualmente un caso excepcional sin volver a contar los valores parciales.
 
 > [!NOTE]
 > Si Home Assistant permanece apagado durante varios tramos completos que el
@@ -105,7 +105,7 @@ Los blueprints no se instalan ni activan automáticamente. Se importan desde
 
 - [Resumen y avisos de sesión](blueprints/automation/session_summary.yaml):
   acciones configurables al iniciar y finalizar, con variables para kWh,
-  porcentaje añadido estimado, coste y autonomía.
+  tiempo activo, porcentaje añadido estimado, coste y autonomía.
 - [Alerta de potencia elevada](blueprints/automation/high_power_alert.yaml):
   umbral, duración y acciones configurables.
 
@@ -152,8 +152,11 @@ permiten seleccionar el cargador cuando existe más de uno.
 | Timeout de lectura | 20 segundos |
 | Reintentos | 3, con 2 segundos entre intentos |
 | Concurrencia | Una petición por cargador |
-| Lecturas LED opcionales | Cada 60 segundos y con caché |
 | Persistencia de sesión | Al cambiar la conexión y durante cargas prolongadas |
+
+Los controles de luz se retiraron tras probarlos físicamente con el firmware
+2.4.6: el estado de la API local no coincidía de forma fiable con el cargador ni
+con la aplicación V2C. Solo volverán si se puede garantizar un estado coherente.
 
 ## Diagnóstico
 

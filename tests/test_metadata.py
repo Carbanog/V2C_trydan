@@ -17,9 +17,7 @@ class _BlueprintLoader(yaml.SafeLoader):
     """Parse Home Assistant input tags without interpreting their values."""
 
 
-def _construct_blueprint_input(
-    loader: _BlueprintLoader, node: yaml.ScalarNode
-) -> str:
+def _construct_blueprint_input(loader: _BlueprintLoader, node: yaml.ScalarNode) -> str:
     """Keep a blueprint input reference as a plain scalar for structure tests."""
     return loader.construct_scalar(node)
 
@@ -128,6 +126,19 @@ def test_statistics_state_classes_do_not_regress() -> None:
         ast.unparse(charge_time["state_class"]) == "SensorStateClass.TOTAL_INCREASING"
     )
 
+    session_time = _sensor_description_keywords("session_active_time")
+    assert (
+        ast.unparse(session_time["state_class"]) == "SensorStateClass.TOTAL_INCREASING"
+    )
+
+
+def test_session_energy_uses_two_display_decimals() -> None:
+    """Keep the UI readable without rounding the coordinator value."""
+    description = _sensor_description_keywords("session_energy")
+    precision = description["suggested_display_precision"]
+    assert isinstance(precision, ast.Constant)
+    assert precision.value == 2
+
 
 def test_default_sensor_surface_remains_focused() -> None:
     """New installs should not enable optional or duplicate readback sensors."""
@@ -152,6 +163,7 @@ def test_default_sensor_surface_remains_focused() -> None:
 
     assert disabled == {
         "battery_power",
+        "charge_time",
         "contracted_power",
         "device_id",
         "dynamic",
@@ -185,3 +197,18 @@ def test_manifest_version_matches_latest_changelog() -> None:
         if line.startswith("## ")
     )
     assert manifest["version"] == latest_heading
+
+
+def test_retired_light_platform_is_not_loaded() -> None:
+    """Unreliable beta light controls must not return accidentally."""
+    init_source = (INTEGRATION / "__init__.py").read_text(encoding="utf-8")
+    platforms_assignment = next(
+        node
+        for node in ast.parse(init_source).body
+        if isinstance(node, ast.AnnAssign)
+        and isinstance(node.target, ast.Name)
+        and node.target.id == "PLATFORMS"
+    )
+    assert "Platform.LIGHT" not in ast.unparse(platforms_assignment)
+    assert not (INTEGRATION / "light.py").exists()
+    assert "_remove_retired_beta_lights" in init_source
