@@ -18,8 +18,8 @@ cards:
         entity: sensor.v2c_trydan_session_energy
         name: Session energy
       - type: tile
-        entity: sensor.v2c_trydan_charge_time
-        name: Charging time
+        entity: sensor.v2c_trydan_session_active_charging_time
+        name: Active charging time
       - type: tile
         entity: binary_sensor.v2c_trydan_cable_connected
         name: Cable
@@ -41,8 +41,6 @@ cards:
       - entity: switch.v2c_trydan_pause_charge
       - entity: switch.v2c_trydan_lock_charger
       - entity: number.v2c_trydan_charge_intensity
-      - entity: light.v2c_trydan_charger_light
-      - entity: light.v2c_trydan_logo_light
   - type: conditional
     conditions:
       - condition: state

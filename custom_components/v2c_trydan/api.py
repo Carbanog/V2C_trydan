@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-import logging
 import re
 from collections.abc import Mapping
 from typing import Any
@@ -13,15 +12,10 @@ from aiohttp import ClientError, ClientResponse, ClientSession, ClientTimeout
 
 from .const import (
     COMMAND_TIMEOUT,
-    OPTIONAL_READ_EVERY_POLLS,
-    OPTIONAL_READ_KEYS,
-    OPTIONAL_READ_TIMEOUT,
     READ_RETRY_DELAY,
     READ_RETRY_LIMIT,
     READ_TIMEOUT,
 )
-
-_LOGGER = logging.getLogger(__name__)
 
 _MISSING_READY_STATE_COMMA = re.compile(
     r'(?P<value>(?:"[^"]*"|-?\d+(?:\.\d+)?|true|false|null|\}|\]))'
@@ -78,19 +72,6 @@ def parse_realtime_data(payload: str) -> dict[str, Any]:
     return parsed
 
 
-def parse_scalar(payload: str) -> int | float | str:
-    """Parse a scalar response returned by the charger's read endpoint."""
-    value = payload.strip()
-    try:
-        return int(value)
-    except ValueError:
-        pass
-    try:
-        return float(value)
-    except ValueError:
-        return value
-
-
 class V2CTrydanApi:
     """Small, reusable client for one charger.
 
@@ -102,9 +83,6 @@ class V2CTrydanApi:
         """Initialize the API client."""
         self._session = session
         self._request_lock = asyncio.Lock()
-        self._optional_values: dict[str, Any] = {}
-        self._unsupported_optional_keys: set[str] = set()
-        self._poll_count = 0
         self.host = host
 
     @property
@@ -152,8 +130,6 @@ class V2CTrydanApi:
                     f"Unable to reach {self.host} after {READ_RETRY_LIMIT} attempts"
                 ) from last_error
 
-            await self._async_supplement_optional_data(data)
-            self._poll_count += 1
             return data
 
     async def async_write(self, key: str, value: int) -> None:
@@ -179,49 +155,6 @@ class V2CTrydanApi:
 
         if response_text.upper() == "ERROR":
             raise V2CTrydanCommandError(f"The charger rejected {key}={value}")
-        if key in OPTIONAL_READ_KEYS:
-            self._optional_values[key] = value
-
-    async def _async_supplement_optional_data(self, data: dict[str, Any]) -> None:
-        """Add optional values without making the main poll depend on them.
-
-        Older firmware omits LED values from ``RealTimeData`` while still
-        exposing them through ``/read``. Supported values are refreshed once
-        per minute and cached between polls, limiting traffic on weak links.
-        """
-        for key in OPTIONAL_READ_KEYS:
-            if key in data:
-                self._optional_values[key] = data[key]
-
-        should_refresh = self._poll_count % OPTIONAL_READ_EVERY_POLLS == 0
-        if should_refresh:
-            for key in OPTIONAL_READ_KEYS:
-                if key in data or key in self._unsupported_optional_keys:
-                    continue
-                await self._async_read_optional_key(key)
-
-        data.update(self._optional_values)
-
-    async def _async_read_optional_key(self, key: str) -> None:
-        """Read one optional keyword, isolating failures from core data."""
-        try:
-            async with self._session.get(
-                f"{self.base_url}/read/{key}",
-                timeout=ClientTimeout(total=OPTIONAL_READ_TIMEOUT),
-            ) as response:
-                if response.status == 404:
-                    self._unsupported_optional_keys.add(key)
-                    return
-                self._raise_for_status(response)
-                self._optional_values[key] = parse_scalar(await response.text())
-        except (
-            V2CTrydanConnectionError,
-            ClientError,
-            TimeoutError,
-        ) as err:
-            _LOGGER.debug(
-                "Optional V2C keyword %s is temporarily unavailable: %s", key, err
-            )
 
     @staticmethod
     def _raise_for_status(response: ClientResponse) -> None:

@@ -2,6 +2,36 @@
 
 All notable changes to this project are documented here.
 
+## 1.3.0b5
+
+### Added
+
+* Persistent session active-charging time, accumulated across the same OCPP/app
+  pause resets as session energy and retained after disconnection.
+* Active-time variables in the session-summary blueprint and matching entries in
+  all dashboard examples.
+
+### Changed
+
+* Session energy now suggests two display decimals while retaining full internal
+  precision.
+* The raw firmware charge-time sensor starts disabled on new installations
+  because it describes only the current charging segment.
+* The optional reset button now resets both accumulated session statistics.
+
+### Removed
+
+* Experimental charger and logo light controls from b3/b4. Physical testing on
+  firmware 2.4.6 showed that their local API state was not reliable or
+  synchronized with the V2C app. Upgrade cleanup targets only those two beta
+  registry entities.
+
+### Internal
+
+* Generalized the pure session state machine and migrated b4 energy checkpoints
+  additively, without losing their accumulated energy.
+* Session storage is deleted only when its config entry is permanently removed.
+
 ## 1.3.0b4
 
 ### Added

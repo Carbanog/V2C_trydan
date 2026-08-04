@@ -19,11 +19,11 @@ async def async_setup_entry(
 ) -> None:
     """Set up optional session maintenance controls."""
     coordinator: V2CTrydanDataUpdateCoordinator = config_entry.runtime_data
-    async_add_entities((ResetSessionEnergyButton(coordinator),))
+    async_add_entities((ResetSessionStatisticsButton(coordinator),))
 
 
-class ResetSessionEnergyButton(V2CTrydanEntity, ButtonEntity):
-    """Allow an exceptional manual reset of the local session total."""
+class ResetSessionStatisticsButton(V2CTrydanEntity, ButtonEntity):
+    """Allow an exceptional manual reset of the local session statistics."""
 
     _attr_translation_key = "reset_session_energy"
     _attr_entity_category = EntityCategory.CONFIG
@@ -35,5 +35,5 @@ class ResetSessionEnergyButton(V2CTrydanEntity, ButtonEntity):
         super().__init__(coordinator, "reset_session_energy")
 
     async def async_press(self) -> None:
-        """Reset session energy while preserving the current raw baseline."""
-        await self.coordinator.async_reset_session_energy()
+        """Reset session totals while preserving current raw baselines."""
+        await self.coordinator.async_reset_session_statistics()

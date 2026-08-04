@@ -18,8 +18,8 @@ cards:
         entity: sensor.v2c_trydan_energia_de_la_sesion
         name: Energía de la sesión
       - type: tile
-        entity: sensor.v2c_trydan_tiempo_de_carga
-        name: Tiempo de carga
+        entity: sensor.v2c_trydan_tiempo_activo_de_la_sesion
+        name: Tiempo activo
       - type: tile
         entity: binary_sensor.v2c_trydan_manguera_conectada
         name: Manguera
@@ -44,8 +44,6 @@ cards:
         name: Bloqueo
       - entity: number.v2c_trydan_intensidad_de_carga
         name: Intensidad
-      - entity: light.v2c_trydan_luz_del_cargador
-      - entity: light.v2c_trydan_luz_del_logotipo
   - type: conditional
     conditions:
       - condition: state

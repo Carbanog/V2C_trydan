@@ -3,9 +3,9 @@ blueprint:
   description: >-
     Runs configurable actions when the first charge starts and when the cable is
     disconnected. The finish action can use session_kwh, estimated_percent,
-    estimated_cost, and estimated_range_km as template variables. Repeated OCPP
-    pauses do not create repeated start notifications because the start path is
-    tied to a new cable connection.
+    session_seconds, session_hours, estimated_cost, and estimated_range_km as
+    template variables. Repeated OCPP pauses do not create repeated start
+    notifications because the start path is tied to a new cable connection.
   domain: automation
   source_url: https://github.com/Carbanog/V2C_trydan/blob/main/blueprints/automation/session_summary.yaml
   homeassistant:
@@ -32,6 +32,14 @@ blueprint:
           filter:
             domain: sensor
             device_class: energy
+    session_active_time:
+      name: Session active charging time
+      description: Select the accumulated session time, not the raw segment time.
+      selector:
+        entity:
+          filter:
+            domain: sensor
+            device_class: duration
     battery_capacity:
       name: Usable battery capacity
       description: Set to 0 to disable the estimated percentage.
@@ -83,8 +91,8 @@ blueprint:
     finish_actions:
       name: Session finished actions
       description: >-
-        Actions can use session_kwh, estimated_percent, estimated_cost, and
-        estimated_range_km in templates.
+        Actions can use session_kwh, session_seconds, session_hours,
+        estimated_percent, estimated_cost, and estimated_range_km in templates.
       default: []
       selector:
         action:
@@ -107,6 +115,7 @@ variables:
   cable_entity: !input cable_connected
   charging_entity: !input charging
   session_entity: !input session_energy
+  session_time_entity: !input session_active_time
   capacity_kwh: !input battery_capacity
   efficiency_percent: !input charging_efficiency
   price_per_kwh: !input electricity_price
@@ -128,7 +137,11 @@ actions:
       - conditions: "{{ trigger.id == 'disconnected' }}"
         sequence:
           - variables:
-              session_kwh: "{{ states(session_entity) | float(0) | round(3) }}"
+              session_kwh: "{{ states(session_entity) | float(0) | round(2) }}"
+              session_seconds: >-
+                {{ states(session_time_entity) | float(0) | round(0) }}
+              session_hours: >-
+                {{ ((session_seconds | float(0)) / 3600) | round(2) }}
               estimated_percent: >-
                 {{ (((session_kwh | float(0)) *
                      ((efficiency_percent | float(90)) / 100) /

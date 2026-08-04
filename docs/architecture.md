@@ -11,7 +11,8 @@ predictable behavior on PLC and weak Wi-Fi networks over request throughput.
   performs one shared poll for all entities. It also owns the persistence boundary
   for local charging-session state.
 * `session.py` is a Home Assistant-independent state machine that accumulates raw
-  energy counter deltas across pauses and resets. It contains no I/O.
+  energy and active-time counter deltas across pauses and resets. It contains no
+  I/O.
 * `entity.py` owns device metadata, stable unique IDs, common command handling,
   and defensive value conversion.
 * Platform modules only describe entities and map coordinator values to Home
@@ -35,14 +36,13 @@ predictable behavior on PLC and weak Wi-Fi networks over request throughput.
    existing entity IDs, names, areas, and dashboard references.
 6. The malformed-JSON workaround only inserts the known missing comma before
    `ReadyState`; it does not attempt to guess arbitrary corrupt responses.
-7. Optional firmware capabilities are detected through read-only endpoints,
-   refreshed less frequently, and cached. An optional failure never invalidates
-   the core `RealTimeData` snapshot.
-8. Session energy resets only on a new cable connection or an explicit user
-   action. Disconnection preserves the completed value for delayed automations.
-9. Session state is checkpointed outside Recorder. Connection transitions are
+7. Session statistics reset only on a new cable connection or an explicit user
+   action. Disconnection preserves completed values for delayed automations.
+8. Session state is checkpointed outside Recorder. Connection transitions are
    saved immediately; long-running charges are saved at a bounded cadence to
    avoid unnecessary storage writes.
+9. Storage additions are backwards compatible. The b4 energy-only checkpoint is
+   accepted and extended with active time without discarding accumulated energy.
 
 ## User-facing extensions
 
@@ -74,6 +74,7 @@ should use Home Assistant integration tests as coverage is expanded.
 ## Compatibility policy
 
 Public entity unique IDs, config-entry data, and action names are persisted user
-interfaces. Changes to them require an explicit migration. Removing an entity or
-action requires a documented deprecation period rather than hiding or silently
-replacing it.
+interfaces. Changes to them require an explicit migration. Removing stable
+entities requires a documented deprecation period. Experimental beta entities
+may be removed before stable release only with targeted registry cleanup and a
+documented reason, as done for the unreliable b3/b4 light controls.

@@ -7,6 +7,7 @@ DOMAIN = "v2c_trydan"
 # Coordinator-only keys use a private prefix so they cannot be confused with
 # properties returned by the charger firmware.
 SESSION_ENERGY_KEY = "_session_energy"
+SESSION_ACTIVE_TIME_KEY = "_session_active_time"
 CONF_IP_ADDRESS = "ip_address"
 CONF_CONFIG_ENTRY_ID = "config_entry_id"
 
@@ -18,12 +19,8 @@ MAX_DYNAMIC_POWER_MODE = 5
 POLL_INTERVAL = timedelta(seconds=15)
 READ_TIMEOUT = 20
 COMMAND_TIMEOUT = 10
-OPTIONAL_READ_TIMEOUT = 5
 READ_RETRY_LIMIT = 3
 READ_RETRY_DELAY = 2
-OPTIONAL_READ_EVERY_POLLS = 4
-
-OPTIONAL_READ_KEYS: tuple[str, ...] = ("LightLED", "LogoLED")
 
 SERVICE_SET_INTENSITY = "set_intensity"
 SERVICE_SET_MIN_INTENSITY = "set_min_intensity"

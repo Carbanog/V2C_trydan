@@ -24,7 +24,7 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .const import SESSION_ENERGY_KEY
+from .const import SESSION_ACTIVE_TIME_KEY, SESSION_ENERGY_KEY
 from .coordinator import V2CTrydanDataUpdateCoordinator
 from .entity import V2CTrydanEntity
 from .utils import value_as_float, value_as_int
@@ -114,8 +114,16 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
         state_class=SensorStateClass.TOTAL_INCREASING,
         device_class=SensorDeviceClass.ENERGY,
-        suggested_display_precision=3,
+        suggested_display_precision=2,
         value_fn=lambda data: value_as_float(data.get(SESSION_ENERGY_KEY)),
+    ),
+    V2CSensorEntityDescription(
+        key="session_active_time",
+        translation_key="session_active_time",
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        device_class=SensorDeviceClass.DURATION,
+        value_fn=lambda data: value_as_float(data.get(SESSION_ACTIVE_TIME_KEY)),
     ),
     V2CSensorEntityDescription(
         key="charge_state",
@@ -130,6 +138,7 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfTime.SECONDS,
         state_class=SensorStateClass.TOTAL_INCREASING,
         device_class=SensorDeviceClass.DURATION,
+        entity_registry_enabled_default=False,
         value_fn=lambda data: value_as_float(data.get("ChargeTime")),
     ),
     V2CSensorEntityDescription(

@@ -57,14 +57,14 @@ cards:
     entities:
       - entity: sensor.v2c_trydan_energia_de_la_sesion
         name: Energía acumulada
+      - entity: sensor.v2c_trydan_tiempo_activo_de_la_sesion
+        name: Tiempo activo acumulado
       - entity: switch.v2c_trydan_pausar_carga
         name: Pausa manual
       - entity: switch.v2c_trydan_bloquear_cargador
         name: Bloqueo
       - entity: number.v2c_trydan_intensidad_de_carga
         name: Intensidad
-      - entity: light.v2c_trydan_luz_del_logotipo
-        name: Luz del logotipo
   - type: conditional
     conditions:
       - condition: state

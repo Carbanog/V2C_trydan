@@ -20,8 +20,9 @@ serialized requests and graceful handling of temporary failures.
 - Fully local HTTP communication with no third-party Python dependency.
 - One coordinated poll every 15 seconds shared by all entities.
 - Retries and serialized requests suited to constrained network links.
-- Pause, lock, current, and supported light controls.
-- **Whole-session energy** across counter resets caused by OCPP or app pauses.
+- Pause, lock, and current controls.
+- **Whole-session energy and active time** across counter resets caused by OCPP
+  or app pauses.
 - Session persistence across Home Assistant restarts.
 - Descriptive charge states and immediate meter-problem detection.
 - UI-based IP reconfiguration without recreating entities.
@@ -55,8 +56,8 @@ charging, for example, remains active when configured through the V2C app.
 | Charge Power | Sensor | Power delivered to the vehicle. |
 | Charge Energy | Sensor | Partial counter reported by firmware. |
 | Session Energy | Sensor | Local total across every segment until the next connection. |
+| Session Active Charging Time | Sensor | Local active-time total across every segment. |
 | Charge State | Sensor | Detailed charger state. |
-| Charge Time | Sensor | Duration reported by firmware. |
 | House Power | Sensor | Consumption seen by dynamic regulation. |
 | Cable Connected | Binary sensor | Reliable session automation trigger. |
 | Charging | Binary sensor | Active charging flow. |
@@ -64,33 +65,32 @@ charging, for example, remains active when configured through the V2C app.
 | Pause Charge | Switch | Manually pauses or resumes charging. |
 | Lock Charger | Switch | Controls charger locking. |
 | Charge Intensity | Number | Sets manual current from 6 to 32 A. |
-| Charger Light | Light | On/off control when supported. |
-| Logo Light | Light | On/off and brightness when supported. |
 
 ### Advanced and diagnostic entities
 
 Photovoltaic and home-battery power, voltage, contracted power, minimum and
 maximum current, dynamic charging, dynamic mode, timer, dynamic pause, duplicate
-raw states, meter codes, firmware, IP, SSID, Wi-Fi signal, and hardware ID start
-disabled. Enable only the entities relevant to the installation from
+raw states (including the firmware's per-segment `Charge Time`), meter codes,
+firmware, IP, SSID, Wi-Fi signal, and hardware ID start disabled. Enable only the
+entities relevant to the installation from
 **Settings → Devices & services → Entities**.
 
 Changing a default never overrides an entity choice already stored by an
 upgrading user.
 
-## Whole-session energy
+## Whole-session statistics
 
 `Charge Energy` mirrors the charger's `ChargeEnergy` property. External
 controllers such as OCPP may split one physical connection into several charging
 segments and reset that value after a pause.
 
-`Session Energy` adds the positive increments from every segment while the cable
-remains connected. It retains the finished total after disconnection for delayed
-summary automations, resets at the next vehicle connection, and periodically
-persists independently of Recorder.
+`Session Energy` and `Session Active Charging Time` add the positive increments
+from every segment while the cable remains connected. They retain the finished
+totals after disconnection for delayed summary automations, reset at the next
+vehicle connection, and periodically persist independently of Recorder.
 
-The disabled-by-default `Reset Session Energy` button handles exceptional manual
-correction without recounting the current raw baseline.
+The disabled-by-default `Reset Session Statistics` button handles exceptional
+manual correction without recounting the current raw baselines.
 
 > [!NOTE]
 > Energy from complete segments that occur while Home Assistant is offline and
@@ -102,7 +102,8 @@ Blueprints are never installed or enabled automatically. Import them through
 **Settings → Automations & scenes → Blueprints → Import blueprint**:
 
 - [Session summary and notifications](blueprints/automation/session_summary.yaml)
-  exposes variables for kWh, estimated percentage added, cost, and range.
+  exposes variables for kWh, active time, estimated percentage added, cost, and
+  range.
 - [High charging power alert](blueprints/automation/high_power_alert.yaml) has a
   configurable threshold, duration, and action sequence.
 
@@ -149,8 +150,11 @@ charger selection in multi-charger installations.
 | Read timeout | 20 seconds |
 | Retries | 3, with a 2-second delay |
 | Concurrency | One in-flight request per charger |
-| Optional LED reads | Cached and refreshed every 60 seconds |
 | Session persistence | On connection changes and during long charges |
+
+Light controls were removed after physical testing with firmware 2.4.6 because
+their local API state did not reliably match the charger or V2C app. Reliable
+state is required before a control can return in a future release.
 
 ## Diagnostics
 

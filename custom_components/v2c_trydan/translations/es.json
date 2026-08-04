@@ -105,12 +105,13 @@
       "meter_problem": { "name": "Problema del Medidor" }
     },
     "button": {
-      "reset_session_energy": { "name": "Reiniciar Energía de Sesión" }
+      "reset_session_energy": { "name": "Reiniciar Estadísticas de Sesión" }
     },
     "sensor": {
       "chargepower": { "name": "Potencia de Carga" },
       "chargeenergy": { "name": "Energía de Carga" },
       "session_energy": { "name": "Energía de la Sesión" },
+      "session_active_time": { "name": "Tiempo Activo de la Sesión" },
       "chargestate": {
         "name": "Estado de Carga",
         "state": {
@@ -210,10 +211,6 @@
           "disable_timed_power_stop": "Modo Parada"
         }
       }
-    },
-    "light": {
-      "light_led": { "name": "Luz del Cargador" },
-      "logo_led": { "name": "Luz del Logotipo" }
     }
   }
 }
