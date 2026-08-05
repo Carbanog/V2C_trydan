@@ -91,6 +91,11 @@ conservan al desconectar para que una automatización pueda leerlos posteriormen
 y se reinician al conectar un nuevo vehículo. Se guardan periódicamente sin
 depender del Recorder.
 
+El tiempo se conserva internamente en segundos, pero las instalaciones nuevas lo
+mostrarán en horas con dos decimales. Si la entidad ya se creó con `1.3.0b5`,
+Home Assistant respeta su unidad anterior: abre la entidad, pulsa el engranaje y
+cambia **Unidad de medida** de `s` a `h`. No se pierde el acumulado ni el histórico.
+
 El botón avanzado `Reiniciar Estadísticas de Sesión` permite corregir
 manualmente un caso excepcional sin volver a contar los valores parciales.
 
@@ -100,14 +105,57 @@ manualmente un caso excepcional sin volver a contar los valores parciales.
 
 ## Automatizaciones reutilizables
 
-Los blueprints no se instalan ni activan automáticamente. Se importan desde
-**Ajustes → Automatizaciones y escenas → Blueprints → Importar blueprint**:
+Los blueprints están en la carpeta [`blueprints/automation`](blueprints/automation)
+del repositorio. No se instalan ni activan automáticamente. Puedes importarlos
+desde **Ajustes → Automatizaciones y escenas → Blueprints → Importar blueprint**
+o utilizar estos accesos directos:
 
-- [Resumen y avisos de sesión](blueprints/automation/session_summary.yaml):
-  acciones configurables al iniciar y finalizar, con variables para kWh,
-  tiempo activo, porcentaje añadido estimado, coste y autonomía.
-- [Alerta de potencia elevada](blueprints/automation/high_power_alert.yaml):
-  umbral, duración y acciones configurables.
+### Resumen y avisos de sesión
+
+[![Importar en Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.0b6%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
+
+- [Ver o copiar el YAML](blueprints/automation/session_summary.yaml).
+- Ejecuta acciones al comenzar la primera carga y dos minutos después de
+  desconectar, sin crear avisos repetidos por las pausas de OCPP.
+- La acción final puede utilizar `session_kwh`, `session_seconds`,
+  `session_hours`, `session_duration`, `estimated_percent`, `estimated_cost` y
+  `estimated_range_km`.
+
+Ejemplo para **Acciones al finalizar** (sustituye el servicio de notificación):
+
+```yaml
+action: notify.mobile_app_tu_movil
+data:
+  title: Carga del coche finalizada
+  message: >-
+    Se han cargado {{ session_kwh }} kWh en {{ session_duration }}.
+    {% if estimated_percent is not none %}
+      Batería añadida estimada: {{ estimated_percent }} %.
+    {% endif %}
+    {% if estimated_cost is not none %}
+      Coste estimado: {{ estimated_cost }} €.
+    {% endif %}
+```
+
+### Alerta de potencia elevada
+
+[![Importar en Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.0b6%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
+
+- [Ver o copiar el YAML](blueprints/automation/high_power_alert.yaml).
+- Ejecuta una acción cuando la potencia de carga supera el umbral durante el
+  tiempo configurado y ofrece la variable `measured_power`.
+
+Ejemplo para **Acciones de alerta**:
+
+```yaml
+action: notify.mobile_app_tu_movil
+data:
+  title: Potencia de carga elevada
+  message: El coche está cargando a {{ measured_power | round(0) }} W.
+```
+
+En el selector de acciones del blueprint puedes crear estas notificaciones desde
+la interfaz o elegir **Editar en YAML** y pegar el bloque correspondiente.
 
 La capacidad de batería, eficiencia, precio y autonomía pertenecen al vehículo o
 al contrato, no al cargador. Por eso forman parte del blueprint y no de las

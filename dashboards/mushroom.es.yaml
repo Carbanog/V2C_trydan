@@ -27,8 +27,16 @@ cards:
         Manguera desconectada
       {% endif %}
     secondary: >-
+      {% set tiempo = 'sensor.v2c_trydan_tiempo_activo_de_la_sesion' %}
+      {% set factores = {'ms': 0.001, 's': 1, 'min': 60,
+                         'h': 3600, 'd': 86400} %}
+      {% set segundos = (states(tiempo) | float(0) *
+          factores.get(state_attr(tiempo, 'unit_of_measurement'), 1)) | int %}
+      {% set horas = segundos // 3600 %}
+      {% set minutos = (segundos % 3600) // 60 %}
       Sesión: {{ states('sensor.v2c_trydan_energia_de_la_sesion') }} kWh ·
-      Intensidad: {{ states('number.v2c_trydan_intensidad_de_carga') }} A
+      {{ horas }} h {{ '%02d' | format(minutos) }} min ·
+      {{ states('number.v2c_trydan_intensidad_de_carga') }} A
     icon: mdi:car-electric
     icon_color: >-
       {% if is_state('binary_sensor.v2c_trydan_cargando', 'on') %}green

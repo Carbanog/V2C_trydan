@@ -2,6 +2,26 @@
 
 All notable changes to this project are documented here.
 
+## 1.3.0b6
+
+### Changed
+
+* New session-time entities now suggest hours with two decimals while retaining
+  seconds as their native and persisted precision.
+* The session-summary blueprint accepts duration sensors displayed in seconds,
+  minutes, hours, days, or milliseconds and exposes a readable
+  `session_duration` value such as `2 h 15 min`.
+* Mushroom dashboard summaries now render accumulated time as hours and minutes.
+* Both READMEs now provide direct blueprint-import buttons, source locations,
+  configuration guidance, available template variables, and copyable
+  notification examples.
+
+### Compatibility
+
+* Home Assistant intentionally retains the unit selected when an entity was
+  first registered. Users upgrading from b5 can change the session-time unit
+  from seconds to hours in entity settings without resetting state or history.
+
 ## 1.3.0b5
 
 ### Added

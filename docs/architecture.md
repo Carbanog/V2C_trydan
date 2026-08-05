@@ -43,6 +43,9 @@ predictable behavior on PLC and weak Wi-Fi networks over request throughput.
    avoid unnecessary storage writes.
 9. Storage additions are backwards compatible. The b4 energy-only checkpoint is
    accepted and extended with active time without discarding accumulated energy.
+10. Session time is stored and published natively in seconds. Home Assistant's
+    supported duration-unit conversion presents it in hours without weakening
+    the accumulator or coupling presentation to persistence.
 
 ## User-facing extensions
 

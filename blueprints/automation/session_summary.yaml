@@ -3,11 +3,12 @@ blueprint:
   description: >-
     Runs configurable actions when the first charge starts and when the cable is
     disconnected. The finish action can use session_kwh, estimated_percent,
-    session_seconds, session_hours, estimated_cost, and estimated_range_km as
-    template variables. Repeated OCPP pauses do not create repeated start
-    notifications because the start path is tied to a new cable connection.
+    session_seconds, session_hours, session_duration, estimated_cost, and
+    estimated_range_km as template variables. Repeated OCPP pauses do not create
+    repeated start notifications because the start path is tied to a new cable
+    connection.
   domain: automation
-  source_url: https://github.com/Carbanog/V2C_trydan/blob/main/blueprints/automation/session_summary.yaml
+  source_url: https://github.com/Carbanog/V2C_trydan/blob/v1.3.0b6/blueprints/automation/session_summary.yaml
   homeassistant:
     min_version: 2024.10.0
   input:
@@ -92,7 +93,8 @@ blueprint:
       name: Session finished actions
       description: >-
         Actions can use session_kwh, session_seconds, session_hours,
-        estimated_percent, estimated_cost, and estimated_range_km in templates.
+        session_duration, estimated_percent, estimated_cost, and
+        estimated_range_km in templates.
       default: []
       selector:
         action:
@@ -139,9 +141,19 @@ actions:
           - variables:
               session_kwh: "{{ states(session_entity) | float(0) | round(2) }}"
               session_seconds: >-
-                {{ states(session_time_entity) | float(0) | round(0) }}
+                {% set factors = {'ms': 0.001, 's': 1, 'min': 60,
+                                  'h': 3600, 'd': 86400} %}
+                {% set unit = state_attr(session_time_entity,
+                                         'unit_of_measurement') %}
+                {{ ((states(session_time_entity) | float(0)) *
+                    factors.get(unit, 1)) | round(0) }}
               session_hours: >-
                 {{ ((session_seconds | float(0)) / 3600) | round(2) }}
+              session_duration: >-
+                {% set total = session_seconds | int(0) %}
+                {% set hours = total // 3600 %}
+                {% set minutes = (total % 3600) // 60 %}
+                {{ '%d h %02d min' | format(hours, minutes) }}
               estimated_percent: >-
                 {{ (((session_kwh | float(0)) *
                      ((efficiency_percent | float(90)) / 100) /
