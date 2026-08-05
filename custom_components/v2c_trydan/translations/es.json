@@ -7,25 +7,111 @@
         "data": {
           "ip_address": "Dirección IP"
         }
+      },
+      "reconfigure": {
+        "title": "Actualizar dirección del V2C Trydan",
+        "description": "Introduce la nueva dirección IP estática del cargador.",
+        "data": {
+          "ip_address": "Dirección IP"
+        }
       }
     },
     "error": {
       "cannot_connect": "No se pudo conectar al dispositivo",
+      "invalid_ip": "Introduce una dirección IPv4 o IPv6 válida",
+      "invalid_response": "Ha respondido un dispositivo, pero no parece un V2C Trydan compatible",
       "unknown": "Ha ocurrido un error inesperado"
     },
     "abort": {
-      "already_configured": "El dispositivo ya está configurado"
+      "already_configured": "El dispositivo ya está configurado",
+      "reconfigure_successful": "La dirección del cargador se ha actualizado"
+    }
+  },
+  "services": {
+    "set_intensity": {
+      "name": "Establecer intensidad de carga",
+      "description": "Establece la intensidad de carga manual.",
+      "fields": {
+        "intensity": {
+          "name": "Intensidad",
+          "description": "Intensidad de carga entre 6 y 32 amperios."
+        },
+        "config_entry_id": {
+          "name": "Cargador",
+          "description": "Cargador que se controlará. Es opcional si solo hay uno configurado."
+        }
+      }
+    },
+    "set_min_intensity": {
+      "name": "Establecer intensidad mínima",
+      "description": "Establece el límite inferior de la carga dinámica.",
+      "fields": {
+        "min_intensity": {
+          "name": "Intensidad mínima",
+          "description": "Intensidad mínima entre 6 y 32 amperios."
+        },
+        "config_entry_id": {
+          "name": "Cargador",
+          "description": "Cargador que se controlará. Es opcional si solo hay uno configurado."
+        }
+      }
+    },
+    "set_max_intensity": {
+      "name": "Establecer intensidad máxima",
+      "description": "Establece el límite superior de la carga dinámica.",
+      "fields": {
+        "max_intensity": {
+          "name": "Intensidad máxima",
+          "description": "Intensidad máxima entre 6 y 32 amperios."
+        },
+        "config_entry_id": {
+          "name": "Cargador",
+          "description": "Cargador que se controlará. Es opcional si solo hay uno configurado."
+        }
+      }
+    },
+    "set_dynamic_power_mode": {
+      "name": "Establecer modo de potencia dinámica",
+      "description": "Cambia la estrategia de potencia dinámica del cargador.",
+      "fields": {
+        "dynamic_power_mode": {
+          "name": "Modo",
+          "description": "Modo de potencia dinámica entre 0 y 5."
+        },
+        "config_entry_id": {
+          "name": "Cargador",
+          "description": "Cargador que se controlará. Es opcional si solo hay uno configurado."
+        }
+      }
+    }
+  },
+  "selector": {
+    "dynamic_power_mode": {
+      "options": {
+        "0": "Activar potencia temporizada",
+        "1": "Desactivar potencia temporizada",
+        "2": "Modo exclusivo (solo FV)",
+        "3": "Modo de potencia mínima",
+        "4": "Modo red y FV",
+        "5": "Modo parada"
+      }
     }
   },
   "entity": {
     "binary_sensor": {
       "connected": { "name": "Manguera Conectada" },
       "charging": { "name": "Cargando" },
-      "ready": { "name": "Listo para Cargar" }
+      "ready": { "name": "Listo para Cargar" },
+      "meter_problem": { "name": "Problema del Medidor" }
+    },
+    "button": {
+      "reset_session_energy": { "name": "Reiniciar Estadísticas de Sesión" }
     },
     "sensor": {
       "chargepower": { "name": "Potencia de Carga" },
       "chargeenergy": { "name": "Energía de Carga" },
+      "session_energy": { "name": "Energía de la Sesión" },
+      "session_active_time": { "name": "Tiempo Activo de la Sesión" },
       "chargestate": {
         "name": "Estado de Carga",
         "state": {
@@ -33,8 +119,9 @@
           "1": "Manguera conectada (sin carga)",
           "2": "Manguera conectada (cargando)",
           "3": "Error",
-          "4": "No disponible (OCPP)",
-          "5": "Desconocido"
+          "4": "Fallo del sistema o cortocircuito del piloto",
+          "5": "Fallo del piloto de control, tierra o general",
+          "6": "Ventilación necesaria"
         }
       },
       "chargetime": { "name": "Tiempo de Carga" },
@@ -51,7 +138,47 @@
       "locked": { "name": "Cargador Bloqueado" },
       "paused": { "name": "Carga Pausada" },
       "pausedynamic": { "name": "Pausa Dinámica" },
-      "slaveerror": { "name": "Error de Medidor" },
+      "slaveerror": { "name": "Código de Error del Medidor" },
+      "meter_error": {
+        "name": "Error del Medidor",
+        "state": {
+          "0": "Sin error",
+          "1": "Error de comunicación",
+          "2": "Error de lectura",
+          "3": "Error del medidor",
+          "4": "Esperando Wi-Fi",
+          "5": "Esperando comunicación",
+          "6": "Dirección IP incorrecta",
+          "7": "Medidor no encontrado",
+          "8": "Medidor incorrecto",
+          "9": "Sin respuesta",
+          "10": "Pinza no conectada",
+          "21": "Función no permitida",
+          "22": "Dirección de datos no permitida",
+          "23": "Valor de datos no permitido",
+          "24": "Fallo del dispositivo servidor",
+          "25": "Confirmado",
+          "26": "Dispositivo servidor ocupado",
+          "27": "Confirmación negativa",
+          "28": "Error de paridad de memoria",
+          "30": "Ruta de pasarela no disponible",
+          "31": "Destino de pasarela sin respuesta",
+          "32": "Tiempo de espera RTU agotado",
+          "245": "Servidor no válido",
+          "246": "Error CRC",
+          "247": "Función no coincidente",
+          "248": "ID de servidor no coincidente",
+          "249": "Longitud de paquete incorrecta",
+          "250": "Número de parámetros incorrecto",
+          "251": "Límite de parámetros incorrecto",
+          "252": "Cola de solicitudes llena",
+          "253": "Dirección IP o puerto no permitido",
+          "254": "Falló la conexión IP",
+          "255": "Cabecera TCP no coincidente",
+          "256": "Mensaje vacío",
+          "257": "Error no definido"
+        }
+      },
       "timer": { "name": "Temporizador" },
       "firmware_version": { "name": "Versión de Firmware" },
       "ip": { "name": "Dirección IP" },
@@ -63,7 +190,9 @@
     "switch": {
       "dynamic": { "name": "Carga Dinámica" },
       "paused": { "name": "Pausar Carga" },
-      "locked": { "name": "Bloquear Cargador" }
+      "locked": { "name": "Bloquear Cargador" },
+      "timer": { "name": "Temporizador de Carga" },
+      "pause_dynamic": { "name": "Pausar Modulación Dinámica" }
     },
     "number": {
       "max_intensity": { "name": "Intensidad Máxima" },

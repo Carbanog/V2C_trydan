@@ -1,0 +1,56 @@
+# Replace entity IDs if Home Assistant generated different names in your system.
+type: vertical-stack
+cards:
+  - type: heading
+    heading: Cargador V2C Trydan
+    icon: mdi:ev-station
+  - type: grid
+    columns: 2
+    square: false
+    cards:
+      - type: tile
+        entity: sensor.v2c_trydan_estado_de_carga
+        name: Estado
+      - type: tile
+        entity: sensor.v2c_trydan_potencia_de_carga
+        name: Potencia de carga
+      - type: tile
+        entity: sensor.v2c_trydan_energia_de_la_sesion
+        name: Energía de la sesión
+      - type: tile
+        entity: sensor.v2c_trydan_tiempo_activo_de_la_sesion
+        name: Tiempo activo
+      - type: tile
+        entity: binary_sensor.v2c_trydan_manguera_conectada
+        name: Manguera
+      - type: tile
+        entity: binary_sensor.v2c_trydan_cargando
+        name: Cargando
+  - type: history-graph
+    title: Potencia durante las últimas 8 horas
+    hours_to_show: 8
+    entities:
+      - entity: sensor.v2c_trydan_potencia_de_casa
+        name: Vivienda
+      - entity: sensor.v2c_trydan_potencia_de_carga
+        name: Coche
+  - type: entities
+    title: Controles
+    show_header_toggle: false
+    entities:
+      - entity: switch.v2c_trydan_pausar_carga
+        name: Pausa manual
+      - entity: switch.v2c_trydan_bloquear_cargador
+        name: Bloqueo
+      - entity: number.v2c_trydan_intensidad_de_carga
+        name: Intensidad
+  - type: conditional
+    conditions:
+      - condition: state
+        entity: binary_sensor.v2c_trydan_problema_del_medidor
+        state: "on"
+    card:
+      type: tile
+      entity: binary_sensor.v2c_trydan_problema_del_medidor
+      name: Revisar medidor del cargador
+      color: red

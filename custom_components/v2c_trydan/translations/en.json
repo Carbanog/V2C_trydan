@@ -7,25 +7,111 @@
         "data": {
           "ip_address": "IP Address"
         }
+      },
+      "reconfigure": {
+        "title": "Update V2C Trydan address",
+        "description": "Enter the charger's new static IP address.",
+        "data": {
+          "ip_address": "IP Address"
+        }
       }
     },
     "error": {
       "cannot_connect": "Could not connect to device",
+      "invalid_ip": "Enter a valid IPv4 or IPv6 address",
+      "invalid_response": "A device responded, but it was not a compatible V2C Trydan charger",
       "unknown": "An unexpected error occurred"
     },
     "abort": {
-      "already_configured": "This device is already configured"
+      "already_configured": "This device is already configured",
+      "reconfigure_successful": "The charger address was updated"
+    }
+  },
+  "services": {
+    "set_intensity": {
+      "name": "Set charge intensity",
+      "description": "Sets the manual charging current.",
+      "fields": {
+        "intensity": {
+          "name": "Intensity",
+          "description": "Charging current between 6 and 32 amperes."
+        },
+        "config_entry_id": {
+          "name": "Charger",
+          "description": "Charger to control. Optional when only one is configured."
+        }
+      }
+    },
+    "set_min_intensity": {
+      "name": "Set minimum intensity",
+      "description": "Sets the lower current limit for dynamic charging.",
+      "fields": {
+        "min_intensity": {
+          "name": "Minimum intensity",
+          "description": "Minimum current between 6 and 32 amperes."
+        },
+        "config_entry_id": {
+          "name": "Charger",
+          "description": "Charger to control. Optional when only one is configured."
+        }
+      }
+    },
+    "set_max_intensity": {
+      "name": "Set maximum intensity",
+      "description": "Sets the upper current limit for dynamic charging.",
+      "fields": {
+        "max_intensity": {
+          "name": "Maximum intensity",
+          "description": "Maximum current between 6 and 32 amperes."
+        },
+        "config_entry_id": {
+          "name": "Charger",
+          "description": "Charger to control. Optional when only one is configured."
+        }
+      }
+    },
+    "set_dynamic_power_mode": {
+      "name": "Set dynamic power mode",
+      "description": "Changes the charger's dynamic power strategy.",
+      "fields": {
+        "dynamic_power_mode": {
+          "name": "Mode",
+          "description": "Dynamic power mode between 0 and 5."
+        },
+        "config_entry_id": {
+          "name": "Charger",
+          "description": "Charger to control. Optional when only one is configured."
+        }
+      }
+    }
+  },
+  "selector": {
+    "dynamic_power_mode": {
+      "options": {
+        "0": "Enable timed power",
+        "1": "Disable timed power",
+        "2": "Exclusive mode (PV only)",
+        "3": "Minimum power mode",
+        "4": "Grid and PV mode",
+        "5": "Stop mode"
+      }
     }
   },
   "entity": {
     "binary_sensor": {
       "connected": { "name": "Cable Connected" },
       "charging": { "name": "Charging" },
-      "ready": { "name": "Ready to Charge" }
+      "ready": { "name": "Ready to Charge" },
+      "meter_problem": { "name": "Meter Problem" }
+    },
+    "button": {
+      "reset_session_energy": { "name": "Reset Session Statistics" }
     },
     "sensor": {
       "chargepower": { "name": "Charge Power" },
       "chargeenergy": { "name": "Charge Energy" },
+      "session_energy": { "name": "Session Energy" },
+      "session_active_time": { "name": "Session Active Charging Time" },
       "chargestate": {
         "name": "Charge State",
         "state": {
@@ -33,8 +119,9 @@
           "1": "Hose connected (not charging)",
           "2": "Hose connected (charging)",
           "3": "Error",
-          "4": "Unavailable (OCPP)",
-          "5": "Unknown"
+          "4": "System failure or pilot short",
+          "5": "Control pilot, ground, or general fault",
+          "6": "Ventilation required"
         }
       },
       "chargetime": { "name": "Charge Time" },
@@ -51,7 +138,47 @@
       "locked": { "name": "Charger Locked" },
       "paused": { "name": "Charge Paused" },
       "pausedynamic": { "name": "Dynamic Pause" },
-      "slaveerror": { "name": "Meter Error" },
+      "slaveerror": { "name": "Meter Error Code" },
+      "meter_error": {
+        "name": "Meter Error",
+        "state": {
+          "0": "No error",
+          "1": "Communication error",
+          "2": "Reading error",
+          "3": "Meter error",
+          "4": "Waiting for Wi-Fi",
+          "5": "Waiting for communication",
+          "6": "Wrong IP address",
+          "7": "Meter not found",
+          "8": "Wrong meter",
+          "9": "No response",
+          "10": "Clamp not connected",
+          "21": "Illegal function",
+          "22": "Illegal data address",
+          "23": "Illegal data value",
+          "24": "Server device failure",
+          "25": "Acknowledged",
+          "26": "Server device busy",
+          "27": "Negative acknowledgement",
+          "28": "Memory parity error",
+          "30": "Gateway path unavailable",
+          "31": "Gateway target not responding",
+          "32": "RTU timeout",
+          "245": "Invalid server",
+          "246": "CRC error",
+          "247": "Function mismatch",
+          "248": "Server ID mismatch",
+          "249": "Packet length error",
+          "250": "Parameter count error",
+          "251": "Parameter limit error",
+          "252": "Request queue full",
+          "253": "Illegal IP address or port",
+          "254": "IP connection failed",
+          "255": "TCP header mismatch",
+          "256": "Empty message",
+          "257": "Undefined error"
+        }
+      },
       "timer": { "name": "Timer" },
       "firmware_version": { "name": "Firmware Version" },
       "ip": { "name": "IP Address" },
@@ -63,7 +190,9 @@
     "switch": {
       "dynamic": { "name": "Dynamic Charge" },
       "paused": { "name": "Pause Charge" },
-      "locked": { "name": "Lock Charger" }
+      "locked": { "name": "Lock Charger" },
+      "timer": { "name": "Charge Timer" },
+      "pause_dynamic": { "name": "Pause Dynamic Modulation" }
     },
     "number": {
       "max_intensity": { "name": "Maximum Intensity" },

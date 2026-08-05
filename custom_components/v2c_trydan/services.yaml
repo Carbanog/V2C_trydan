@@ -1,10 +1,6 @@
 set_intensity:
-  name: Establecer Intensidad de Carga
-  description: Establece la intensidad de carga del cargador V2C Trydan
   fields:
     intensity:
-      name: Intensidad
-      description: Intensidad de carga en amperios (entre 6 y 32)
       required: true
       selector:
         number:
@@ -13,14 +9,15 @@ set_intensity:
           step: 1
           unit_of_measurement: A
           mode: slider
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: v2c_trydan
 
 set_min_intensity:
-  name: Establecer Intensidad Mínima
-  description: Establece la intensidad mínima de carga del cargador V2C Trydan
   fields:
     min_intensity:
-      name: Intensidad Mínima
-      description: Intensidad mínima en amperios (entre 6 y 32)
       required: true
       selector:
         number:
@@ -29,14 +26,15 @@ set_min_intensity:
           step: 1
           unit_of_measurement: A
           mode: slider
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: v2c_trydan
 
 set_max_intensity:
-  name: Establecer Intensidad Máxima
-  description: Establece la intensidad máxima de carga del cargador V2C Trydan
   fields:
     max_intensity:
-      name: Intensidad Máxima
-      description: Intensidad máxima en amperios (entre 6 y 32)
       required: true
       selector:
         number:
@@ -45,27 +43,28 @@ set_max_intensity:
           step: 1
           unit_of_measurement: A
           mode: slider
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: v2c_trydan
 
 set_dynamic_power_mode:
-  name: Establecer Modo de Potencia Dinámica
-  description: Establece el modo de potencia dinámica del cargador V2C Trydan
   fields:
-    DynamicPowerMode:
-      name: Modo
-      description: Modo de potencia dinámica (entre 0 y 5)
+    dynamic_power_mode:
       required: true
       selector:
         select:
+          translation_key: dynamic_power_mode
           options:
-            - label: "Activar Potencia Temporizada"
-              value: "0"
-            - label: "Desactivar Potencia Temporizada"
-              value: "1"
-            - label: "Modo Exclusivo"
-              value: "2"
-            - label: "Modo Potencia Mínima"
-              value: "3"
-            - label: "Modo Red+FV"
-              value: "4"
-            - label: "Modo Parada"
-              value: "5"
+            - "0"
+            - "1"
+            - "2"
+            - "3"
+            - "4"
+            - "5"
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: v2c_trydan
