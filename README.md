@@ -31,6 +31,12 @@ serialized requests and graceful handling of temporary failures.
 
 ## Installation
 
+[![Open this repository in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Carbanog&repository=V2C_trydan&category=integration)
+
+The button opens this custom repository directly in HACS. Select **Download**,
+restart Home Assistant, and continue from step 3. If the link cannot open your
+instance, use the manual procedure:
+
 1. Add `https://github.com/Carbanog/V2C_trydan` to HACS as a custom
    **Integration** repository.
 2. Install V2C Trydan and restart Home Assistant.

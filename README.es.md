@@ -31,6 +31,12 @@ necesitan peticiones espaciadas, serializadas y tolerantes a fallos puntuales.
 
 ## Instalación
 
+[![Abrir este repositorio en HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Carbanog&repository=V2C_trydan&category=integration)
+
+El botón abre directamente este repositorio personalizado dentro de HACS. Pulsa
+**Descargar**, reinicia Home Assistant y continúa desde el paso 3. Si el enlace
+no puede abrir tu instancia, utiliza el procedimiento manual:
+
 1. En HACS, añade `https://github.com/Carbanog/V2C_trydan` como repositorio
    personalizado de tipo **Integración**.
 2. Instala V2C Trydan y reinicia Home Assistant.
