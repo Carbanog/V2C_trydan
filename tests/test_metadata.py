@@ -238,3 +238,15 @@ def test_blueprint_release_links_are_current_and_documented() -> None:
             readme = (ROOT / readme_name).read_text(encoding="utf-8")
             assert f"blueprints/automation/{path.name}" in readme
             assert f"v{version}%2Fblueprints%2Fautomation%2F{path.name}" in readme
+
+
+def test_hacs_install_link_is_available_in_both_readmes() -> None:
+    """Keep the one-click custom-repository installation path discoverable."""
+    install_url = (
+        "https://my.home-assistant.io/redirect/hacs_repository/"
+        "?owner=Carbanog&repository=V2C_trydan&category=integration"
+    )
+    for readme_name in ("README.md", "README.es.md"):
+        readme = (ROOT / readme_name).read_text(encoding="utf-8")
+        assert "https://my.home-assistant.io/badges/hacs_repository.svg" in readme
+        assert install_url in readme
