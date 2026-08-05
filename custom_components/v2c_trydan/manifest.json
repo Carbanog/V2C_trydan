@@ -1,7 +1,6 @@
 {
   "domain": "v2c_trydan",
   "name": "V2C Trydan",
-  "after_dependencies": ["network"],
   "codeowners": ["@Carbanog"],
   "config_flow": true,
   "dependencies": [],
@@ -9,7 +8,6 @@
   "integration_type": "device",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/Carbanog/V2C_trydan/issues",
-  "quality_scale": "internal",
-  "requirements": ["aiohttp>=3.9.0"],
-  "version": "1.2.2"
+  "requirements": [],
+  "version": "1.3.0"
 }

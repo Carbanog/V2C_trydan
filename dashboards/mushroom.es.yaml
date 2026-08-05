@@ -1,0 +1,85 @@
+# Requires Mushroom and Mini Graph Card. Replace IDs generated differently.
+type: vertical-stack
+cards:
+  - type: heading
+    heading: Cargador V2C Trydan
+    icon: mdi:ev-station
+  - type: horizontal-stack
+    cards:
+      - type: custom:mushroom-entity-card
+        entity: sensor.v2c_trydan_potencia_de_casa
+        name: Vivienda
+        icon: mdi:home-lightning-bolt
+        icon_color: blue
+      - type: custom:mushroom-entity-card
+        entity: sensor.v2c_trydan_potencia_de_carga
+        name: Coche
+        icon: mdi:ev-station
+        icon_color: green
+  - type: custom:mushroom-template-card
+    entity: sensor.v2c_trydan_estado_de_carga
+    primary: >-
+      {% if is_state('binary_sensor.v2c_trydan_cargando', 'on') %}
+        Cargando a {{ states('sensor.v2c_trydan_potencia_de_carga') }} W
+      {% elif is_state('binary_sensor.v2c_trydan_manguera_conectada', 'on') %}
+        Conectado · En espera
+      {% else %}
+        Manguera desconectada
+      {% endif %}
+    secondary: >-
+      {% set tiempo = 'sensor.v2c_trydan_tiempo_activo_de_la_sesion' %}
+      {% set factores = {'ms': 0.001, 's': 1, 'min': 60,
+                         'h': 3600, 'd': 86400} %}
+      {% set segundos = (states(tiempo) | float(0) *
+          factores.get(state_attr(tiempo, 'unit_of_measurement'), 1)) | int %}
+      {% set horas = segundos // 3600 %}
+      {% set minutos = (segundos % 3600) // 60 %}
+      Sesión: {{ states('sensor.v2c_trydan_energia_de_la_sesion') }} kWh ·
+      {{ horas }} h {{ '%02d' | format(minutos) }} min ·
+      {{ states('number.v2c_trydan_intensidad_de_carga') }} A
+    icon: mdi:car-electric
+    icon_color: >-
+      {% if is_state('binary_sensor.v2c_trydan_cargando', 'on') %}green
+      {% elif is_state('binary_sensor.v2c_trydan_manguera_conectada', 'on') %}blue
+      {% else %}grey{% endif %}
+    tap_action:
+      action: more-info
+  - type: custom:mini-graph-card
+    name: Potencia durante las últimas 8 horas
+    hours_to_show: 8
+    points_per_hour: 12
+    line_width: 3
+    entities:
+      - entity: sensor.v2c_trydan_potencia_de_casa
+        name: Vivienda
+        color: "#3498db"
+      - entity: sensor.v2c_trydan_potencia_de_carga
+        name: Coche
+        color: "#2ecc71"
+    show:
+      extrema: true
+      fill: fade
+  - type: entities
+    title: Controles y sesión
+    show_header_toggle: false
+    entities:
+      - entity: sensor.v2c_trydan_energia_de_la_sesion
+        name: Energía acumulada
+      - entity: sensor.v2c_trydan_tiempo_activo_de_la_sesion
+        name: Tiempo activo acumulado
+      - entity: switch.v2c_trydan_pausar_carga
+        name: Pausa manual
+      - entity: switch.v2c_trydan_bloquear_cargador
+        name: Bloqueo
+      - entity: number.v2c_trydan_intensidad_de_carga
+        name: Intensidad
+  - type: conditional
+    conditions:
+      - condition: state
+        entity: binary_sensor.v2c_trydan_problema_del_medidor
+        state: "on"
+    card:
+      type: custom:mushroom-entity-card
+      entity: binary_sensor.v2c_trydan_problema_del_medidor
+      name: Problema en el medidor
+      icon_color: red
