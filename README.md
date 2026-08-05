@@ -89,6 +89,11 @@ from every segment while the cable remains connected. They retain the finished
 totals after disconnection for delayed summary automations, reset at the next
 vehicle connection, and periodically persist independently of Recorder.
 
+Time remains stored internally in seconds, while new installations display it in
+hours with two decimals. If the entity was already created by `1.3.0b5`, Home
+Assistant preserves its previous unit: open the entity settings and change
+**Unit of measurement** from `s` to `h`. This does not reset its value or history.
+
 The disabled-by-default `Reset Session Statistics` button handles exceptional
 manual correction without recounting the current raw baselines.
 
@@ -98,14 +103,57 @@ manual correction without recounting the current raw baselines.
 
 ## Reusable automations
 
-Blueprints are never installed or enabled automatically. Import them through
-**Settings → Automations & scenes → Blueprints → Import blueprint**:
+Blueprints live in the repository's
+[`blueprints/automation`](blueprints/automation) directory. They are never
+installed or enabled automatically. Import them through **Settings → Automations
+& scenes → Blueprints → Import blueprint**, or use the direct buttons below.
 
-- [Session summary and notifications](blueprints/automation/session_summary.yaml)
-  exposes variables for kWh, active time, estimated percentage added, cost, and
-  range.
-- [High charging power alert](blueprints/automation/high_power_alert.yaml) has a
-  configurable threshold, duration, and action sequence.
+### Session summary and notifications
+
+[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.0b6%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
+
+- [View or copy the YAML](blueprints/automation/session_summary.yaml).
+- Runs actions on the first charging start and two minutes after disconnect,
+  without repeating notifications for OCPP pauses.
+- Finish actions can use `session_kwh`, `session_seconds`, `session_hours`,
+  `session_duration`, `estimated_percent`, `estimated_cost`, and
+  `estimated_range_km`.
+
+Example **Session finished actions** block (replace the notification service):
+
+```yaml
+action: notify.mobile_app_your_phone
+data:
+  title: Car charging finished
+  message: >-
+    Added {{ session_kwh }} kWh in {{ session_duration }}.
+    {% if estimated_percent is not none %}
+      Estimated battery added: {{ estimated_percent }}%.
+    {% endif %}
+    {% if estimated_cost is not none %}
+      Estimated cost: €{{ estimated_cost }}.
+    {% endif %}
+```
+
+### High charging power alert
+
+[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.0b6%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
+
+- [View or copy the YAML](blueprints/automation/high_power_alert.yaml).
+- Runs an action after charging power exceeds the configured threshold for the
+  selected duration and exposes `measured_power`.
+
+Example **Alert actions** block:
+
+```yaml
+action: notify.mobile_app_your_phone
+data:
+  title: High charging power
+  message: The car is charging at {{ measured_power | round(0) }} W.
+```
+
+In the blueprint action selector, create these notifications in the UI or choose
+**Edit in YAML** and paste the relevant block.
 
 Battery capacity, efficiency, price, and range describe the vehicle or tariff,
 not the charger. They therefore belong to the optional blueprint rather than the

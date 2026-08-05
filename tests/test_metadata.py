@@ -130,6 +130,15 @@ def test_statistics_state_classes_do_not_regress() -> None:
     assert (
         ast.unparse(session_time["state_class"]) == "SensorStateClass.TOTAL_INCREASING"
     )
+    assert (
+        ast.unparse(session_time["native_unit_of_measurement"]) == "UnitOfTime.SECONDS"
+    )
+    assert (
+        ast.unparse(session_time["suggested_unit_of_measurement"]) == "UnitOfTime.HOURS"
+    )
+    precision = session_time["suggested_display_precision"]
+    assert isinstance(precision, ast.Constant)
+    assert precision.value == 2
 
 
 def test_session_energy_uses_two_display_decimals() -> None:
@@ -212,3 +221,20 @@ def test_retired_light_platform_is_not_loaded() -> None:
     assert "Platform.LIGHT" not in ast.unparse(platforms_assignment)
     assert not (INTEGRATION / "light.py").exists()
     assert "_remove_retired_beta_lights" in init_source
+
+
+def test_blueprint_release_links_are_current_and_documented() -> None:
+    """Import links must target the released files and remain discoverable."""
+    manifest = json.loads((INTEGRATION / "manifest.json").read_text(encoding="utf-8"))
+    version = manifest["version"]
+    blueprint_paths = tuple(ROOT.glob("blueprints/automation/*.yaml"))
+    for path in blueprint_paths:
+        blueprint = yaml.load(path.read_text(encoding="utf-8"), Loader=_BlueprintLoader)
+        assert (
+            f"/blob/v{version}/blueprints/automation/{path.name}"
+            in blueprint["blueprint"]["source_url"]
+        )
+        for readme_name in ("README.md", "README.es.md"):
+            readme = (ROOT / readme_name).read_text(encoding="utf-8")
+            assert f"blueprints/automation/{path.name}" in readme
+            assert f"v{version}%2Fblueprints%2Fautomation%2F{path.name}" in readme

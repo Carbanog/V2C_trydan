@@ -27,8 +27,16 @@ cards:
         Cable disconnected
       {% endif %}
     secondary: >-
+      {% set duration = 'sensor.v2c_trydan_session_active_charging_time' %}
+      {% set factors = {'ms': 0.001, 's': 1, 'min': 60,
+                        'h': 3600, 'd': 86400} %}
+      {% set seconds = (states(duration) | float(0) *
+          factors.get(state_attr(duration, 'unit_of_measurement'), 1)) | int %}
+      {% set hours = seconds // 3600 %}
+      {% set minutes = (seconds % 3600) // 60 %}
       Session: {{ states('sensor.v2c_trydan_session_energy') }} kWh ·
-      Current: {{ states('number.v2c_trydan_charge_intensity') }} A
+      {{ hours }} h {{ '%02d' | format(minutes) }} min ·
+      {{ states('number.v2c_trydan_charge_intensity') }} A
     icon: mdi:car-electric
     icon_color: >-
       {% if is_state('binary_sensor.v2c_trydan_charging', 'on') %}green
