@@ -181,9 +181,9 @@ dashboard automatically.
 
 | Native dashboard | Mushroom dashboard |
 | :---: | :---: |
-| _Reserved for the first screenshot_ | _Reserved for the second screenshot_ |
+| [![Native Home Assistant dashboard](docs/images/dashboard-native.png)](docs/images/dashboard-native.png) | [![Mushroom dashboard](docs/images/dashboard-mushroom.png)](docs/images/dashboard-mushroom.png) |
 
-The final screenshots can be added here without restructuring the document.
+Select either screenshot to open it at its original size.
 
 ## Compatibility actions
 
