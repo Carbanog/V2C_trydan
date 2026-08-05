@@ -170,12 +170,8 @@ vehicle-reported state of charge.
 
 - [Native dashboard](dashboards/native.en.yaml) uses built-in Home Assistant
   cards only.
-  <img width="523" height="814" alt="Captura de pantalla 2026-08-05 102806" src="https://github.com/user-attachments/assets/c6488f12-9116-4402-a14b-8c9d028575ec" />
-
 - [Mushroom dashboard](dashboards/mushroom.en.yaml) requires Mushroom and Mini
   Graph Card.
-  <img width="505" height="821" alt="Captura de pantalla 2026-08-05 102824" src="https://github.com/user-attachments/assets/e4108878-e9bd-4c38-aa75-fc7f4751eaea" />
-
 
 Paste a selected example into a manual dashboard card and adjust entity IDs if
 Home Assistant generated different names. The integration never changes a
@@ -185,9 +181,9 @@ dashboard automatically.
 
 | Native dashboard | Mushroom dashboard |
 | :---: | :---: |
-| _Reserved for the first screenshot_ | _Reserved for the second screenshot_ |
+| [![Native Home Assistant dashboard](docs/images/dashboard-native.png)](docs/images/dashboard-native.png) | [![Mushroom dashboard](docs/images/dashboard-mushroom.png)](docs/images/dashboard-mushroom.png) |
 
-The final screenshots can be added here without restructuring the document.
+Select either screenshot to open it at its original size.
 
 ## Compatibility actions
 

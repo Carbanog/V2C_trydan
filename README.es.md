@@ -183,10 +183,9 @@ automáticamente.
 
 | Panel nativo | Panel Mushroom |
 | :---: | :---: |
-| _Espacio reservado para la primera captura_ | _Espacio reservado para la segunda captura_ |
+| [![Panel nativo de Home Assistant](docs/images/dashboard-native.png)](docs/images/dashboard-native.png) | [![Panel Mushroom](docs/images/dashboard-mushroom.png)](docs/images/dashboard-mushroom.png) |
 
-Las capturas definitivas se añadirán aquí sin cambiar la estructura del
-documento.
+Pulsa cualquiera de las capturas para abrirla a tamaño original.
 
 ## Acciones compatibles
 

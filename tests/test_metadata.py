@@ -250,3 +250,15 @@ def test_hacs_install_link_is_available_in_both_readmes() -> None:
         readme = (ROOT / readme_name).read_text(encoding="utf-8")
         assert "https://my.home-assistant.io/badges/hacs_repository.svg" in readme
         assert install_url in readme
+
+
+def test_dashboard_screenshots_are_local_and_documented() -> None:
+    """Keep README screenshots self-contained instead of hot-linking attachments."""
+    for image_name in ("dashboard-native.png", "dashboard-mushroom.png"):
+        relative_path = f"docs/images/{image_name}"
+        image_path = ROOT / relative_path
+        assert image_path.is_file()
+        assert image_path.stat().st_size > 0
+        for readme_name in ("README.md", "README.es.md"):
+            readme = (ROOT / readme_name).read_text(encoding="utf-8")
+            assert relative_path in readme
