@@ -8,7 +8,7 @@ blueprint:
     repeated start notifications because the start path is tied to a new cable
     connection.
   domain: automation
-  source_url: https://github.com/Carbanog/V2C_trydan/blob/v1.3.0b6/blueprints/automation/session_summary.yaml
+  source_url: https://github.com/Carbanog/V2C_trydan/blob/v1.3.0/blueprints/automation/session_summary.yaml
   homeassistant:
     min_version: 2024.10.0
   input:

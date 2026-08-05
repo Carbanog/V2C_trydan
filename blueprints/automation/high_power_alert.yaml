@@ -4,7 +4,7 @@ blueprint:
     Runs configurable actions when charging power remains above a chosen safety
     threshold. The measured_power variable is available to action templates.
   domain: automation
-  source_url: https://github.com/Carbanog/V2C_trydan/blob/v1.3.0b6/blueprints/automation/high_power_alert.yaml
+  source_url: https://github.com/Carbanog/V2C_trydan/blob/v1.3.0/blueprints/automation/high_power_alert.yaml
   homeassistant:
     min_version: 2024.10.0
   input:

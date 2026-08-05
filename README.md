@@ -110,7 +110,7 @@ installed or enabled automatically. Import them through **Settings → Automatio
 
 ### Session summary and notifications
 
-[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.0b6%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
+[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.0%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
 
 - [View or copy the YAML](blueprints/automation/session_summary.yaml).
 - Runs actions on the first charging start and two minutes after disconnect,
@@ -137,7 +137,7 @@ data:
 
 ### High charging power alert
 
-[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.0b6%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
+[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.0%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
 
 - [View or copy the YAML](blueprints/automation/high_power_alert.yaml).
 - Runs an action after charging power exceeds the configured threshold for the
@@ -170,6 +170,14 @@ vehicle-reported state of charge.
 Paste a selected example into a manual dashboard card and adjust entity IDs if
 Home Assistant generated different names. The integration never changes a
 dashboard automatically.
+
+### Screenshots
+
+| Native dashboard | Mushroom dashboard |
+| :---: | :---: |
+| _Reserved for the first screenshot_ | _Reserved for the second screenshot_ |
+
+The final screenshots can be added here without restructuring the document.
 
 ## Compatibility actions
 

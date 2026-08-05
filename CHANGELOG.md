@@ -2,6 +2,34 @@
 
 All notable changes to this project are documented here.
 
+## 1.3.0
+
+First stable release of the professionally restructured integration.
+
+### Highlights
+
+* Fully local, coordinated polling with serialized requests, bounded retries,
+  strict response validation, and privacy-safe diagnostics.
+* Persistent whole-session energy and active charging time across OCPP or app
+  pauses, charger counter resets, Home Assistant restarts, and cable
+  disconnection.
+* Focused defaults for everyday use while retaining opt-in installation,
+  dynamic-control, solar, battery, and diagnostic entities.
+* Stable hardware-based identifiers, explicit compatibility migrations, and
+  safe multi-charger actions.
+* Importable automation blueprints, native and Mushroom dashboard examples, and
+  complete English and Spanish documentation.
+
+### Validation
+
+* Session behavior was verified on a physical Trydan running firmware 2.4.6,
+  including Octopus/OCPP pause and resume cycles, Home Assistant restarts,
+  disconnection retention, new-session reset, and manual reset.
+* Experimental light controls were removed before stable release after their
+  state proved inconsistent with the charger and V2C app.
+* The stable candidate passed the complete local test suite plus Python, HACS,
+  and Home Assistant validation in CI.
+
 ## 1.3.0b6
 
 ### Changed
