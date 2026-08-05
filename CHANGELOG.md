@@ -29,6 +29,8 @@ First stable release of the professionally restructured integration.
   state proved inconsistent with the charger and V2C app.
 * The stable candidate passed the complete local test suite plus Python, HACS,
   and Home Assistant validation in CI.
+* GitHub Actions use the current Node 24-based checkout and Python setup actions,
+  avoiding deprecated-runtime warnings in release validation.
 
 ## 1.3.0b6
 
