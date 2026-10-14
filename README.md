@@ -99,10 +99,10 @@ or automatic charging controls.
 This project and Rain1971's integration use the same `v2c_trydan` domain. Do not
 install both implementations side by side in the same HA instance.
 
-After installing a version containing the French translation, choose French in
+After installing version 1.3.2 or later, choose French in
 your HA user profile and restart HA after the integration update. Existing entity
 IDs, customized names, and manually written dashboard titles are not renamed.
-French is not included in the previously published 1.3.1 release.
+French translations do not change charger communication or session tracking.
 
 ### Measured values with firmware 2.5.1
 
@@ -153,7 +153,7 @@ installed or enabled automatically. Import them through **Settings → Automatio
 
 ### Session summary and notifications
 
-[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.1%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
+[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.2%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
 
 - [View or copy the YAML](blueprints/automation/session_summary.yaml).
 - Runs actions on the first charging start and two minutes after disconnect,
@@ -180,7 +180,7 @@ data:
 
 ### High charging power alert
 
-[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.1%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
+[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.2%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
 
 - [View or copy the YAML](blueprints/automation/high_power_alert.yaml).
 - Runs an action after charging power exceeds the configured threshold for the
