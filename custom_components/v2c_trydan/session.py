@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Any
 
-from .utils import value_as_float, value_as_int
+from .utils import cable_connected_from_charge_state, value_as_float
 
 
 @dataclass(slots=True)
@@ -82,10 +82,11 @@ class SessionTracker:
         disconnected to connected starts a new session. While connected, a raw
         counter decrease starts a new segment without discarding earlier ones.
         """
-        parsed_charge_state = value_as_int(charge_state)
-        connected = (
-            parsed_charge_state in (1, 2) if parsed_charge_state is not None else None
-        )
+        connected = cable_connected_from_charge_state(charge_state)
+        if connected is None:
+            # Error-state counters may be stale or cleared. Keeping the last
+            # trustworthy baselines avoids losing or recounting the session.
+            return SessionUpdate(changed=False, connection_changed=False)
         current_energy = _non_negative(raw_energy)
         current_time = _non_negative(raw_time)
         previous_connected = self.state.cable_connected

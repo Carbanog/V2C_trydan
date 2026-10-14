@@ -85,6 +85,21 @@ Se pueden habilitar individualmente en **Ajustes → Dispositivos y servicios �
 Entidades**. Los cambios de valores predeterminados no deshabilitan entidades que
 un usuario ya hubiera activado en una versión anterior.
 
+### Medidas reales con firmware 2.5.1
+
+Si `RealTimeData` incluye `IntensityMeasure_L1` y `VoltageMeasure_L1`, se crean
+**Corriente Medida L1** y **Tensión Medida L1**, deshabilitadas inicialmente y con
+dos decimales. Se habilitan desde la lista de entidades del dispositivo. Son
+medidas reales: no equivalen a la intensidad solicitada ni al voltaje de
+referencia de la instalación. Un cero comunicado por el cargador en reposo se
+conserva como cero.
+
+Las respuestas anonimizadas de firmware 2.4.6 y 2.5.1 se utilizan en las pruebas.
+Los equipos anteriores que no devuelven estos campos no crean esas entidades.
+Tras actualizar el firmware, recarga la integración para detectar los campos
+nuevos. `GridPower`, las fases L2/L3, las luces y `ChargeMode` no añaden controles
+ni entidades en esta actualización.
+
 ## Estadísticas de la sesión
 
 `Energía de Carga` reproduce el valor `ChargeEnergy` del cargador. Algunos
@@ -96,6 +111,10 @@ todos esos tramos mientras la manguera permanece conectada. Los resultados se
 conservan al desconectar para que una automatización pueda leerlos posteriormente
 y se reinician al conectar un nuevo vehículo. Se guardan periódicamente sin
 depender del Recorder.
+
+Los estados de error del cargador no demuestran que se haya desenchufado la
+manguera. Durante ellos el acumulador conserva la sesión y sus últimos contadores
+válidos, sin iniciar una sesión nueva al recuperarse.
 
 El tiempo se conserva internamente en segundos, pero las instalaciones nuevas lo
 mostrarán en horas con dos decimales. Si la entidad ya se creó con `1.3.0b5`,
@@ -118,7 +137,7 @@ o utilizar estos accesos directos:
 
 ### Resumen y avisos de sesión
 
-[![Importar en Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.0%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
+[![Importar en Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.1%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
 
 - [Ver o copiar el YAML](blueprints/automation/session_summary.yaml).
 - Ejecuta acciones al comenzar la primera carga y dos minutos después de
@@ -145,7 +164,7 @@ data:
 
 ### Alerta de potencia elevada
 
-[![Importar en Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.0%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
+[![Importar en Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.1%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
 
 - [Ver o copiar el YAML](blueprints/automation/high_power_alert.yaml).
 - Ejecuta una acción cuando la potencia de carga supera el umbral durante el
@@ -212,7 +231,7 @@ permiten seleccionar el cargador cuando existe más de uno.
 | --- | --- |
 | Actualización principal | 15 segundos |
 | Timeout de lectura | 20 segundos |
-| Reintentos | 3, con 2 segundos entre intentos |
+| Intentos de lectura | Hasta 3 para fallos transitorios, con 2 segundos entre intentos |
 | Concurrencia | Una petición por cargador |
 | Persistencia de sesión | Al cambiar la conexión y durante cargas prolongadas |
 
@@ -229,6 +248,26 @@ con la aplicación V2C. Solo volverán si se puede garantizar un estado coherent
   incidencia; los datos sensibles se ocultan.
 - Consulta [`docs/architecture.md`](docs/architecture.md) para conocer módulos,
   invariantes, compatibilidad y criterios de contribución.
+
+Ante un fallo de comunicación, el aviso indica el número de intentos, su duración
+y la categoría del último error (por ejemplo, timeout, error de conexión o código
+HTTP). Un HTTP 4xx permanente o una respuesta incompleta se informa de inmediato;
+los fallos transitorios se reintentan. Las órdenes requieren la confirmación
+`OK` y no se repiten automáticamente si falla la respuesta.
+
+El informe de diagnóstico incluye `communication`: la última lectura, el último
+fallo aunque ya se haya recuperado, los fallos consecutivos y la última duración
+observada hasta la recuperación. No incluye cuerpos de respuesta ni mensajes
+arbitrarios del transporte. Esa duración es el intervalo observado por HA, no
+una medida exacta del tiempo que estuvo caída la red.
+
+Para investigar un episodio, activa **Habilitar registro de depuración** en el
+menú de la integración, espera al fallo y a su recuperación, y después desactívalo
+y descarga el registro. Los intentos aparecen en DEBUG y la recuperación en INFO;
+sin depuración, INFO puede no aparecer con el nivel habitual de HA. Adjunta también
+el diagnóstico y la versión de HA. Estos datos permitirán distinguir la causa;
+una recuperación automática por sí sola no identifica un problema de red o del
+cargador.
 
 ## Créditos
 

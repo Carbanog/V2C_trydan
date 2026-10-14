@@ -84,6 +84,19 @@ entities relevant to the installation from
 Changing a default never overrides an entity choice already stored by an
 upgrading user.
 
+### Measured values with firmware 2.5.1
+
+When `RealTimeData` includes `IntensityMeasure_L1` and `VoltageMeasure_L1`, the
+integration creates **Measured Current L1** and **Measured Voltage L1**, disabled
+by default and displayed with two decimals. Enable them from the device entity
+list. These are measurements, distinct from the requested current and reference
+installation voltage. Zero values reported while idle remain zero.
+
+Anonymized 2.4.6 and 2.5.1 responses are covered by tests. Older devices without
+these fields do not create these entities. Reload the integration after a firmware
+upgrade to discover new fields. `GridPower`, phases L2/L3, lights, and `ChargeMode`
+do not add entities or controls in this update.
+
 ## Whole-session statistics
 
 `Charge Energy` mirrors the charger's `ChargeEnergy` property. External
@@ -94,6 +107,10 @@ segments and reset that value after a pause.
 from every segment while the cable remains connected. They retain the finished
 totals after disconnection for delayed summary automations, reset at the next
 vehicle connection, and periodically persist independently of Recorder.
+
+Charger fault states do not prove that the cable was unplugged. The accumulator
+retains session totals and the last trustworthy counter baselines during faults,
+without starting a new session when charging recovers.
 
 Time remains stored internally in seconds, while new installations display it in
 hours with two decimals. If the entity was already created by `1.3.0b5`, Home
@@ -116,7 +133,7 @@ installed or enabled automatically. Import them through **Settings → Automatio
 
 ### Session summary and notifications
 
-[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.0%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
+[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.1%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
 
 - [View or copy the YAML](blueprints/automation/session_summary.yaml).
 - Runs actions on the first charging start and two minutes after disconnect,
@@ -143,7 +160,7 @@ data:
 
 ### High charging power alert
 
-[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.0%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
+[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.1%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
 
 - [View or copy the YAML](blueprints/automation/high_power_alert.yaml).
 - Runs an action after charging power exceeds the configured threshold for the
@@ -210,7 +227,7 @@ charger selection in multi-charger installations.
 | --- | --- |
 | Main poll | 15 seconds |
 | Read timeout | 20 seconds |
-| Retries | 3, with a 2-second delay |
+| Read attempts | Up to 3 for transient failures, with a 2-second delay |
 | Concurrency | One in-flight request per charger |
 | Session persistence | On connection changes and during long charges |
 
@@ -226,6 +243,24 @@ state is required before a control can return in a future release.
   sensitive network and identity values are redacted.
 - See [`docs/architecture.md`](docs/architecture.md) for module boundaries,
   invariants, compatibility policy, and contribution guidance.
+
+Communication errors include attempt count, elapsed time, and the last failure
+category (for example, timeout, connection error, or HTTP status). Permanent HTTP
+4xx errors and incomplete payloads fail immediately; transient failures are
+retried. Commands require an `OK` acknowledgement and are never automatically
+repeated after an ambiguous failure.
+
+Diagnostics include `communication`: the latest read, the most recent failed
+read even after recovery, consecutive failures, and the last observed recovery
+duration. Response bodies and arbitrary transport messages are excluded. The
+duration is the window observed by HA, not an exact measurement of network downtime.
+
+To investigate an episode, select **Enable debug logging** from the integration
+menu, wait for the failure and recovery, then disable logging and download the
+log. Attempts use DEBUG and recovery uses INFO; INFO may be hidden at HA's normal
+logging level. Include integration diagnostics and the HA version in the report.
+Automatic recovery alone does not distinguish a charger problem from a network
+problem.
 
 ## Credits
 

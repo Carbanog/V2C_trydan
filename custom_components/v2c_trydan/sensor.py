@@ -35,6 +35,7 @@ class V2CSensorEntityDescription(SensorEntityDescription):
     """Describes a V2C Trydan sensor entity."""
 
     value_fn: Callable[[Mapping[str, Any]], Any]
+    required_key: str | None = None
 
 
 def _rounded_float(value: Any) -> int | None:
@@ -215,6 +216,28 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         value_fn=lambda data: value_as_float(data.get("ContractedPower")),
     ),
     V2CSensorEntityDescription(
+        key="measured_current_l1",
+        translation_key="measured_current_l1",
+        required_key="IntensityMeasure_L1",
+        native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.CURRENT,
+        suggested_display_precision=2,
+        entity_registry_enabled_default=False,
+        value_fn=lambda data: value_as_float(data.get("IntensityMeasure_L1")),
+    ),
+    V2CSensorEntityDescription(
+        key="measured_voltage_l1",
+        translation_key="measured_voltage_l1",
+        required_key="VoltageMeasure_L1",
+        native_unit_of_measurement=UnitOfElectricPotential.VOLT,
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.VOLTAGE,
+        suggested_display_precision=2,
+        entity_registry_enabled_default=False,
+        value_fn=lambda data: value_as_float(data.get("VoltageMeasure_L1")),
+    ),
+    V2CSensorEntityDescription(
         key="dynamic",
         translation_key="dynamic",
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -335,7 +358,10 @@ async def async_setup_entry(
     coordinator = config_entry.runtime_data
 
     async_add_entities(
-        V2CTrydanSensor(coordinator, description) for description in TRYDAN_SENSORS
+        V2CTrydanSensor(coordinator, description)
+        for description in TRYDAN_SENSORS
+        if description.required_key is None
+        or description.required_key in coordinator.data
     )
 
 

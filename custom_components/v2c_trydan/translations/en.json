@@ -132,6 +132,8 @@
       "minintensity": { "name": "Minimum Intensity" },
       "maxintensity": { "name": "Maximum Intensity" },
       "voltageinstallation": { "name": "Installation Voltage" },
+      "measured_current_l1": { "name": "Measured Current L1" },
+      "measured_voltage_l1": { "name": "Measured Voltage L1" },
       "contractedpower": { "name": "Contracted Power" },
       "dynamic": { "name": "Dynamic Charge" },
       "dynamicpowermode": { "name": "Dynamic Power Mode" },

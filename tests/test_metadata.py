@@ -149,6 +149,19 @@ def test_session_energy_uses_two_display_decimals() -> None:
     assert precision.value == 2
 
 
+def test_measured_sensors_use_optional_firmware_fields() -> None:
+    """L1 telemetry must use actual measurements without requiring new firmware."""
+    for entity_key, api_key, unit in (
+        ("measured_current_l1", "IntensityMeasure_L1", "UnitOfElectricCurrent.AMPERE"),
+        ("measured_voltage_l1", "VoltageMeasure_L1", "UnitOfElectricPotential.VOLT"),
+    ):
+        description = _sensor_description_keywords(entity_key)
+        assert ast.literal_eval(description["required_key"]) == api_key
+        assert ast.unparse(description["native_unit_of_measurement"]) == unit
+        assert ast.unparse(description["state_class"]) == "SensorStateClass.MEASUREMENT"
+        assert ast.literal_eval(description["suggested_display_precision"]) == 2
+
+
 def test_default_sensor_surface_remains_focused() -> None:
     """New installs should not enable optional or duplicate readback sensors."""
     tree = ast.parse((INTEGRATION / "sensor.py").read_text(encoding="utf-8"))
@@ -183,6 +196,8 @@ def test_default_sensor_surface_remains_focused() -> None:
         "ip_address",
         "locked",
         "max_intensity",
+        "measured_current_l1",
+        "measured_voltage_l1",
         "meter_error",
         "min_intensity",
         "pause_dynamic",
@@ -203,7 +218,7 @@ def test_manifest_version_matches_latest_changelog() -> None:
     latest_heading = next(
         line.removeprefix("## ")
         for line in changelog.splitlines()
-        if line.startswith("## ")
+        if line.startswith("## ") and line != "## Unreleased"
     )
     assert manifest["version"] == latest_heading
 
