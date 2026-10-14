@@ -137,7 +137,7 @@ o utilizar estos accesos directos:
 
 ### Resumen y avisos de sesión
 
-[![Importar en Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.0%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
+[![Importar en Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.1%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
 
 - [Ver o copiar el YAML](blueprints/automation/session_summary.yaml).
 - Ejecuta acciones al comenzar la primera carga y dos minutos después de
@@ -164,7 +164,7 @@ data:
 
 ### Alerta de potencia elevada
 
-[![Importar en Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.0%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
+[![Importar en Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.1%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
 
 - [Ver o copiar el YAML](blueprints/automation/high_power_alert.yaml).
 - Ejecuta una acción cuando la potencia de carga supera el umbral durante el
