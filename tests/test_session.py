@@ -117,3 +117,38 @@ def test_invalid_persisted_state_is_safely_ignored() -> None:
     )
 
     assert state == SessionState()
+
+
+@pytest.mark.parametrize("fault", (3, 4, 5, 6, 99, None, "invalid"))
+@pytest.mark.parametrize("fault_energy,fault_time", ((0, 0), (1.0, 120), (1.1, 150)))
+def test_fault_does_not_end_or_reset_cable_session(
+    fault: object, fault_energy: float, fault_time: float
+) -> None:
+    """A charger fault does not prove unplugging; ignore its unreliable counters."""
+    tracker = SessionTracker()
+    tracker.update(0, 0, 0)
+    tracker.update(2, 1.0, 120)
+    before_fault = tracker.state.as_dict()
+    result = tracker.update(fault, fault_energy, fault_time)
+    assert not result.changed
+    assert not result.connection_changed
+    assert tracker.state.as_dict() == before_fault
+    tracker.update(2, 1.2, 180)
+    assert tracker.energy == pytest.approx(1.2)
+    assert tracker.active_time == 180
+
+
+def test_counter_reset_during_fault_preserves_completed_segments() -> None:
+    """Recovery may start a new partial counter without starting a cable session."""
+    tracker = SessionTracker()
+    tracker.update(2, 1.0, 120)
+    tracker.update(3, 0, 0)
+    restored = SessionTracker(SessionState.from_dict(tracker.state.as_dict()))
+    restored.update(2, 0.2, 30)
+    assert restored.energy == pytest.approx(1.2)
+    assert restored.active_time == 150
+    restored.update(0, 0.3, 60)
+    assert restored.energy == pytest.approx(1.3)
+    restored.update(1, 0, 0)
+    assert restored.energy == 0
+    assert restored.active_time == 0

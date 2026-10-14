@@ -132,6 +132,8 @@
       "minintensity": { "name": "Intensidad Mínima" },
       "maxintensity": { "name": "Intensidad Máxima" },
       "voltageinstallation": { "name": "Voltaje de Instalación" },
+      "measured_current_l1": { "name": "Corriente Medida L1" },
+      "measured_voltage_l1": { "name": "Tensión Medida L1" },
       "contractedpower": { "name": "Potencia Contratada" },
       "dynamic": { "name": "Carga Dinámica" },
       "dynamicpowermode": { "name": "Modo de Potencia Dinámica" },
