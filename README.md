@@ -28,6 +28,7 @@ serialized requests and graceful handling of temporary failures.
 - UI-based IP reconfiguration without recreating entities.
 - Privacy-safe diagnostics that redact IP, SSID, and hardware identifiers.
 - Optional automation blueprints and dashboard examples.
+- Integration interface translated into English, Spanish, and French.
 
 ## Installation
 
@@ -83,6 +84,25 @@ entities relevant to the installation from
 
 Changing a default never overrides an entity choice already stored by an
 upgrading user.
+
+To enable an optional entity, include disabled entities in the entity list,
+open the required entity, and enable it in its settings. Enabling a configuration
+entity does not change the charger until you use its control.
+
+The former Rain1971 project's kilometre sensor, kilometre charging target,
+maximum-price control, and built-in PVPC scheduling are not part of this
+integration; they are not hidden disabled entities. Its old dashboards may
+therefore reference entities that do not exist here. The session-summary
+blueprint's range/cost estimates are variables for notifications, not entities
+or automatic charging controls.
+
+This project and Rain1971's integration use the same `v2c_trydan` domain. Do not
+install both implementations side by side in the same HA instance.
+
+After installing a version containing the French translation, choose French in
+your HA user profile and restart HA after the integration update. Existing entity
+IDs, customized names, and manually written dashboard titles are not renamed.
+French is not included in the previously published 1.3.1 release.
 
 ### Measured values with firmware 2.5.1
 

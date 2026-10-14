@@ -1,0 +1,218 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configuration V2C Trydan",
+        "description": "Configurez votre borne V2C Trydan en saisissant son adresse IP locale.",
+        "data": {
+          "ip_address": "Adresse IP"
+        }
+      },
+      "reconfigure": {
+        "title": "Modifier l’adresse du V2C Trydan",
+        "description": "Saisissez la nouvelle adresse IP statique de la borne.",
+        "data": {
+          "ip_address": "Adresse IP"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Impossible de se connecter à l’appareil",
+      "invalid_ip": "Saisissez une adresse IPv4 ou IPv6 valide",
+      "invalid_response": "Un appareil a répondu, mais ce n’est pas une borne V2C Trydan compatible",
+      "unknown": "Une erreur inattendue s’est produite"
+    },
+    "abort": {
+      "already_configured": "Cet appareil est déjà configuré",
+      "reconfigure_successful": "L’adresse de la borne a été mise à jour"
+    }
+  },
+  "services": {
+    "set_intensity": {
+      "name": "Régler l’intensité de charge",
+      "description": "Règle l’intensité de charge manuelle.",
+      "fields": {
+        "intensity": {
+          "name": "Intensité",
+          "description": "Intensité de charge comprise entre 6 et 32 ampères."
+        },
+        "config_entry_id": {
+          "name": "Borne",
+          "description": "Borne à commander. Facultatif si une seule borne est configurée."
+        }
+      }
+    },
+    "set_min_intensity": {
+      "name": "Régler l’intensité minimale",
+      "description": "Règle la limite inférieure d’intensité pour la charge dynamique.",
+      "fields": {
+        "min_intensity": {
+          "name": "Intensité minimale",
+          "description": "Intensité minimale comprise entre 6 et 32 ampères."
+        },
+        "config_entry_id": {
+          "name": "Borne",
+          "description": "Borne à commander. Facultatif si une seule borne est configurée."
+        }
+      }
+    },
+    "set_max_intensity": {
+      "name": "Régler l’intensité maximale",
+      "description": "Règle la limite supérieure d’intensité pour la charge dynamique.",
+      "fields": {
+        "max_intensity": {
+          "name": "Intensité maximale",
+          "description": "Intensité maximale comprise entre 6 et 32 ampères."
+        },
+        "config_entry_id": {
+          "name": "Borne",
+          "description": "Borne à commander. Facultatif si une seule borne est configurée."
+        }
+      }
+    },
+    "set_dynamic_power_mode": {
+      "name": "Régler le mode de puissance dynamique",
+      "description": "Modifie la stratégie de puissance dynamique de la borne.",
+      "fields": {
+        "dynamic_power_mode": {
+          "name": "Mode",
+          "description": "Mode de puissance dynamique compris entre 0 et 5."
+        },
+        "config_entry_id": {
+          "name": "Borne",
+          "description": "Borne à commander. Facultatif si une seule borne est configurée."
+        }
+      }
+    }
+  },
+  "selector": {
+    "dynamic_power_mode": {
+      "options": {
+        "0": "Activer la puissance programmée",
+        "1": "Désactiver la puissance programmée",
+        "2": "Mode exclusif (photovoltaïque uniquement)",
+        "3": "Mode puissance minimale",
+        "4": "Mode réseau et photovoltaïque",
+        "5": "Mode arrêt"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "connected": { "name": "Câble connecté" },
+      "charging": { "name": "En charge" },
+      "ready": { "name": "Prêt à charger" },
+      "meter_problem": { "name": "Problème du compteur" }
+    },
+    "button": {
+      "reset_session_energy": { "name": "Réinitialiser les statistiques de session" }
+    },
+    "sensor": {
+      "chargepower": { "name": "Puissance de charge" },
+      "chargeenergy": { "name": "Énergie de charge" },
+      "session_energy": { "name": "Énergie de la session" },
+      "session_active_time": { "name": "Temps de charge actif de la session" },
+      "chargestate": {
+        "name": "État de charge",
+        "state": {
+          "0": "Câble débranché",
+          "1": "Câble branché (sans charge)",
+          "2": "Câble branché (en charge)",
+          "3": "Erreur",
+          "4": "Défaillance du système ou court-circuit du pilote",
+          "5": "Défaut du pilote de contrôle, de terre ou défaut général",
+          "6": "Ventilation nécessaire"
+        }
+      },
+      "chargetime": { "name": "Temps de charge" },
+      "housepower": { "name": "Puissance de la maison" },
+      "fvpower": { "name": "Puissance photovoltaïque" },
+      "batterypower": { "name": "Puissance de la batterie" },
+      "intensity": { "name": "Intensité de charge" },
+      "minintensity": { "name": "Intensité minimale" },
+      "maxintensity": { "name": "Intensité maximale" },
+      "voltageinstallation": { "name": "Tension de l’installation" },
+      "measured_current_l1": { "name": "Courant mesuré L1" },
+      "measured_voltage_l1": { "name": "Tension mesurée L1" },
+      "contractedpower": { "name": "Puissance souscrite" },
+      "dynamic": { "name": "Charge dynamique" },
+      "dynamicpowermode": { "name": "Mode de puissance dynamique" },
+      "locked": { "name": "Borne verrouillée" },
+      "paused": { "name": "Charge en pause" },
+      "pausedynamic": { "name": "Pause de la modulation dynamique" },
+      "slaveerror": { "name": "Code d’erreur du compteur" },
+      "meter_error": {
+        "name": "Erreur du compteur",
+        "state": {
+          "0": "Aucune erreur",
+          "1": "Erreur de communication",
+          "2": "Erreur de lecture",
+          "3": "Erreur du compteur",
+          "4": "En attente du Wi-Fi",
+          "5": "En attente de communication",
+          "6": "Adresse IP incorrecte",
+          "7": "Compteur introuvable",
+          "8": "Compteur incorrect",
+          "9": "Aucune réponse",
+          "10": "Pince non connectée",
+          "21": "Fonction non autorisée",
+          "22": "Adresse de données non autorisée",
+          "23": "Valeur de données non autorisée",
+          "24": "Défaillance de l’appareil serveur",
+          "25": "Acquittement",
+          "26": "Appareil serveur occupé",
+          "27": "Acquittement négatif",
+          "28": "Erreur de parité mémoire",
+          "30": "Chemin de passerelle indisponible",
+          "31": "Cible de la passerelle sans réponse",
+          "32": "Délai d’attente RTU dépassé",
+          "245": "Serveur non valide",
+          "246": "Erreur CRC",
+          "247": "Fonction incohérente",
+          "248": "Identifiant du serveur incohérent",
+          "249": "Longueur du paquet incorrecte",
+          "250": "Nombre de paramètres incorrect",
+          "251": "Limite des paramètres dépassée",
+          "252": "File de requêtes pleine",
+          "253": "Adresse IP ou port non autorisé",
+          "254": "Échec de la connexion IP",
+          "255": "En-tête TCP incohérent",
+          "256": "Message vide",
+          "257": "Erreur non définie"
+        }
+      },
+      "timer": { "name": "Programmateur" },
+      "firmware_version": { "name": "Version du micrologiciel" },
+      "ip": { "name": "Adresse IP" },
+      "ssid": { "name": "Réseau Wi-Fi" },
+      "signalstatus": { "name": "État du signal Wi-Fi" },
+      "id": { "name": "Identifiant de l’appareil" },
+      "readystate": { "name": "État de disponibilité" }
+    },
+    "switch": {
+      "dynamic": { "name": "Charge dynamique" },
+      "paused": { "name": "Mettre en pause la charge" },
+      "locked": { "name": "Verrouiller la borne" },
+      "timer": { "name": "Programmation de charge" },
+      "pause_dynamic": { "name": "Mettre en pause la modulation dynamique" }
+    },
+    "number": {
+      "max_intensity": { "name": "Intensité maximale" },
+      "min_intensity": { "name": "Intensité minimale" },
+      "intensity": { "name": "Intensité de charge" }
+    },
+    "select": {
+      "dynamic_power_mode": {
+        "name": "Mode de puissance dynamique",
+        "state": {
+          "enable_timed_power": "Activer la puissance programmée",
+          "disable_timed_power": "Désactiver la puissance programmée",
+          "disable_timed_power_exclusive": "Mode exclusif (photovoltaïque uniquement)",
+          "disable_timed_power_min": "Mode puissance minimale",
+          "disable_timed_power_grid_fv": "Mode réseau et photovoltaïque",
+          "disable_timed_power_stop": "Mode arrêt"
+        }
+      }
+    }
+  }
+}

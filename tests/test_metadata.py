@@ -7,6 +7,7 @@ import json
 import re
 from pathlib import Path
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).parents[1]
@@ -53,15 +54,28 @@ def _key_shape(value: object) -> object:
     return None
 
 
-def test_translation_files_have_the_same_keys() -> None:
-    """Spanish and English translation structures must not drift."""
+@pytest.mark.parametrize(
+    "language",
+    sorted(path.stem for path in (INTEGRATION / "translations").glob("*.json")),
+)
+def test_translation_files_have_the_same_keys(language: str) -> None:
+    """Every supplied language must cover the complete integration interface."""
     english = json.loads(
         (INTEGRATION / "translations" / "en.json").read_text(encoding="utf-8")
     )
-    spanish = json.loads(
-        (INTEGRATION / "translations" / "es.json").read_text(encoding="utf-8")
+    translated = json.loads(
+        (INTEGRATION / "translations" / f"{language}.json").read_text(encoding="utf-8")
     )
-    assert _key_shape(english) == _key_shape(spanish)
+    assert _key_shape(english) == _key_shape(translated)
+
+    def assert_translated_text(value: object) -> None:
+        if isinstance(value, dict):
+            for child in value.values():
+                assert_translated_text(child)
+        else:
+            assert isinstance(value, str) and value.strip()
+
+    assert_translated_text(translated)
 
 
 def test_service_translation_fields_match_service_metadata() -> None:

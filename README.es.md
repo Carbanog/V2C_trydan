@@ -28,6 +28,7 @@ necesitan peticiones espaciadas, serializadas y tolerantes a fallos puntuales.
 - Cambio de IP desde la interfaz sin recrear entidades ni automatizaciones.
 - Diagnósticos que ocultan IP, SSID e identificadores sensibles.
 - Blueprints y ejemplos de panel opcionales.
+- Interfaz de la integración traducida al español, inglés y francés.
 
 ## Instalación
 
@@ -84,6 +85,27 @@ señal Wi-Fi e identificador del dispositivo.
 Se pueden habilitar individualmente en **Ajustes → Dispositivos y servicios →
 Entidades**. Los cambios de valores predeterminados no deshabilitan entidades que
 un usuario ya hubiera activado en una versión anterior.
+
+Para habilitar una entidad opcional, incluye las deshabilitadas en la lista,
+abre la que necesites y actívala en su configuración. Habilitar una entidad de
+configuración no cambia el cargador hasta que utilices su control.
+
+El sensor de kilómetros, el objetivo de carga en kilómetros, el control de precio
+máximo y la planificación PVPC del proyecto de Rain1971 no forman parte de esta
+integración: no son entidades ocultas o deshabilitadas. Por eso sus paneles
+antiguos pueden referenciar entidades que aquí no existen. Las estimaciones de
+autonomía y coste del blueprint de resumen son variables para las notificaciones,
+no entidades ni controles automáticos de carga.
+
+Este proyecto y la integración de Rain1971 utilizan el mismo dominio
+`v2c_trydan`. No instales ambas implementaciones a la vez en la misma instancia
+de HA.
+
+Después de instalar una versión con la traducción francesa, selecciona francés
+en tu perfil de HA y reinicia HA tras actualizar la integración. No se renombran
+los identificadores existentes, los nombres personalizados ni los títulos
+escritos en los paneles. El francés no está incluido en la versión 1.3.1 publicada
+anteriormente.
 
 ### Medidas reales con firmware 2.5.1
 

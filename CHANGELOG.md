@@ -2,6 +2,23 @@
 
 All notable changes to this project are documented here.
 
+## Unreleased
+
+### Added
+
+* Complete French integration translations for configuration, entities, states,
+  selectors, and compatibility actions (issue #6).
+* Short English/Spanish README explanations of optional entities and features
+  from Rain1971's project that are not provided here (issue #7).
+* Translation completeness and non-empty-text checks for every supplied language.
+
+### Scope
+
+* French translations require installing the new file; they are not retroactively
+  included in release 1.3.1. No new charger, vehicle, or tariff features are added.
+* Integration polling, controls, entity identifiers, and session storage are
+  unchanged. Master/secondary Trydan Pro operation remains unverified (issue #5).
+
 ## 1.3.1
 
 ### Fixed
