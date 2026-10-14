@@ -46,6 +46,41 @@ predictable behavior on PLC and weak Wi-Fi networks over request throughput.
 10. Session time is stored and published natively in seconds. Home Assistant's
     supported duration-unit conversion presents it in hours without weakening
     the accumulator or coupling presentation to persistence.
+11. Only charge state `0` proves disconnection; `1` and `2` prove connection.
+    Fault/unknown snapshots do not update session baselines or trigger a new
+    session on recovery. Existing binary-entity state mapping is unchanged.
+12. Successful snapshots contain finite, non-negative core power/counters and
+    an integer charge state. Optional/new firmware fields are not required.
+13. Writes require `OK` and are not retried because the command may have executed
+    before a response was lost. Redirects are not followed for reads or writes.
+
+## Communication failures and recovery
+
+The API preserves the configured three-attempt/20-second read policy. Transport
+failures, HTTP 408/429, and HTTP 5xx are retryable. Other non-200 statuses are
+reported immediately. Invalid payloads fail without retrying. Cancellation is
+propagated, releasing the serialization lock without fabricating an offline poll.
+
+Read diagnostics contain sanitized error categories, status codes, attempt counts,
+and monotonic durations. They retain the last failed poll after a successful poll.
+The first failed poll starts an observed failure window; successful recovery logs
+its elapsed duration and clears the consecutive-failure count. This window can
+include polling delays and cannot identify the exact instant of a physical outage.
+No response body, full transport exception string, URL, ID, or SSID is logged by
+these diagnostics. Home Assistant continues to own entity availability and final
+failure logging through `UpdateFailed`.
+
+The integration shares Home Assistant's HTTP client and never closes it. Connection
+pooling is retained; disabling keep-alive or changing network timeouts requires
+evidence from the recorded failure rather than an assumed transport defect.
+
+## Firmware measurements
+
+L1 current and voltage use additive entity IDs and start disabled. Their sensor
+descriptions declare a required API key, checked at platform setup instead of
+assuming availability from a firmware version string. Missing keys on old firmware
+do not create empty optional entities; reload after a firmware upgrade. These
+measurements do not replace the existing current setpoint/reference voltage.
 
 ## User-facing extensions
 
@@ -66,6 +101,7 @@ Create a virtual environment and run:
 ```bash
 python -m pip install -r requirements_test.txt
 ruff check .
+ruff format --check .
 pytest
 ```
 
@@ -73,6 +109,13 @@ GitHub Actions additionally runs Home Assistant `hassfest` and HACS validation.
 Every behavior change should include focused tests. API and session-state behavior
 belong in fast unit tests; config flows, entity setup, registry migrations, and actions
 should use Home Assistant integration tests as coverage is expanded.
+
+`tests/fixtures` contains explicitly anonymized, recorded firmware 2.4.6/2.5.1
+responses. Local HTTP tests use an aiohttp test server on loopback, never a real
+charger. Unit tests cover payload/acknowledgement validation, permanent versus
+transient HTTP failures, outage/recovery diagnostics, serialization, cancellation,
+and fault-state session preservation. These tests are not a full HA installation
+test or proof of a physical network fix.
 
 ## Compatibility policy
 

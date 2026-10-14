@@ -2,6 +2,40 @@
 
 All notable changes to this project are documented here.
 
+## 1.3.1
+
+### Fixed
+
+* Preserve session totals and counter baselines during charger faults or unknown
+  cable states. Only an explicit unplugged state ends a session connection.
+* Require an explicit `OK` acknowledgement for writes. Empty and HTML responses
+  are rejected, and writes are never automatically retried.
+* Reject snapshots missing valid `ChargeState`, `ChargePower`, `ChargeEnergy`, or
+  `ChargeTime` instead of publishing a successful empty poll.
+* Retry temporary HTTP failures only; report permanent failures and redirects
+  immediately. Reads and writes no longer follow redirects.
+
+### Added
+
+* Read diagnostics with attempt count, elapsed time, error category, HTTP status,
+  consecutive failed polls, and the last observed recovery duration. The most
+  recent failed poll remains available after recovery.
+* Debug logs for failed attempts and an informational recovery log, excluding
+  response bodies, network identifiers, and arbitrary exception text.
+* Disabled-by-default measured current and voltage sensors for L1, created only
+  when their fields exist in the first snapshot.
+* Anonymized 2.4.6/2.5.1 fixtures, regression tests for fault recovery and response
+  validation, concurrency/cancellation tests, and real local HTTP server tests.
+
+### Compatibility and validation
+
+* Existing entity IDs and stored sessions are preserved. Polling remains at
+  15 seconds, with a 20-second read timeout and at most three attempts.
+* The 2.5.1 fixtures come from idle and charging monophase Trydan responses.
+  Software tests do not replace physical verification of this update.
+* Recurrent communication failures remain under investigation; diagnostics expose
+  their cause rather than claiming to eliminate an unconfirmed network fault.
+
 ## 1.3.0
 
 First stable release of the professionally restructured integration.

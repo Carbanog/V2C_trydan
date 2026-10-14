@@ -40,3 +40,17 @@ def value_as_bool(value: Any) -> bool | None:
         if normalized in {"0", "false", "off"}:
             return False
     return None
+
+
+def cable_connected_from_charge_state(value: Any) -> bool | None:
+    """Only an explicit unplugged state proves the end of a cable session.
+
+    Faults and ventilation requests do not tell us whether the cable was
+    removed. Preserve the session until the next explicit cable state.
+    """
+    state = value_as_float(value)
+    if state == 0:
+        return False
+    if state in (1, 2):
+        return True
+    return None
