@@ -42,6 +42,12 @@ def test_json_files_are_valid() -> None:
         assert isinstance(json.loads(path.read_text(encoding="utf-8")), dict)
 
 
+def test_funding_uses_the_project_support_url() -> None:
+    """Expose optional support through GitHub without third-party widgets."""
+    funding = yaml.safe_load((ROOT / ".github" / "FUNDING.yml").read_text())
+    assert funding == {"custom": ["https://buymeacoffee.com/Carbanog"]}
+
+
 def test_yaml_files_are_valid() -> None:
     """Integration metadata, examples, and workflows must be parseable YAML."""
     paths = [
