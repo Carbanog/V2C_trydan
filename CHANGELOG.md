@@ -8,9 +8,8 @@ All notable changes to this project are documented here.
 
 * Supply the V2C brand icon locally so HACS branding validation does not depend
   on a separate upstream entry for the `v2c_trydan` domain.
-* Categorize the integration as EV charging in its manifest.
-* Add regression checks for the PNG asset and integration category. Charger
-  communication, controls, and session storage are unchanged.
+* Add a regression check for the PNG asset. Charger communication, controls,
+  and session storage are unchanged.
 
 ## 1.3.2
 

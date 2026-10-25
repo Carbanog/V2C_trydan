@@ -16,3 +16,12 @@ official Home Assistant V2C integration. See the upstream
 Home Assistant 2026.3 and later can serve local integration images from `brand/`.
 HACS validates the local icon rather than requiring a separate entry for the
 `v2c_trydan` domain in the upstream brands repository.
+
+## Category compatibility
+
+The documented category is `energy.ev_charging`, but on 2026-10-25 the image
+used by `home-assistant/actions/hassfest@master` rejects the `categories` key
+even though the development schema accepts it. Categories are optional for
+custom integrations, so the manifest omits this key until the published
+validator supports it. HACS may therefore still show a category warning.
+Neither validator is disabled or bypassed.

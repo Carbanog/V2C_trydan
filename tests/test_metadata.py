@@ -24,12 +24,6 @@ def test_local_brand_icon_is_valid_png() -> None:
     assert content[-12:] == b"\x00\x00\x00\x00IEND\xaeB`\x82"
 
 
-def test_integration_category_matches_ev_charging() -> None:
-    """Describe the product without changing its entities or behavior."""
-    manifest = json.loads((INTEGRATION / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["categories"] == ["energy.ev_charging"]
-
-
 class _BlueprintLoader(yaml.SafeLoader):
     """Parse Home Assistant input tags without interpreting their values."""
 
