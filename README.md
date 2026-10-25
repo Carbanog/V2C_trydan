@@ -287,3 +287,6 @@ problem.
 - [Rain1971](https://github.com/Rain1971/V2C_trydant), author of the original
   integration this project started from.
 - The Home Assistant community and AI tools used during development and review.
+
+Optional support: [Buy me a coffee](https://buymeacoffee.com/Carbanog).
+All features remain freely available, with no payment required.
