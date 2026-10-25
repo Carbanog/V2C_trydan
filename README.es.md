@@ -296,3 +296,6 @@ cargador.
 - [Rain1971](https://github.com/Rain1971/V2C_trydant), autor de la base original.
 - La comunidad de Home Assistant y las herramientas de IA utilizadas durante el
   desarrollo y la revisión del proyecto.
+
+Apoyo opcional: [Invítame a un café](https://buymeacoffee.com/Carbanog).
+Todas las funciones siguen disponibles libremente, sin necesidad de pagar.
