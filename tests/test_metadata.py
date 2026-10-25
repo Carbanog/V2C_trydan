@@ -5,6 +5,7 @@ from __future__ import annotations
 import ast
 import json
 import re
+import struct
 from pathlib import Path
 
 import pytest
@@ -12,6 +13,21 @@ import yaml
 
 ROOT = Path(__file__).parents[1]
 INTEGRATION = ROOT / "custom_components" / "v2c_trydan"
+
+
+def test_local_brand_icon_is_valid_png() -> None:
+    """Keep HACS branding self-contained and protect against corrupt downloads."""
+    content = (INTEGRATION / "brand" / "icon.png").read_bytes()
+    assert content[:8] == b"\x89PNG\r\n\x1a\n"
+    assert content[12:16] == b"IHDR"
+    assert struct.unpack_from(">II", content, 16) == (256, 256)
+    assert content[-12:] == b"\x00\x00\x00\x00IEND\xaeB`\x82"
+
+
+def test_integration_category_matches_ev_charging() -> None:
+    """Describe the product without changing its entities or behavior."""
+    manifest = json.loads((INTEGRATION / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["categories"] == ["energy.ev_charging"]
 
 
 class _BlueprintLoader(yaml.SafeLoader):
