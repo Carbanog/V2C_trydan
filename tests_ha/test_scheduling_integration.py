@@ -582,7 +582,7 @@ async def test_cancelling_options_does_not_reload_or_command_a_running_charger(h
         await hass.async_block_till_done()
         coordinator = entry.runtime_data
         manager = coordinator.scheduler
-        configured = deepcopy(entry.options)
+        configured = deepcopy(dict(entry.options))
         command.reset_mock()
         flow, _result = await start_edit(hass, entry.entry_id)
         await hass.config_entries.options.async_configure(
