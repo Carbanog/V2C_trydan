@@ -26,7 +26,8 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .const import SESSION_ACTIVE_TIME_KEY, SESSION_ENERGY_KEY
 from .coordinator import V2CTrydanDataUpdateCoordinator
-from .entity import V2CTrydanEntity
+from .entity import SchedulingEntity, V2CTrydanEntity
+from .scheduling.policy import PERIODS
 from .utils import value_as_float, value_as_int
 
 
@@ -363,6 +364,13 @@ async def async_setup_entry(
         if description.required_key is None
         or description.required_key in coordinator.data
     )
+    if coordinator.scheduler is not None:
+        async_add_entities(
+            (
+                SchedulingStatusSensor(coordinator, "scheduling_period"),
+                SchedulingStatusSensor(coordinator, "scheduling_status"),
+            )
+        )
 
 
 class V2CTrydanSensor(V2CTrydanEntity, SensorEntity):
@@ -383,3 +391,43 @@ class V2CTrydanSensor(V2CTrydanEntity, SensorEntity):
     def native_value(self) -> Any:
         """Return the state of the sensor."""
         return self.entity_description.value_fn(self.coordinator.data)
+
+
+class SchedulingStatusSensor(SchedulingEntity, SensorEntity):
+    """Expose the tariff and reason, not extra hardware telemetry."""
+
+    _attr_device_class = SensorDeviceClass.ENUM
+
+    def __init__(self, coordinator, key: str) -> None:
+        super().__init__(coordinator, key)
+        self._attr_translation_key = key
+        self._key = key
+        self._attr_options = (
+            [*PERIODS, "unassigned"]
+            if key == "scheduling_period"
+            else [
+                "disabled",
+                "unavailable",
+                "disconnected",
+                "charger_fault",
+                "incomplete_data",
+                "command_unconfirmed",
+                "locked",
+                "device_timer",
+                "manual_pause",
+                "charge_now",
+                "waiting_schedule",
+                "charging_allowed",
+            ]
+        )
+
+    @property
+    def native_value(self) -> str:
+        decision = self.scheduler.controller.decision
+        return decision.period if self._key == "scheduling_period" else decision.reason
+
+    @property
+    def extra_state_attributes(self) -> dict[str, str | None] | None:
+        if self._key != "scheduling_status":
+            return None
+        return {"next_allowed_start": self.scheduler.next_allowed_start}

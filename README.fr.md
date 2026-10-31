@@ -176,7 +176,7 @@ Ils ne sont jamais installés ou activés automatiquement.
 
 **Résumé et notifications de session**
 
-[![Importer dans Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.3%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
+[![Importer dans Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0b3%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
 
 [Voir le YAML](blueprints/automation/session_summary.yaml). Actions au démarrage et
 après débranchement, sans répéter chaque pause OCPP. Les actions de fin disposent
@@ -193,7 +193,7 @@ data:
 
 **Alerte de puissance élevée**
 
-[![Importer dans Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.3%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
+[![Importer dans Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0b3%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
 
 [Voir le YAML](blueprints/automation/high_power_alert.yaml). Déclenche les actions
 après dépassement d’un seuil pendant la durée choisie ; fournit `measured_power`.

@@ -27,6 +27,60 @@
       "reconfigure_successful": "La dirección del cargador se ha actualizado"
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Programación de carga opcional (beta)",
+        "description": "Desactivada inicialmente. Añade tramos, elige tarifas permitidas y pulsa Guardar. La primera activación comienza en Pausado; selecciona Automático en el dispositivo. No combinar con OCPP ni horarios de la app V2C.",
+        "menu_options": {
+          "settings": "Ajustes y tarifas permitidas",
+          "add_block": "Añadir tramo horario",
+          "edit_block": "Editar tramo horario",
+          "remove_block": "Eliminar tramo horario",
+          "save": "Guardar y aplicar"
+        }
+      },
+      "settings": {
+        "title": "Ajustes y tarifas permitidas",
+        "data": {
+          "enabled": "Habilitar programación",
+          "allowed": "Tarifas permitidas"
+        }
+      },
+      "add_block": {
+        "title": "Añadir tramo horario",
+        "description": "Hora local de HA, precisión de minutos. Si el fin es anterior al inicio, cruza medianoche. De 00:00 a 00:00 significa un día completo. No se permiten solapamientos; fuera de los tramos se pausa.",
+        "data": {
+          "days": "Días en los que comienza el tramo",
+          "start": "Hora de inicio",
+          "end": "Hora de fin",
+          "period": "Tarifa"
+        }
+      },
+      "edit_block": {"title":"Editar tramo horario","description":"Elige el tramo existente que quieres editar. No se elimina.","data":{"block":"Editar tramo horario"}},
+      "edit_details": {"title":"Editar datos del tramo","description":"Los valores actuales están rellenados. Cambia días, inicio, fin o tarifa. Seguirá siendo un borrador hasta revisar y confirmar Guardar.","data":{"days":"Días en los que comienza el tramo","start":"Hora de inicio","end":"Hora de fin","period":"Tarifa"}},
+      "remove_block": {
+        "title": "Eliminar tramo horario",
+        "description": "Elige el tramo que quieres eliminar. Los cambios solo se aplican al Guardar.",
+        "data": {
+          "block": "Eliminar tramo horario"
+        }
+      },
+      "save_error": {"title":"Revisar errores del horario","description":"Horario no válido: revisa horas, días y solapamientos. Para habilitar hace falta al menos un tramo. Pulsa Enviar para volver al menú."},
+      "save": {
+        "title": "Revisar y aplicar horarios",
+        "description": "**Programación:** {enabled}\n\n### Tramos horarios\n{blocks}\n\n**Tarifas permitidas:** {allowed}\n\n### Tiempo sin asignar: {unassigned_minutes} minutos por semana\n{gaps}\n\nLos huecos no permiten cargar en Automático. 00:00 → 00:00 significa un día completo. Confirma abajo para guardar; cancelar deja intacta la configuración existente.",
+        "data": {
+          "confirm": "Aplicar estos horarios"
+        }
+      }
+    },
+    "error": {
+      "confirm_required": "Confirma el resumen para aplicar los horarios.",
+      "invalid_schedule": "Horario no válido: revisa horas, días y solapamientos. Para habilitar hace falta al menos un tramo. Pulsa Enviar para volver al menú."
+    }
+  },
+  "issues": {"scheduling_command_unconfirmed":{"title":"V2C Trydan: orden de carga sin confirmar","description":"La orden del programador para **{charger}** lleva al menos un minuto sin confirmarse. La carga puede no coincidir con la tarifa o pausa solicitada. Revisa el cargador, la conexión y Estado de programación; después de comprobar el estado real, selecciona explícitamente un modo para reintentar. No desactives las protecciones eléctricas. La integración no repite la orden a ciegas. Este aviso desaparece al confirmar, detectar la manguera desconectada o deshabilitar la programación."}},
   "services": {
     "set_intensity": {
       "name": "Establecer intensidad de carga",
@@ -86,6 +140,9 @@
     }
   },
   "selector": {
+    "scheduling_enabled": {"options":{"enabled":"Habilitada","disabled":"Deshabilitada"}},
+    "tariff": {"options":{"peak":"Punta","shoulder":"Llano","off_peak":"Valle"}},
+    "weekdays": {"options":{"mon":"Lunes","tue":"Martes","wed":"Miércoles","thu":"Jueves","fri":"Viernes","sat":"Sábado","sun":"Domingo"}},
     "dynamic_power_mode": {
       "options": {
         "0": "Activar potencia temporizada",
@@ -108,6 +165,8 @@
       "reset_session_energy": { "name": "Reiniciar Estadísticas de Sesión" }
     },
     "sensor": {
+      "scheduling_period": {"name":"Tarifa actual","state":{"peak":"Punta","shoulder":"Llano","off_peak":"Valle","unassigned":"Sin asignar"}},
+      "scheduling_status": {"name":"Estado de programación","state":{"disabled":"Desactivado","unavailable":"Cargador no disponible","disconnected":"Manguera desconectada","charger_fault":"Fallo del cargador o conexión de manguera desconocida","incomplete_data":"Datos incompletos del cargador","command_unconfirmed":"Orden sin confirmar — revisa el estado y elige modo para reintentar","locked":"Cargador bloqueado","device_timer":"Horario del propio V2C activado — conflicto","manual_pause":"Pausado por el usuario u otro controlador","charge_now":"Excepción Cargar ahora","waiting_schedule":"Esperando una tarifa permitida","charging_allowed":"Carga permitida por horario"},"state_attributes":{"next_allowed_start":{"name":"Próximo inicio de tarifa permitida"}}},
       "chargepower": { "name": "Potencia de Carga" },
       "chargeenergy": { "name": "Energía de Carga" },
       "session_energy": { "name": "Energía de la Sesión" },
@@ -202,6 +261,7 @@
       "intensity": { "name": "Intensidad de Carga" }
     },
     "select": {
+      "scheduling_mode": {"name":"Modo de programación de carga","state":{"automatic":"Automático","charge_now":"Cargar ahora (hasta desenchufar)","paused":"Pausado"}},
       "dynamic_power_mode": {
         "name": "Modo de Potencia Dinámica",
         "state": {

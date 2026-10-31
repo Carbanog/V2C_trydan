@@ -97,6 +97,43 @@ Advanced charger settings remain represented as entities for capable users, but
 are categorized as configuration and disabled by default when accidental changes
 could conflict with V2C app schedules, load protection, or OCPP control.
 
+## Optional scheduling (1.4 beta)
+
+Scheduling is a local opt-in policy, not firmware telemetry or a change to the
+HTTP API. The coordinator exposes an optional manager reference but continues
+to own reads and session accumulation. With scheduling disabled, no manager,
+timer, policy store load, extra entities or scheduling writes are created.
+
+* `scheduling/policy.py`: validates weekly wall-clock intervals and makes pure
+  decisions. Unknown time is denied; overlaps including week wrap are rejected.
+* `scheduling/controller.py`: serializes decisions and user intent, checkpoints
+  before issuing a single command, and reconciles pending writes with reads.
+* `scheduling/ha.py`: Store, coordinator/clock subscriptions, task cancellation
+  and entity listeners. Scheduling state uses a separate storage key/version.
+* `scheduling/alerts.py`: monotonic 60-second debounce and deduplication for
+  unresolved-command Repairs warnings. No network IO or automatic retries.
+* `scheduling/presentation.py`: localized summaries using HA translation resources.
+* `config_flow.py`: edits an options draft with native HA forms; only Save
+  shows a summary and requires explicit confirmation before committing it.
+  Options changes reload the entry to rebuild optional entities.
+
+The next tariff window is an attribute, calculated off the event loop at most
+once per minute while Auto waits. The bounded UTC-minute search evaluates local
+time, handling real DST gaps/folds. It previews tariff permission, not actuation.
+
+Only `Paused` is written, through the same API lock used by manual controls.
+An HA pause-switch action selects Paused; resume selects Charge now. An
+unexpected new pause from another controller latches Paused. The policy never
+unlocks the charger or disables its own Timer. Unsupported concurrent OCPP/app
+schedulers must be disabled by the user before testing this feature.
+
+Mode and pending intent are persisted before actions. Failed/ambiguous writes
+are not repeated on every clock/poll event. A fresh read can confirm them;
+otherwise the user must inspect the state and explicitly select a mode to retry.
+Disabling/unloading never automatically resumes a paused charger. HA/network
+outages cannot enforce boundaries, and an unplug/replug entirely during an
+outage cannot reliably be detected. See the beta guide for testing and rollback.
+
 ## Development
 
 Create a virtual environment and run:

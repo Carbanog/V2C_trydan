@@ -2,6 +2,49 @@
 
 All notable changes to this project are documented here.
 
+## 1.4.0b3
+
+### Beta: edit time blocks in place
+
+* Add an Edit block option with prefilled days, start/end time and tariff.
+* Validate a replacement against the other blocks; reject overlaps without
+  discarding the original or adding a duplicate. Changes stay in the options
+  draft until the final summary is explicitly confirmed.
+* Share add/edit form validation and translated edit/remove labels in English,
+  Spanish and French. Existing schedules and unrelated options are preserved.
+* No date exceptions, charger-policy changes, new entities or storage migration.
+* Prerelease only; stable remains 1.3.3.
+
+## 1.4.0b2
+
+### Beta: scheduling visibility and review
+
+* Require explicit confirmation of a localized summary before applying options:
+  enabled state, blocks, allowed tariffs and all unassigned weekly intervals.
+* Show the next allowed tariff start as an attribute of Scheduling status while
+  Automatic is waiting, without adding another entity or promising an actual start.
+* Raise one translated HA Repairs warning if an attempted command remains
+  unconfirmed for at least 60 seconds. Clear on confirmation, observed unplug
+  or scheduler unload; never retry a command blindly or flood the UI.
+* Add coverage/preview/alert tests, real DST transition tests and real-HA tests
+  for summaries and translations in English, Spanish and French.
+* Remains prerelease only; 1.3.3 is still the stable production release.
+
+## 1.4.0b1
+
+### Beta: optional charging schedules
+
+* Separate weekly tariff policy, serialized command controller and HA lifecycle
+  adapter. Disabled by default; first activation starts Paused.
+* Native options menu for weekly blocks, allowed peak/shoulder/off-peak periods,
+  midnight-crossing intervals and explicit Save. Overlaps are rejected.
+* Automatic, Charge now until unplugged, and Paused modes; current tariff and
+  decision-status sensors appear only when enabled.
+* Persist mode and pending commands independently of energy/session storage.
+  Do not retry unconfirmed writes blindly or override locks/device timers.
+* Scheduling and real-HA regression tests; no charger firmware update.
+* Prerelease only: 1.3.3 remains the stable production release.
+
 ## 1.3.3
 
 ### Fixed
