@@ -22,6 +22,18 @@ dinámica ni las protecciones del cargador.
 Abre **Ajustes → Dispositivos y servicios → V2C Trydan → Configurar**.
 Todo lo editado es un borrador hasta **Guardar y aplicar**; cancelar no lo aplica.
 
+En la rama de desarrollo (todavía no incluido en la beta publicada 1.4.0b3),
+cada formulario incluye **Acción**. Elige **Volver al menú** y pulsa **Enviar**
+para salir sin aceptar los cambios de esa pantalla. Los pasos aceptados antes
+siguen en memoria, pero nada se guarda ni se aplica al cargador.
+**Cancelar todos los cambios**, desde el menú o desde Acción, descarta toda la
+edición; cerrar el diálogo hace lo mismo. Al abrir Configurar de nuevo se carga
+la configuración guardada, no lo cancelado. **Continuar con este formulario**
+acepta solo ese paso; **Guardar y aplicar** y su confirmación son la única
+forma de aplicar la configuración completa. Los botones inferiores pertenecen
+a HA: no se añade un botón Atrás al pie. Si un campo contiene un formato inválido
+y HA impide Enviar, cerrar el diálogo siempre permite cancelar.
+
 1. **Añadir tramo horario**: selecciona días, hora de inicio, fin y tarifa
    (Punta, Llano o Valle). Repite para los demás tramos/días.
 2. **Ajustes y tarifas permitidas**: habilita la función y elige en qué tarifas

@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented here.
 
+## Unreleased
+
+* Add Return to menu and Cancel all changes actions to every scheduling form,
+  including invalid-summary recovery, plus Cancel in the main options menu.
+* Back ignores the current screen; Cancel or closing the flow discards all
+  uncommitted changes. Only explicit confirmation of Save and apply persists
+  options. Edit/remove no longer require choosing a block merely to go back.
+* Translate navigation, cancellation and selection errors in English, Spanish
+  and French, with regression tests using Home Assistant's actual options flow.
+* No charger API, scheduling policy, session storage or runtime dependency changes.
+
 ## 1.4.0b3
 
 ### Beta: edit time blocks in place

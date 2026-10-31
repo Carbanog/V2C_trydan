@@ -135,6 +135,11 @@ Dans **Configurer**, ajoutez ou modifiez les plages, choisissez les tarifs et ac
 puis exige une confirmation. Les chevauchements sont refusés ; hors plage,
 la charge n’est pas autorisée.
 
+En développement, pour la prochaine bêta : **Action → Revenir au menu → Valider**
+quitte le formulaire sans accepter cet écran. **Annuler tous les changements**
+ou fermer abandonne toute la modification. Seule la confirmation finale enregistre
+et applique la configuration.
+
 | Mode | Comportement |
 | --- | --- |
 | Automatique | Autorise la charge uniquement pendant les tarifs sélectionnés. |

@@ -132,6 +132,10 @@ En **Configurar**, añade o edita tramos, elige tarifas permitidas y habilita el
 **Guardar y aplicar** muestra un resumen de activación, horarios y huecos; confirma
 antes de aplicar. Los solapamientos se rechazan y los huecos no permiten cargar.
 
+En desarrollo, pendiente de la siguiente beta: **Acción → Volver al menú → Enviar**
+sale de un formulario sin aceptar esa pantalla. **Cancelar todos los cambios**
+o cerrar descarta la edición completa. Solo la confirmación final guarda y aplica.
+
 | Modo | Comportamiento |
 | --- | --- |
 | Automático | Permite cargar solo en los periodos seleccionados. |

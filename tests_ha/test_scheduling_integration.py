@@ -335,7 +335,9 @@ async def test_edit_prefills_replaces_and_preserves_other_settings(hass):
     entry.add_to_hass(hass)
     flow, result = await start_edit(hass, entry.entry_id)
     assert {
-        key.schema: key.default() for key in result["data_schema"].schema
+        key.schema: key.default()
+        for key in result["data_schema"].schema
+        if key.schema != "navigation"
     } == original
     changed = {
         "days": ["tue"],
@@ -416,3 +418,184 @@ async def test_edit_and_remove_choices_use_translated_labels(
     ]
     choices = await async_block_choices(hass, blocks, language)
     assert choices == [{"value": "0", "label": f"{day}: 00:00 → 08:00 — {tariff}"}]
+
+
+@pytest.mark.parametrize(
+    "step",
+    ["settings", "add_block", "edit_block", "edit_details", "remove_block", "save"],
+)
+@pytest.mark.parametrize("action", ["back", "cancel"])
+async def test_form_navigation_never_applies_current_screen(hass, step, action):
+    """Back needs no block selection; even a checked summary cannot apply it."""
+    configured = options()
+    entry = MockConfigEntry(
+        domain=DOMAIN, data={"ip_address": "192.0.2.10"}, options=deepcopy(configured)
+    )
+    entry.add_to_hass(hass)
+    if step == "edit_details":
+        flow, result = await start_edit(hass, entry.entry_id)
+    else:
+        result = await hass.config_entries.options.async_init(entry.entry_id)
+        flow = result["flow_id"]
+        result = await hass.config_entries.options.async_configure(
+            flow, {"next_step_id": step}
+        )
+    assert result["step_id"] == step
+    payload = {"navigation": action}
+    if step == "save":
+        payload["confirm"] = True
+    if step == "settings":
+        payload.update(enabled=False, allowed=[])
+    result = await hass.config_entries.options.async_configure(flow, payload)
+    assert entry.options == configured
+    if action == "cancel":
+        assert result["type"] == "abort"
+        assert result["reason"] == "changes_cancelled"
+    else:
+        assert result["type"] == "menu"
+        result = await hass.config_entries.options.async_configure(
+            flow, {"next_step_id": "save"}
+        )
+        result = await hass.config_entries.options.async_configure(
+            flow, {"confirm": True}
+        )
+        assert result["type"] == "create_entry"
+        assert entry.options == configured
+
+
+@pytest.mark.parametrize("step", ["edit_block", "remove_block"])
+async def test_continue_requires_a_block_but_back_does_not(hass, step):
+    entry = MockConfigEntry(
+        domain=DOMAIN, data={"ip_address": "192.0.2.10"}, options=options()
+    )
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    flow = result["flow_id"]
+    await hass.config_entries.options.async_configure(flow, {"next_step_id": step})
+    result = await hass.config_entries.options.async_configure(
+        flow, {"navigation": "continue"}
+    )
+    assert result["errors"] == {"block": "choose_block"}
+    result = await hass.config_entries.options.async_configure(
+        flow, {"navigation": "back"}
+    )
+    assert result["type"] == "menu"
+    hass.config_entries.options.async_abort(flow)
+
+
+@pytest.mark.parametrize("cancel_method", ["menu", "close"])
+async def test_cancel_discards_previously_accepted_draft_and_reopens_saved_options(
+    hass, cancel_method
+):
+    configured = options()
+    entry = MockConfigEntry(
+        domain=DOMAIN, data={"ip_address": "192.0.2.10"}, options=deepcopy(configured)
+    )
+    entry.add_to_hass(hass)
+    flow, _result = await start_edit(hass, entry.entry_id)
+    changed = {
+        "days": ["tue"],
+        "start": "01:00:00",
+        "end": "06:00:00",
+        "period": "peak",
+    }
+    result = await hass.config_entries.options.async_configure(flow, changed)
+    assert result["type"] == "menu"
+    assert entry.options == configured
+    if cancel_method == "menu":
+        result = await hass.config_entries.options.async_configure(
+            flow, {"next_step_id": "cancel"}
+        )
+        assert result["type"] == "abort"
+    else:
+        hass.config_entries.options.async_abort(flow)
+    flow, result = await start_edit(hass, entry.entry_id)
+    assert {
+        key.schema: key.default()
+        for key in result["data_schema"].schema
+        if key.schema != "navigation"
+    } == configured["scheduling"]["blocks"][0]
+    assert entry.options == configured
+    hass.config_entries.options.async_abort(flow)
+
+
+async def test_back_after_invalid_edit_preserves_accepted_draft(hass):
+    configured = options()
+    entry = MockConfigEntry(
+        domain=DOMAIN, data={"ip_address": "192.0.2.10"}, options=deepcopy(configured)
+    )
+    entry.add_to_hass(hass)
+    flow, _result = await start_edit(hass, entry.entry_id)
+    changed = {
+        "days": ["mon"],
+        "start": "01:00:00",
+        "end": "06:00:00",
+        "period": "peak",
+    }
+    await hass.config_entries.options.async_configure(flow, changed)
+    await hass.config_entries.options.async_configure(
+        flow, {"next_step_id": "edit_block"}
+    )
+    await hass.config_entries.options.async_configure(flow, {"block": "0"})
+    result = await hass.config_entries.options.async_configure(
+        flow, {**changed, "end": "01:00:00"}
+    )
+    assert result["errors"] == {"base": "invalid_schedule"}
+    result = await hass.config_entries.options.async_configure(
+        flow, {"navigation": "back"}
+    )
+    assert result["type"] == "menu"
+    await hass.config_entries.options.async_configure(flow, {"next_step_id": "save"})
+    result = await hass.config_entries.options.async_configure(flow, {"confirm": True})
+    assert result["type"] == "create_entry"
+    assert entry.options["scheduling"]["blocks"] == [changed]
+
+
+@pytest.mark.parametrize("action", ["back", "cancel"])
+async def test_invalid_summary_can_be_abandoned(hass, action):
+    entry = MockConfigEntry(domain=DOMAIN, data={"ip_address": "192.0.2.10"})
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    flow = result["flow_id"]
+    await hass.config_entries.options.async_configure(
+        flow, {"next_step_id": "settings"}
+    )
+    await hass.config_entries.options.async_configure(
+        flow, {"enabled": True, "allowed": ["off_peak"]}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow, {"next_step_id": "save"}
+    )
+    assert result["step_id"] == "save_error"
+    result = await hass.config_entries.options.async_configure(
+        flow, {"navigation": action}
+    )
+    assert result["type"] == ("menu" if action == "back" else "abort")
+    assert not entry.options
+    if action == "back":
+        hass.config_entries.options.async_abort(flow)
+
+
+async def test_cancelling_options_does_not_reload_or_command_a_running_charger(hass):
+    async for entry, _data, command in setup_charger(hass, options()):
+        await entry.runtime_data.async_refresh()
+        await hass.async_block_till_done()
+        coordinator = entry.runtime_data
+        manager = coordinator.scheduler
+        configured = deepcopy(entry.options)
+        command.reset_mock()
+        flow, _result = await start_edit(hass, entry.entry_id)
+        await hass.config_entries.options.async_configure(
+            flow,
+            {"days": ["mon"], "start": "01:00:00", "end": "06:00:00", "period": "peak"},
+        )
+        result = await hass.config_entries.options.async_configure(
+            flow, {"next_step_id": "cancel"}
+        )
+        await hass.async_block_till_done()
+        assert result["type"] == "abort"
+        assert entry.options == configured
+        assert entry.runtime_data is coordinator
+        assert coordinator.scheduler is manager
+        assert not manager._stopped
+        command.assert_not_awaited()

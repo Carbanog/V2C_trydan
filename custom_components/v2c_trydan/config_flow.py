@@ -68,6 +68,22 @@ def _block_schema(defaults: dict[str, Any]) -> vol.Schema:
     )
 
 
+def _with_navigation(schema: vol.Schema) -> vol.Schema:
+    """HA owns footer buttons; provide an explicit, translated menu action."""
+    return vol.Schema(
+        {
+            vol.Required("navigation", default="continue"): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=["continue", "back", "cancel"],
+                    translation_key="options_navigation",
+                    mode=selector.SelectSelectorMode.LIST,
+                )
+            ),
+            **schema.schema,
+        }
+    )
+
+
 class V2CTrydanConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for V2C Trydan."""
 
@@ -186,36 +202,63 @@ class V2CTrydanOptionsFlow(config_entries.OptionsFlow):
                 "edit_block",
                 "remove_block",
                 "save",
+                "cancel",
             ],
         )
 
+    async def _async_navigation(
+        self, user_input: dict[str, Any]
+    ) -> ConfigFlowResult | None:
+        """Consume UI-only actions before validation or changing the draft."""
+        action = user_input.pop("navigation", "continue")
+        if action == "cancel":
+            return await self.async_step_cancel()
+        if action == "back":
+            self._edit_index = None
+            return await self.async_step_init()
+        return None
+
+    async def async_step_cancel(self, user_input=None) -> ConfigFlowResult:
+        """Discard the entire in-memory draft without updating entry options."""
+        self._draft = None
+        self._edit_index = None
+        return self.async_abort(reason="changes_cancelled")
+
     async def async_step_settings(self, user_input=None) -> ConfigFlowResult:
         if user_input is not None:
+            user_input = dict(user_input)
+            if (result := await self._async_navigation(user_input)) is not None:
+                return result
             self._draft.update(user_input)
             return await self.async_step_init()
         return self.async_show_form(
             step_id="settings",
-            data_schema=vol.Schema(
-                {
-                    vol.Required(
-                        "enabled", default=self._draft["enabled"]
-                    ): selector.BooleanSelector(),
-                    vol.Required(
-                        "allowed", default=self._draft["allowed"]
-                    ): selector.SelectSelector(
-                        selector.SelectSelectorConfig(
-                            options=list(PERIODS),
-                            multiple=True,
-                            translation_key="tariff",
-                        )
-                    ),
-                }
+            data_schema=_with_navigation(
+                vol.Schema(
+                    {
+                        vol.Required(
+                            "enabled", default=self._draft["enabled"]
+                        ): selector.BooleanSelector(),
+                        vol.Required(
+                            "allowed", default=self._draft["allowed"]
+                        ): selector.SelectSelector(
+                            selector.SelectSelectorConfig(
+                                options=list(PERIODS),
+                                multiple=True,
+                                translation_key="tariff",
+                            )
+                        ),
+                    }
+                )
             ),
         )
 
     async def async_step_add_block(self, user_input=None) -> ConfigFlowResult:
         errors = {}
         if user_input is not None:
+            user_input = dict(user_input)
+            if (result := await self._async_navigation(user_input)) is not None:
+                return result
             candidate = deepcopy(self._draft)
             candidate["blocks"].append(user_input)
             try:
@@ -228,7 +271,7 @@ class V2CTrydanOptionsFlow(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="add_block",
             errors=errors,
-            data_schema=_block_schema(user_input or {}),
+            data_schema=_with_navigation(_block_schema(user_input or {})),
         )
 
     async def async_step_edit_block(self, user_input=None) -> ConfigFlowResult:
@@ -236,6 +279,13 @@ class V2CTrydanOptionsFlow(config_entries.OptionsFlow):
         if not self._draft["blocks"]:
             return await self.async_step_init()
         if user_input is not None:
+            user_input = dict(user_input)
+            if (result := await self._async_navigation(user_input)) is not None:
+                return result
+            if "block" not in user_input:
+                return await self._async_block_selection(
+                    "edit_block", {"block": "choose_block"}
+                )
             self._edit_index = int(user_input["block"])
             return await self.async_step_edit_details()
         return await self._async_block_selection("edit_block")
@@ -248,6 +298,9 @@ class V2CTrydanOptionsFlow(config_entries.OptionsFlow):
             return await self.async_step_edit_block()
         errors = {}
         if user_input is not None:
+            user_input = dict(user_input)
+            if (result := await self._async_navigation(user_input)) is not None:
+                return result
             candidate = deepcopy(self._draft)
             candidate["blocks"][self._edit_index] = user_input
             try:
@@ -261,8 +314,8 @@ class V2CTrydanOptionsFlow(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="edit_details",
             errors=errors,
-            data_schema=_block_schema(
-                user_input or self._draft["blocks"][self._edit_index]
+            data_schema=_with_navigation(
+                _block_schema(user_input or self._draft["blocks"][self._edit_index])
             ),
         )
 
@@ -271,11 +324,20 @@ class V2CTrydanOptionsFlow(config_entries.OptionsFlow):
         if not blocks:
             return await self.async_step_init()
         if user_input is not None:
+            user_input = dict(user_input)
+            if (result := await self._async_navigation(user_input)) is not None:
+                return result
+            if "block" not in user_input:
+                return await self._async_block_selection(
+                    "remove_block", {"block": "choose_block"}
+                )
             blocks.pop(int(user_input["block"]))
             return await self.async_step_init()
         return await self._async_block_selection("remove_block")
 
-    async def _async_block_selection(self, step_id: str) -> ConfigFlowResult:
+    async def _async_block_selection(
+        self, step_id: str, errors=None
+    ) -> ConfigFlowResult:
         options = await async_block_choices(
             self.hass,
             self._draft["blocks"],
@@ -283,23 +345,32 @@ class V2CTrydanOptionsFlow(config_entries.OptionsFlow):
         )
         return self.async_show_form(
             step_id=step_id,
-            data_schema=vol.Schema(
-                {
-                    vol.Required("block"): selector.SelectSelector(
-                        selector.SelectSelectorConfig(options=options)
-                    )
-                }
+            errors=errors or {},
+            data_schema=_with_navigation(
+                vol.Schema(
+                    {
+                        vol.Optional("block"): selector.SelectSelector(
+                            selector.SelectSelectorConfig(options=options)
+                        )
+                    }
+                )
             ),
         )
 
     async def async_step_save(self, user_input=None) -> ConfigFlowResult:
+        if user_input is not None:
+            user_input = dict(user_input)
+            if (result := await self._async_navigation(user_input)) is not None:
+                return result
         try:
             schedule = WeeklySchedule.from_options(self._draft)
             if self._draft["enabled"] and not self._draft["blocks"]:
                 raise ValueError("Configure at least one block")
         except ValueError:
             return self.async_show_form(
-                step_id="save_error", errors={"base": "invalid_schedule"}
+                step_id="save_error",
+                errors={"base": "invalid_schedule"},
+                data_schema=_with_navigation(vol.Schema({})),
             )
         if user_input is not None and user_input.get("confirm") is True:
             return self.async_create_entry(
@@ -315,12 +386,21 @@ class V2CTrydanOptionsFlow(config_entries.OptionsFlow):
             step_id="save",
             description_placeholders=summary,
             errors={"base": "confirm_required"} if user_input is not None else {},
-            data_schema=vol.Schema(
-                {
-                    vol.Required("confirm", default=False): selector.BooleanSelector(),
-                }
+            data_schema=_with_navigation(
+                vol.Schema(
+                    {
+                        vol.Required(
+                            "confirm", default=False
+                        ): selector.BooleanSelector(),
+                    }
+                )
             ),
         )
 
     async def async_step_save_error(self, user_input=None) -> ConfigFlowResult:
+        if (
+            user_input is not None
+            and (result := await self._async_navigation(dict(user_input))) is not None
+        ):
+            return result
         return await self.async_step_init()

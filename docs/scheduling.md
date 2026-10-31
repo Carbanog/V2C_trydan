@@ -11,6 +11,16 @@ production or let two HA instances send commands to the same charger.
 Open **Settings → Devices & services → V2C Trydan → Configure**. Changes remain
 a draft until **Save and apply**; cancelling discards the draft.
 
+On the development branch (not yet in published beta 1.4.0b3), every form has an
+**Action** selector. Choose **Return to menu**, then **Submit**, to ignore changes
+on that screen. Previously accepted steps remain in memory but are not saved or
+applied. **Cancel all changes**, available in the menu and each form, discards the
+entire edit, as does closing the dialog. Reopening Configure loads saved options.
+**Continue with this form** accepts only that step; only explicitly confirming
+**Save and apply** persists the complete configuration. HA owns the footer
+buttons; there is no custom Back footer button. If a malformed field prevents
+submission in HA, closing the dialog still cancels the edit.
+
 1. Add blocks: start days, start/end time, and Peak / Shoulder / Off-peak tariff.
 2. In Settings, enable scheduling and select allowed tariffs (none is permitted).
 3. Save opens a summary of enabled state, blocks, allowed tariffs and uncovered

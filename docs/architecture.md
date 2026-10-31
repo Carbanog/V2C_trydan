@@ -13,8 +13,8 @@ predictable behavior on PLC and weak Wi-Fi networks over request throughput.
 * `session.py` is a Home Assistant-independent state machine that accumulates raw
   energy and active-time counter deltas across pauses and resets. It contains no
   I/O.
-* `entity.py` owns device metadata, stable unique IDs, common command handling,
-  and defensive value conversion.
+* `entity.py` owns device metadata, stable unique IDs and common command handling.
+* `utils.py` provides defensive, Home Assistant-independent value conversion.
 * Platform modules only describe entities and map coordinator values to Home
   Assistant concepts.
 * `config_flow.py` validates new or changed addresses and identifies the charger
@@ -115,6 +115,9 @@ timer, policy store load, extra entities or scheduling writes are created.
 * `scheduling/presentation.py`: localized summaries using HA translation resources.
 * `config_flow.py`: edits an options draft with native HA forms; only Save
   shows a summary and requires explicit confirmation before committing it.
+  Navigation actions are consumed before draft validation or mutation; Back
+  ignores the current screen, Cancel discards the whole edit. UI-only fields
+  never enter saved options, and no form sends charger commands directly.
   Options changes reload the entry to rebuild optional entities.
 
 The next tariff window is an attribute, calculated off the event loop at most

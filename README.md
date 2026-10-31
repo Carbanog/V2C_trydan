@@ -128,6 +128,10 @@ In **Configure**, add or edit blocks, choose permitted tariffs and enable the mo
 **Save and apply** shows enabled state, blocks and gaps, then requires explicit
 confirmation. Overlaps are rejected; unassigned time does not permit charging.
 
+In development, pending the next beta: **Action → Return to menu → Submit** leaves
+a form without accepting that screen. **Cancel all changes** or closing discards
+the entire edit. Only the final confirmation saves and applies the configuration.
+
 | Mode | Behavior |
 | --- | --- |
 | Automatic | Permits charging only in selected tariff periods. |
