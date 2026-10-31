@@ -34,6 +34,9 @@ predictable behavior on PLC and weak Wi-Fi networks over request throughput.
    observe the same device snapshot.
 5. New registry identifiers use the hardware ID. The migration preserves
    existing entity IDs, names, areas, and dashboard references.
+   Device lookups are scoped to the config entry, so another entry sharing an
+   identifier cannot be selected. Older HA versions use scoped enumeration
+   rather than the deprecated global device lookup.
 6. The malformed-JSON workaround only inserts the known missing comma before
    `ReadyState`; it does not attempt to guess arbitrary corrupt responses.
 7. Session statistics reset only on a new cable connection or an explicit user

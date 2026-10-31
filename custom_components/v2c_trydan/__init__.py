@@ -291,8 +291,21 @@ def _migrate_legacy_registry_entries(
         return
 
     device_registry = dr.async_get(hass)
-    legacy_device = device_registry.async_get_device(identifiers={(DOMAIN, legacy_id)})
-    current_device = device_registry.async_get_device(identifiers={(DOMAIN, device_id)})
+    if lookup := getattr(device_registry, "async_get_device_by_identifier", None):
+        legacy_device = lookup((DOMAIN, legacy_id), entry.entry_id)
+        current_device = lookup((DOMAIN, device_id), entry.entry_id)
+    else:
+        # Older HA versions lack the scoped lookup. Enumerate only this entry's
+        # devices instead of falling back to the deprecated, ambiguous lookup.
+        devices = dr.async_entries_for_config_entry(device_registry, entry.entry_id)
+        legacy_device = next(
+            (device for device in devices if (DOMAIN, legacy_id) in device.identifiers),
+            None,
+        )
+        current_device = next(
+            (device for device in devices if (DOMAIN, device_id) in device.identifiers),
+            None,
+        )
     if legacy_device is not None and current_device is None:
         device_registry.async_update_device(
             legacy_device.id,
