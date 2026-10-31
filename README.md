@@ -1,8 +1,15 @@
+<img src="custom_components/v2c_trydan/brand/icon.png" alt="V2C" width="64" align="right">
+
 # V2C Trydan for Home Assistant
 
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz/)
 [![Stable release](https://img.shields.io/github/v/release/Carbanog/V2C_trydan.svg)](https://github.com/Carbanog/V2C_trydan/releases/)
+[![Validation](https://github.com/Carbanog/V2C_trydan/actions/workflows/validate.yml/badge.svg?branch=main)](https://github.com/Carbanog/V2C_trydan/actions/workflows/validate.yml)
+[![MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 [English](README.md) · [Español](README.es.md) · [Français](README.fr.md)
+
+[Install](#installation) · [Entities](#entities-and-configuration) · [Sessions](#session-accounting) · [Scheduling beta](#tariff-scheduling--14-beta-only) · [Blueprints](#blueprints-and-automations) · [Dashboards](#dashboards)
 
 Local charger control, complete charging-session tracking, and optional tools
 for managing charging from Home Assistant.
@@ -10,6 +17,14 @@ for managing charging from Home Assistant.
 V2C Trydan combines everyday controls, persistent sessions across pauses and
 restarts, diagnostics and reusable automations. The beta branch adds optional
 weekly tariff scheduling without relying on an energy provider.
+
+## At a glance
+
+| Native dashboard | Mushroom dashboard |
+| :---: | :---: |
+| [![Native dashboard](docs/images/dashboard-native.png)](docs/images/dashboard-native.png) | [![Mushroom dashboard](docs/images/dashboard-mushroom.png)](docs/images/dashboard-mushroom.png) |
+
+Real dashboard examples. Screenshots are in Spanish; entities follow your HA language.
 
 ## Releases and scope
 
@@ -25,14 +40,12 @@ as included in the default HACS catalog.
 
 ## Features
 
-- Local HTTP; no V2C Cloud account or Octopus/OCPP required.
-- Pause, lock and current controls, with optional advanced settings.
-- Whole-session energy and active time across firmware counter resets.
-- Session restoration after HA restarts.
-- Shared serialized requests, bounded retries and communication diagnostics,
-  also useful for constrained PLC/Wi-Fi connections.
-- IP reconfiguration without recreating the integration; redacted diagnostic fields.
-- Optional blueprints, dashboard examples and English/Spanish/French UI.
+| Capability | What it gives you |
+| --- | --- |
+| **Local control** | Pause, lock and current controls over local HTTP. No V2C Cloud account or Octopus/OCPP required. |
+| **Whole-session tracking** | Energy and active time across pauses, counter resets and HA restarts. |
+| **Communication and diagnostics** | Shared serialized requests, bounded retries, redacted diagnostics and IP reconfiguration without recreating the integration. |
+| **Optional extensions** | Importable blueprints, native/Mushroom dashboards and English, Spanish and French UI. Weekly tariff scheduling is beta-only. |
 
 Fault tolerance does not eliminate network problems or guarantee connectivity.
 
@@ -190,11 +203,8 @@ vehicle-reported SOC or newly created sensors.
 Paste the YAML into a manual card and adapt entity IDs to your installation.
 The integration never changes your dashboards automatically.
 
-| Native dashboard | Mushroom dashboard |
-| :---: | :---: |
-| [![Native dashboard](docs/images/dashboard-native.png)](docs/images/dashboard-native.png) | [![Mushroom dashboard](docs/images/dashboard-mushroom.png)](docs/images/dashboard-mushroom.png) |
+See the [dashboard previews](#at-a-glance) above. Open either image for full size.
 
-Screenshots show the Spanish interface; entity text follows your HA language.
 
 ## Compatibility actions
 

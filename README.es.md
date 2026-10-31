@@ -1,8 +1,15 @@
+<img src="custom_components/v2c_trydan/brand/icon.png" alt="V2C" width="64" align="right">
+
 # V2C Trydan para Home Assistant
 
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz/)
 [![Stable release](https://img.shields.io/github/v/release/Carbanog/V2C_trydan.svg)](https://github.com/Carbanog/V2C_trydan/releases/)
+[![Validation](https://github.com/Carbanog/V2C_trydan/actions/workflows/validate.yml/badge.svg?branch=main)](https://github.com/Carbanog/V2C_trydan/actions/workflows/validate.yml)
+[![MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 [English](README.md) · [Español](README.es.md) · [Français](README.fr.md)
+
+[Instalar](#instalación) · [Entidades](#entidades-y-configuración) · [Sesiones](#cómo-se-contabilizan-las-sesiones) · [Programación beta](#programación-por-tarifas--solo-beta-14) · [Blueprints](#blueprints-y-automatizaciones) · [Paneles](#paneles)
 
 Control local del cargador, seguimiento completo de las sesiones y herramientas
 opcionales para gestionar la carga desde Home Assistant.
@@ -10,6 +17,14 @@ opcionales para gestionar la carga desde Home Assistant.
 V2C Trydan combina controles de uso diario, sesiones persistentes entre pausas y
 reinicios, diagnósticos y ejemplos de automatización. La rama beta incorpora
 programación semanal por tarifas, sin depender de una comercializadora.
+
+## Así se ve
+
+| Panel nativo | Panel Mushroom |
+| :---: | :---: |
+| [![Panel nativo](docs/images/dashboard-native.png)](docs/images/dashboard-native.png) | [![Panel Mushroom](docs/images/dashboard-mushroom.png)](docs/images/dashboard-mushroom.png) |
+
+Paneles reales de ejemplo. Las entidades siguen el idioma configurado en HA.
 
 ## Versiones y alcance
 
@@ -25,15 +40,12 @@ presenta como incluido en su catálogo predeterminado.
 
 ## Funciones principales
 
-- HTTP local: no necesita cuenta de V2C Cloud ni Octopus/OCPP para funcionar.
-- Controles de pausa, bloqueo e intensidad; ajustes avanzados opcionales.
-- Energía y tiempo activo de toda la sesión, incluso si el cargador reinicia
-  contadores parciales durante las pausas.
-- Restauración de la sesión después de reiniciar HA.
-- Peticiones compartidas y serializadas, reintentos acotados y diagnóstico de
-  comunicación, útiles también en conexiones PLC o Wi-Fi limitadas.
-- Cambio de IP sin recrear la integración y diagnósticos con campos sensibles ocultos.
-- Blueprints, paneles de ejemplo e interfaz en español, inglés y francés.
+| Función | Qué te aporta |
+| --- | --- |
+| **Control local** | Pausa, bloqueo e intensidad mediante HTTP local. Sin cuenta de V2C Cloud ni dependencia de Octopus/OCPP. |
+| **Sesiones completas** | Energía y tiempo activo acumulados entre pausas, reinicios de contadores y reinicios de HA. |
+| **Comunicación y diagnóstico** | Peticiones compartidas y serializadas, reintentos acotados, campos sensibles ocultos y cambio de IP sin recrear la integración. |
+| **Extras opcionales** | Blueprints importables, paneles nativo/Mushroom e interfaz en español, inglés y francés. La programación semanal por tarifas es solo beta. |
 
 La tolerancia a fallos no elimina problemas de red ni garantiza la conexión.
 
@@ -194,9 +206,7 @@ no el SOC comunicado por el coche ni sensores nuevos.
 Copia el YAML en una tarjeta manual y adapta los identificadores a tu instalación.
 El proyecto no modifica tus paneles automáticamente.
 
-| Panel nativo | Panel Mushroom |
-| :---: | :---: |
-| [![Panel nativo](docs/images/dashboard-native.png)](docs/images/dashboard-native.png) | [![Panel Mushroom](docs/images/dashboard-mushroom.png)](docs/images/dashboard-mushroom.png) |
+Consulta las [capturas de los paneles](#así-se-ve) al principio. Pulsa una imagen para verla completa.
 
 ## Acciones compatibles
 
