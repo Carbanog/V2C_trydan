@@ -1,298 +1,252 @@
 # V2C Trydan for Home Assistant
 
-> **1.4.0b2 is an opt-in beta.** Keep production on stable **1.3.3**.
-> Scheduling is disabled by default. Read the [beta scheduling guide](docs/scheduling.md)
-> before enabling it on a test Home Assistant instance.
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz/)
+[![Stable release](https://img.shields.io/github/v/release/Carbanog/V2C_trydan.svg)](https://github.com/Carbanog/V2C_trydan/releases/)
+[English](README.md) · [Español](README.es.md) · [Français](README.fr.md)
 
-[![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://www.hacs.xyz/)
-[![GitHub release](https://img.shields.io/github/v/release/Carbanog/V2C_trydan.svg)](https://github.com/Carbanog/V2C_trydan/releases/)
-[![English](https://img.shields.io/badge/lang-en-red.svg)](README.md)
-[![Español](https://img.shields.io/badge/lang-es-yellow.svg)](README.es.md)
+Local charger control, complete charging-session tracking, and optional tools
+for managing charging from Home Assistant.
 
-A local Home Assistant integration for monitoring and controlling **V2C Trydan**
-chargers. It is designed for PLC and weak Wi-Fi links that benefit from paced,
-serialized requests and graceful handling of temporary failures.
+V2C Trydan combines everyday controls, persistent sessions across pauses and
+restarts, diagnostics and reusable automations. The beta branch adds optional
+weekly tariff scheduling without relying on an energy provider.
 
-> [!IMPORTANT]
-> This is an independent community project and is not affiliated with V2C. It
-> derives from [Rain1971's original work](https://github.com/Rain1971/V2C_trydant)
-> and is provided without warranty. Test beta releases on a non-production Home
-> Assistant instance first.
+## Releases and scope
 
-## Highlights
+| Channel | Version | Purpose |
+| --- | --- | --- |
+| Stable | [1.3.3](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.3.3) | Monitoring, controls and sessions. |
+| Opt-in beta | [1.4.0b2](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.4.0b2) | Adds optional scheduling; test installations only. |
 
-- Fully local HTTP communication with no third-party Python dependency.
-- One coordinated poll every 15 seconds shared by all entities.
-- Retries and serialized requests suited to constrained network links.
-- Pause, lock, and current controls.
-- **Whole-session energy and active time** across counter resets caused by OCPP
-  or app pauses.
-- Session persistence across Home Assistant restarts.
-- Descriptive charge states and immediate meter-problem detection.
-- UI-based IP reconfiguration without recreating entities.
-- Privacy-safe diagnostics that redact IP, SSID, and hardware identifiers.
-- Optional automation blueprints and dashboard examples.
-- Integration interface translated into English, Spanish, and French.
+The beta does not replace the latest stable release. Features labelled beta below
+are experimental, not part of 1.3.3. See the [changelog](CHANGELOG.md).
+Install through HACS as a **custom repository**; this project is not presented
+as included in the default HACS catalog.
+
+## Features
+
+- Local HTTP; no V2C Cloud account or Octopus/OCPP required.
+- Pause, lock and current controls, with optional advanced settings.
+- Whole-session energy and active time across firmware counter resets.
+- Session restoration after HA restarts.
+- Shared serialized requests, bounded retries and communication diagnostics,
+  also useful for constrained PLC/Wi-Fi connections.
+- IP reconfiguration without recreating the integration; redacted diagnostic fields.
+- Optional blueprints, dashboard examples and English/Spanish/French UI.
+
+Fault tolerance does not eliminate network problems or guarantee connectivity.
+
+## Requirements and compatibility
+
+HA must reach the charger's local HTTP API. Reserve its address in your router
+and check `http://CHARGER_IP/RealTimeData` on the same network.
+Do not expose that API to the Internet.
+
+Tests include anonymized real responses from firmware 2.4.6 and 2.5.1; this does
+not physically validate every firmware or installation. Optional fields are
+detected by presence rather than firmware number alone. Firmware 2.5.2 and
+Trydan Pro master/secondary arrangements remain unverified.
+
+Measured L1 current/voltage entities appear when reported by the charger.
+L2/L3 measurements and light controls are not exposed; the latter were removed
+because local states were inconsistent. Local brand icons are served by
+HA 2026.3 and later.
 
 ## Installation
 
-Version **1.3.3** replaces deprecated device-registry lookups and includes the
-local V2C icon (served by HA 2026.3 and later). Update through HACS and restart
-Home Assistant; do not delete or recreate the integration. Charger controls,
-entity IDs and session storage are unchanged. See [CHANGELOG.md](CHANGELOG.md).
+[![Add to HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Carbanog&repository=V2C_trydan&category=integration)
 
-[![Open this repository in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Carbanog&repository=V2C_trydan&category=integration)
+1. Back up HA.
+2. Use the button or add `https://github.com/Carbanog/V2C_trydan` in HACS as a
+   custom **Integration** repository.
+3. Download stable **1.3.3** and restart HA.
+4. Open **Settings → Devices & services → Add integration → V2C Trydan**.
+5. Enter the charger's local IP address.
 
-The button opens this custom repository directly in HACS. Select **Download**,
-restart Home Assistant, and continue from step 3. If the link cannot open your
-instance, use the manual procedure:
+Without HACS, download a release and copy only `custom_components/v2c_trydan`
+to `/config/custom_components/v2c_trydan`; restart and continue from step 4.
+Do not install two implementations using the `v2c_trydan` domain side by side.
+Avoid competing controllers/automations sending contradictory commands.
 
-1. Add `https://github.com/Carbanog/V2C_trydan` to HACS as a custom
-   **Integration** repository.
-2. Install V2C Trydan and restart Home Assistant.
-3. Open **Settings → Devices & services → Add integration**.
-4. Search for **V2C Trydan** and enter the charger's local IP address.
+## Updates, beta testing and rollback
 
-Reserve the address in your router's DHCP server. If it changes, choose
-**Reconfigure** from the integration menu instead of deleting the integration.
+Update through HACS and restart. Do not delete/recreate the integration:
+existing IDs, customizations and stored sessions are retained. Use **Reconfigure**
+if the IP changes. Reload after firmware upgrades to discover available optional fields.
 
-## A focused default experience
+To try **1.4.0b2**, explicitly select it in HACS's re-download/version selector,
+showing prereleases if needed, on test HA only. Do not enable beta updates in
+production or let two HA instances govern the same charger.
 
-New installations enable only everyday entities. Internal settings, solar and
-home-battery data, and detailed diagnostics remain available on the device page
-but start disabled.
+To roll back, review the actual pause state, disable scheduling if it was enabled,
+download **1.3.3** and restart. Disabling/unloading does not automatically resume
+charging. Beta-only entities can remain unavailable after rollback; user registry
+records are not automatically deleted.
 
-Disabling an entity in Home Assistant **does not modify the charger**. Dynamic
-charging, for example, remains active when configured through the V2C app.
+## Entities and configuration
 
-### Enabled by default
+| Group | Contents |
+| --- | --- |
+| Everyday controls | Pause charge, lock charger and manual current. |
+| Session | Session energy, active time and optional reset button. |
+| Monitoring | Charging power/partial energy, charge state, house power, cable/charging states. |
+| Optional settings | Current limits, dynamic charging/mode, timer and dynamic pause. |
+| Optional diagnostics/measurements | Meter, firmware, network, Wi-Fi, raw states, measured L1 voltage/current. |
+| Beta scheduling | Mode, current tariff and status; only when enabled. |
 
-| Entity | Type | Purpose |
-| --- | --- | --- |
-| Charge Power | Sensor | Power delivered to the vehicle. |
-| Charge Energy | Sensor | Partial counter reported by firmware. |
-| Session Energy | Sensor | Local total across every segment until the next connection. |
-| Session Active Charging Time | Sensor | Local active-time total across every segment. |
-| Charge State | Sensor | Detailed charger state. |
-| House Power | Sensor | Consumption seen by dynamic regulation. |
-| Cable Connected | Binary sensor | Reliable session automation trigger. |
-| Charging | Binary sensor | Active charging flow. |
-| Meter Problem | Binary sensor | Warns when the meter reports any error code. |
-| Pause Charge | Switch | Manually pauses or resumes charging. |
-| Lock Charger | Switch | Controls charger locking. |
-| Charge Intensity | Number | Sets manual current from 6 to 32 A. |
+New installs keep advanced settings, solar/home-battery data and many diagnostic
+entities disabled. Existing entity choices survive updates. Enable what you need
+under **Settings → Devices & services → Entities**, including disabled entities
+in the filter. Enabling an entity alone does not modify the charger.
 
-### Advanced and diagnostic entities
+Choose your language in the HA profile. Existing entity IDs, customized names
+and manually written dashboard text are not automatically renamed.
 
-Photovoltaic and home-battery power, voltage, contracted power, minimum and
-maximum current, dynamic charging, dynamic mode, timer, dynamic pause, duplicate
-raw states (including the firmware's per-segment `Charge Time`), meter codes,
-firmware, IP, SSID, Wi-Fi signal, and hardware ID start disabled. Enable only the
-entities relevant to the installation from
-**Settings → Devices & services → Entities**.
+## Session accounting
 
-Changing a default never overrides an entity choice already stored by an
-upgrading user.
+**Charge Energy** is the firmware's partial counter. **Session Energy** and
+**Session Active Charging Time** accumulate increments across pauses and counter
+resets. They do not depend on Octopus and also work with manual charging.
 
-To enable an optional entity, include disabled entities in the entity list,
-open the required entity, and enable it in its settings. Enabling a configuration
-entity does not change the charger until you use its control.
+Totals remain after unplug for delayed summaries; the next observed connection
+starts a new session. Charger faults do not start a new session on recovery.
+State is checkpointed independently of Recorder. An optional reset button
+handles exceptional corrections.
 
-The former Rain1971 project's kilometre sensor, kilometre charging target,
-maximum-price control, and built-in PVPC scheduling are not part of this
-integration; they are not hidden disabled entities. Its old dashboards may
-therefore reference entities that do not exist here. The session-summary
-blueprint's range/cost estimates are variables for notifications, not entities
-or automatic charging controls.
+Display precision is two decimals; time is stored in seconds. If an older entity
+still displays seconds, choose hours in its settings without resetting its total.
+Energy erased by the charger while HA was offline cannot be reconstructed.
 
-This project and Rain1971's integration use the same `v2c_trydan` domain. Do not
-install both implementations side by side in the same HA instance.
+## Tariff scheduling — 1.4 beta only
 
-After installing version 1.3.2 or later, choose French in
-your HA user profile and restart HA after the integration update. Existing entity
-IDs, customized names, and manually written dashboard titles are not renamed.
-French translations do not change charger communication or session tracking.
+A separate, optional module, **disabled by default**, with no helpers or
+automations to create. Configure multiple blocks per day, different weekdays,
+Peak/Shoulder/Off-peak labels and overnight intervals. Utility hours, holidays
+and prices are not assumed or fetched.
 
-### Measured values with firmware 2.5.1
+In **Configure**, add blocks, choose permitted tariffs and enable the module.
+**Save and apply** shows enabled state, blocks and gaps, then requires explicit
+confirmation. Overlaps are rejected; unassigned time does not permit charging.
 
-When `RealTimeData` includes `IntensityMeasure_L1` and `VoltageMeasure_L1`, the
-integration creates **Measured Current L1** and **Measured Voltage L1**, disabled
-by default and displayed with two decimals. Enable them from the device entity
-list. These are measurements, distinct from the requested current and reference
-installation voltage. Zero values reported while idle remain zero.
+| Mode | Behavior |
+| --- | --- |
+| Automatic | Permits charging only in selected tariff periods. |
+| Charge now | Ignores tariffs until an observed connection followed by unplug. |
+| Paused | Latches a stop until another mode is chosen. |
 
-Anonymized 2.4.6 and 2.5.1 responses are covered by tests. Older devices without
-these fields do not create these entities. Reload the integration after a firmware
-upgrade to discover new fields. `GridPower`, phases L2/L3, lights, and `ChargeMode`
-do not add entities or controls in this update.
+First activation starts Paused. Only `Paused` is written: the policy never
+unlocks the charger or changes current/dynamic regulation. While enabled, the
+existing pause switch selects Paused when on, and Charge now when off.
+Status explains waiting, shows the next window as an attribute, and raises a
+**Repairs** warning if an attempted command stays unconfirmed for one minute.
 
-## Whole-session statistics
+**HA must remain running and connected.** An outage can prevent stopping at a
+boundary; an unplug/replug entirely during downtime may go undetected.
+The next window previews tariff permission, not a guaranteed vehicle start.
+Do not combine with OCPP/Octopus or other charging schedules. Leave dynamic
+regulation and electrical protections enabled.
 
-`Charge Energy` mirrors the charger's `ChargeEnergy` property. External
-controllers such as OCPP may split one physical connection into several charging
-segments and reset that value after a pause.
+[Full beta setup, physical-test and rollback guide](https://github.com/Carbanog/V2C_trydan/blob/v1.4.0b2/docs/scheduling.md).
+Promotion to stable is pending physical charging checks.
 
-`Session Energy` and `Session Active Charging Time` add the positive increments
-from every segment while the cable remains connected. They retain the finished
-totals after disconnection for delayed summary automations, reset at the next
-vehicle connection, and periodically persist independently of Recorder.
+## Blueprints and automations
 
-Charger fault states do not prove that the cable was unplugged. The accumulator
-retains session totals and the last trustworthy counter baselines during faults,
-without starting a new session when charging recovers.
+Optional imports live in [blueprints/automation](blueprints/automation).
+They are never automatically installed or enabled.
 
-Time remains stored internally in seconds, while new installations display it in
-hours with two decimals. If the entity was already created by `1.3.0b5`, Home
-Assistant preserves its previous unit: open the entity settings and change
-**Unit of measurement** from `s` to `h`. This does not reset its value or history.
-
-The disabled-by-default `Reset Session Statistics` button handles exceptional
-manual correction without recounting the current raw baselines.
-
-> [!NOTE]
-> Energy from complete segments that occur while Home Assistant is offline and
-> are later erased by the charger cannot be recovered.
-
-## Reusable automations
-
-Blueprints live in the repository's
-[`blueprints/automation`](blueprints/automation) directory. They are never
-installed or enabled automatically. Import them through **Settings → Automations
-& scenes → Blueprints → Import blueprint**, or use the direct buttons below.
-
-### Session summary and notifications
+**Session summary and notifications**
 
 [![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0b2%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
 
-- [View or copy the YAML](blueprints/automation/session_summary.yaml).
-- Runs actions on the first charging start and two minutes after disconnect,
-  without repeating notifications for OCPP pauses.
-- Finish actions can use `session_kwh`, `session_seconds`, `session_hours`,
-  `session_duration`, `estimated_percent`, `estimated_cost`, and
-  `estimated_range_km`.
+[View YAML](blueprints/automation/session_summary.yaml). Runs start/end actions
+without repeating every OCPP pause. Finish actions can use `session_kwh`,
+`session_seconds`, `session_hours`, `session_duration`, `estimated_percent`,
+`estimated_cost` and `estimated_range_km`.
 
-Example **Session finished actions** block (replace the notification service):
-
+Example finish action; replace the notification service:
 ```yaml
 action: notify.mobile_app_your_phone
 data:
-  title: Car charging finished
-  message: >-
-    Added {{ session_kwh }} kWh in {{ session_duration }}.
-    {% if estimated_percent is not none %}
-      Estimated battery added: {{ estimated_percent }}%.
-    {% endif %}
-    {% if estimated_cost is not none %}
-      Estimated cost: €{{ estimated_cost }}.
-    {% endif %}
+  title: Charging finished
+  message: "{{ session_kwh }} kWh · {{ session_duration }}"
 ```
 
-### High charging power alert
+**High charging power alert**
 
 [![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0b2%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
 
-- [View or copy the YAML](blueprints/automation/high_power_alert.yaml).
-- Runs an action after charging power exceeds the configured threshold for the
-  selected duration and exposes `measured_power`.
+[View YAML](blueprints/automation/high_power_alert.yaml). Runs chosen actions
+after a power threshold is exceeded for a configured duration; exposes `measured_power`.
 
-Example **Alert actions** block:
+Vehicle capacity, efficiency, price and consumption are optional blueprint inputs.
+Battery-added percentages, cost and range are estimates for notifications, not
+vehicle-reported SOC or newly created sensors.
 
-```yaml
-action: notify.mobile_app_your_phone
-data:
-  title: High charging power
-  message: The car is charging at {{ measured_power | round(0) }} W.
-```
+## Dashboards
 
-In the blueprint action selector, create these notifications in the UI or choose
-**Edit in YAML** and paste the relevant block.
+- [Native](dashboards/native.en.yaml): standard HA cards.
+- [Mushroom](dashboards/mushroom.en.yaml): requires Mushroom and Mini Graph Card.
 
-Battery capacity, efficiency, price, and range describe the vehicle or tariff,
-not the charger. They therefore belong to the optional blueprint rather than the
-core integration. Calculated percentages are **estimated energy added**, not a
-vehicle-reported state of charge.
-
-## Dashboard examples
-
-- [Native dashboard](dashboards/native.en.yaml) uses built-in Home Assistant
-  cards only.
-- [Mushroom dashboard](dashboards/mushroom.en.yaml) requires Mushroom and Mini
-  Graph Card.
-
-Paste a selected example into a manual dashboard card and adjust entity IDs if
-Home Assistant generated different names. The integration never changes a
-dashboard automatically.
-
-### Screenshots
+Paste the YAML into a manual card and adapt entity IDs to your installation.
+The integration never changes your dashboards automatically.
 
 | Native dashboard | Mushroom dashboard |
 | :---: | :---: |
-| [![Native Home Assistant dashboard](docs/images/dashboard-native.png)](docs/images/dashboard-native.png) | [![Mushroom dashboard](docs/images/dashboard-mushroom.png)](docs/images/dashboard-mushroom.png) |
+| [![Native dashboard](docs/images/dashboard-native.png)](docs/images/dashboard-native.png) | [![Mushroom dashboard](docs/images/dashboard-mushroom.png)](docs/images/dashboard-mushroom.png) |
 
-Select either screenshot to open it at its original size.
+Screenshots show the Spanish interface; entity text follows your HA language.
 
 ## Compatibility actions
 
-| Action | Description |
-| --- | --- |
-| `v2c_trydan.set_intensity` | Sets manual charging current. |
-| `v2c_trydan.set_min_intensity` | Sets the lower dynamic-current limit. |
-| `v2c_trydan.set_max_intensity` | Sets the upper dynamic-current limit. |
-| `v2c_trydan.set_dynamic_power_mode` | Changes dynamic strategy from 0 to 5. |
+New automations should normally target `switch`, `number` and `select` entities.
+Compatibility actions remain available: `v2c_trydan.set_intensity`,
+`v2c_trydan.set_min_intensity`, `v2c_trydan.set_max_intensity` and
+`v2c_trydan.set_dynamic_power_mode`. Supply `config_entry_id` when needed to
+select one of multiple chargers.
 
-New automations should normally target `number`, `select`, and `switch` entities
-directly. These actions remain for backwards compatibility and support explicit
-charger selection in multi-charger installations.
+They do not replace every V2C app setting. Do not change protection-related
+current limits, dynamic charging or advanced modes without understanding the installation.
 
-> [!WARNING]
-> The V2C app exposes settings that the local API does not, including scheduled
-> contracted-power limits. Do not change dynamic charging, timer, or advanced
-> modes from Home Assistant when they protect the installation or when an energy
-> provider controls charging through OCPP.
+## Diagnostics and limits
 
-## Technical behavior
+One shared poll every **15 s**, a **20 s** read timeout and up to **3 attempts**
+for transient failures, separated by **2 s**. Requests are serialized per charger.
+Permanent HTTP errors, redirects and invalid snapshots remain visible.
+Writes require `OK` and are not blindly repeated.
 
-| Parameter | Value |
-| --- | --- |
-| Main poll | 15 seconds |
-| Read timeout | 20 seconds |
-| Read attempts | Up to 3 for transient failures, with a 2-second delay |
-| Concurrency | One in-flight request per charger |
-| Session persistence | On connection changes and during long charges |
+For a report, enable debug logging in the integration menu, wait for failure and
+recovery, then disable logging and download logs/diagnostics. They include read
+attempts, elapsed time, latest failure and observed recovery.
+Automatic recovery alone does not identify a network root cause.
+Known IP, SSID and hardware-ID fields are redacted from diagnostics, but review
+all logs and screenshots before publishing.
 
-Light controls were removed after physical testing with firmware 2.4.6 because
-their local API state did not reliably match the charger or V2C app. Reliable
-state is required before a control can return in a future release.
+There is no real vehicle SOC, kilometre charging target, PVPC integration or
+automatic price optimization. Beta scheduling is neither a safety mechanism
+nor a guarantee of tariff compliance during HA/network downtime.
 
-## Diagnostics
+## Contributing and HACS readiness
 
-- Verify `http://CHARGER_IP/RealTimeData` from the same network.
-- Temporary failures make entities unavailable and are retried automatically.
-- Download diagnostics from the integration menu when reporting a problem;
-  sensitive network and identity values are redacted.
-- See [`docs/architecture.md`](docs/architecture.md) for module boundaries,
-  invariants, compatibility policy, and contribution guidance.
+Use [Issues](https://github.com/Carbanog/V2C_trydan/issues) with integration/HA/
+firmware versions, reproduction steps and reviewed, privacy-safe diagnostics.
+Maintained languages are English, Spanish and French; native wording corrections
+are welcome. Add languages when there is demand and someone to maintain them.
 
-Communication errors include attempt count, elapsed time, and the last failure
-category (for example, timeout, connection error, or HTTP status). Permanent HTTP
-4xx errors and incomplete payloads fail immediately; transient failures are
-retried. Commands require an `OK` acknowledgement and are never automatically
-repeated after an ambiguous failure.
+[Architecture and development](docs/architecture.md) ·
+[HACS catalog readiness checklist](docs/hacs-readiness.md).
 
-Diagnostics include `communication`: the latest read, the most recent failed
-read even after recovery, consecutive failures, and the last observed recovery
-duration. Response bodies and arbitrary transport messages are excluded. The
-duration is the window observed by HA, not an exact measurement of network downtime.
+Checks include Ruff, pytest, hassfest and HACS. The beta branch also tests actual
+HA lifecycle with a mocked charger; this does not replace physical verification.
+Default HACS catalog inclusion requires a separate submission and review.
 
-To investigate an episode, select **Enable debug logging** from the integration
-menu, wait for the failure and recovery, then disable logging and download the
-log. Attempts use DEBUG and recovery uses INFO; INFO may be hidden at HA's normal
-logging level. Include integration diagnostics and the HA version in the report.
-Automatic recovery alone does not distinguish a charger problem from a network
-problem.
+## License and credits
 
-## Credits
+An independent project maintained by [Carbanog](https://github.com/Carbanog),
+not affiliated with V2C or Home Assistant. It began from
+[Rain1971's work](https://github.com/Rain1971/V2C_trydant) and has evolved with its
+own functionality and architecture while retaining that acknowledgement.
 
-- [Rain1971](https://github.com/Rain1971/V2C_trydant), author of the original
-  integration this project started from.
-- The Home Assistant community and AI tools used during development and review.
+[MIT license](LICENSE), with original-author and Carbanog copyright notices
+preserved. Thanks to the community and AI tools used during development/review.
+Icon provenance is documented in [brand-assets](docs/brand-assets.md).
+Optional support is available in **Sponsor this project** in the repository sidebar.
