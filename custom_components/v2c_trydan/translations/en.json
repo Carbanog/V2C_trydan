@@ -27,6 +27,51 @@
       "reconfigure_successful": "The charger address was updated"
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Optional charging schedule (beta)",
+        "description": "Disabled by default. Configure blocks, choose allowed tariffs, then Save. First activation starts Paused; select Automatic on the device. Do not combine with OCPP or V2C app timers.",
+        "menu_options": {
+          "settings": "Settings and allowed tariffs",
+          "add_block": "Add a time block",
+          "remove_block": "Remove a time block",
+          "save": "Save and apply"
+        }
+      },
+      "settings": {
+        "title": "Settings and allowed tariffs",
+        "data": {
+          "enabled": "Enable scheduling",
+          "allowed": "Allowed tariffs"
+        }
+      },
+      "add_block": {
+        "title": "Add a time block",
+        "description": "Local HA time, minute precision. End earlier than start crosses midnight. 00:00 to 00:00 means a full day. Overlaps are rejected; unassigned time is paused.",
+        "data": {
+          "days": "Days on which the block starts",
+          "start": "Start time",
+          "end": "End time",
+          "period": "Tariff"
+        }
+      },
+      "remove_block": {
+        "title": "Remove a time block",
+        "description": "Choose a block to remove. Changes apply only after Save.",
+        "data": {
+          "block": "Remove a time block"
+        }
+      },
+      "save": {
+        "title": "Save and apply",
+        "description": "Invalid schedule: check times, days and overlaps. Enabling requires at least one block. Press Submit to return to the menu."
+      }
+    },
+    "error": {
+      "invalid_schedule": "Invalid schedule: check times, days and overlaps. Enabling requires at least one block. Press Submit to return to the menu."
+    }
+  },
   "services": {
     "set_intensity": {
       "name": "Set charge intensity",
@@ -86,6 +131,8 @@
     }
   },
   "selector": {
+    "tariff": {"options":{"peak":"Peak","shoulder":"Shoulder","off_peak":"Off-peak"}},
+    "weekdays": {"options":{"mon":"Monday","tue":"Tuesday","wed":"Wednesday","thu":"Thursday","fri":"Friday","sat":"Saturday","sun":"Sunday"}},
     "dynamic_power_mode": {
       "options": {
         "0": "Enable timed power",
@@ -108,6 +155,8 @@
       "reset_session_energy": { "name": "Reset Session Statistics" }
     },
     "sensor": {
+      "scheduling_period": {"name":"Current tariff","state":{"peak":"Peak","shoulder":"Shoulder","off_peak":"Off-peak","unassigned":"Unassigned"}},
+      "scheduling_status": {"name":"Scheduling status","state":{"disabled":"Disabled","unavailable":"Charger unavailable","disconnected":"Cable disconnected","charger_fault":"Charger fault or unknown cable state","incomplete_data":"Incomplete charger data","command_unconfirmed":"Command unconfirmed — review state and select mode to retry","locked":"Charger locked","device_timer":"V2C device timer enabled — conflict","manual_pause":"Paused by user or external controller","charge_now":"Charge now override","waiting_schedule":"Waiting for an allowed tariff","charging_allowed":"Charging permitted by schedule"}},
       "chargepower": { "name": "Charge Power" },
       "chargeenergy": { "name": "Charge Energy" },
       "session_energy": { "name": "Session Energy" },
@@ -202,6 +251,7 @@
       "intensity": { "name": "Charge Intensity" }
     },
     "select": {
+      "scheduling_mode": {"name":"Charging schedule mode","state":{"automatic":"Automatic","charge_now":"Charge now (until unplugged)","paused":"Paused"}},
       "dynamic_power_mode": {
         "name": "Dynamic Power Mode",
         "state": {

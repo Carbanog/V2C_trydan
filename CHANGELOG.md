@@ -2,6 +2,21 @@
 
 All notable changes to this project are documented here.
 
+## 1.4.0b1
+
+### Beta: optional charging schedules
+
+* Separate weekly tariff policy, serialized command controller and HA lifecycle
+  adapter. Disabled by default; first activation starts Paused.
+* Native options menu for weekly blocks, allowed peak/shoulder/off-peak periods,
+  midnight-crossing intervals and explicit Save. Overlaps are rejected.
+* Automatic, Charge now until unplugged, and Paused modes; current tariff and
+  decision-status sensors appear only when enabled.
+* Persist mode and pending commands independently of energy/session storage.
+  Do not retry unconfirmed writes blindly or override locks/device timers.
+* Scheduling and real-HA regression tests; no charger firmware update.
+* Prerelease only: 1.3.3 remains the stable production release.
+
 ## 1.3.3
 
 ### Fixed

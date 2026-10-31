@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from time import monotonic
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -17,6 +17,9 @@ from homeassistant.helpers.update_coordinator import (
 from .api import V2CTrydanApi, V2CTrydanError, device_identifier
 from .const import DOMAIN, POLL_INTERVAL, SESSION_ACTIVE_TIME_KEY, SESSION_ENERGY_KEY
 from .session import SessionState, SessionTracker
+
+if TYPE_CHECKING:
+    from .scheduling.ha import SchedulingManager
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -41,6 +44,7 @@ class V2CTrydanDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     ) -> None:
         """Initialize the coordinator."""
         self.api = api
+        self.scheduler: SchedulingManager | None = None
         self.host = api.host
         self.device_id = (
             entry.unique_id

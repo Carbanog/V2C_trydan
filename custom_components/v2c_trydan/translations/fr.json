@@ -27,6 +27,51 @@
       "reconfigure_successful": "L’adresse de la borne a été mise à jour"
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Programmation de charge facultative (bêta)",
+        "description": "Désactivée par défaut. Ajoutez des plages, choisissez les tarifs autorisés, puis enregistrez. La première activation commence en Pause ; sélectionnez Automatique sur l’appareil. Ne pas combiner avec OCPP ou les horaires V2C.",
+        "menu_options": {
+          "settings": "Réglages et tarifs autorisés",
+          "add_block": "Ajouter une plage horaire",
+          "remove_block": "Supprimer une plage horaire",
+          "save": "Enregistrer et appliquer"
+        }
+      },
+      "settings": {
+        "title": "Réglages et tarifs autorisés",
+        "data": {
+          "enabled": "Activer la programmation",
+          "allowed": "Tarifs autorisés"
+        }
+      },
+      "add_block": {
+        "title": "Ajouter une plage horaire",
+        "description": "Heure locale de HA, précision à la minute. Une fin avant le début traverse minuit. De 00:00 à 00:00 signifie une journée entière. Les chevauchements sont interdits ; hors plage, la charge est en pause.",
+        "data": {
+          "days": "Jours de début de la plage",
+          "start": "Heure de début",
+          "end": "Heure de fin",
+          "period": "Tarif"
+        }
+      },
+      "remove_block": {
+        "title": "Supprimer une plage horaire",
+        "description": "Choisissez la plage à supprimer. Les changements prennent effet après enregistrement.",
+        "data": {
+          "block": "Supprimer une plage horaire"
+        }
+      },
+      "save": {
+        "title": "Enregistrer et appliquer",
+        "description": "Horaire non valide : vérifiez les heures, jours et chevauchements. L’activation nécessite au moins une plage. Validez pour revenir au menu."
+      }
+    },
+    "error": {
+      "invalid_schedule": "Horaire non valide : vérifiez les heures, jours et chevauchements. L’activation nécessite au moins une plage. Validez pour revenir au menu."
+    }
+  },
   "services": {
     "set_intensity": {
       "name": "Régler l’intensité de charge",
@@ -86,6 +131,8 @@
     }
   },
   "selector": {
+    "tariff": {"options":{"peak":"Pointe","shoulder":"Intermédiaire","off_peak":"Heures creuses"}},
+    "weekdays": {"options":{"mon":"Lundi","tue":"Mardi","wed":"Mercredi","thu":"Jeudi","fri":"Vendredi","sat":"Samedi","sun":"Dimanche"}},
     "dynamic_power_mode": {
       "options": {
         "0": "Activer la puissance programmée",
@@ -108,6 +155,8 @@
       "reset_session_energy": { "name": "Réinitialiser les statistiques de session" }
     },
     "sensor": {
+      "scheduling_period": {"name":"Tarif actuel","state":{"peak":"Pointe","shoulder":"Intermédiaire","off_peak":"Heures creuses","unassigned":"Non défini"}},
+      "scheduling_status": {"name":"État de la programmation","state":{"disabled":"Désactivée","unavailable":"Borne indisponible","disconnected":"Câble débranché","charger_fault":"Défaut de borne ou connexion du câble inconnue","incomplete_data":"Données de borne incomplètes","command_unconfirmed":"Commande non confirmée — vérifiez l’état et sélectionnez le mode pour réessayer","locked":"Borne verrouillée","device_timer":"Programmation V2C activée — conflit","manual_pause":"Pause par l’utilisateur ou un autre contrôleur","charge_now":"Dérogation Charger maintenant","waiting_schedule":"En attente d’un tarif autorisé","charging_allowed":"Charge autorisée par l’horaire"}},
       "chargepower": { "name": "Puissance de charge" },
       "chargeenergy": { "name": "Énergie de charge" },
       "session_energy": { "name": "Énergie de la session" },
@@ -202,6 +251,7 @@
       "intensity": { "name": "Intensité de charge" }
     },
     "select": {
+      "scheduling_mode": {"name":"Mode de programmation de charge","state":{"automatic":"Automatique","charge_now":"Charger maintenant (jusqu’au débranchement)","paused":"Pause"}},
       "dynamic_power_mode": {
         "name": "Mode de puissance dynamique",
         "state": {
