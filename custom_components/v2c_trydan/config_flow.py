@@ -22,7 +22,7 @@ from .api import (
 )
 from .const import DOMAIN
 from .scheduling.policy import DAYS, OPTION_KEY, PERIODS, WeeklySchedule
-from .scheduling.presentation import async_schedule_summary
+from .scheduling.presentation import async_block_choices, async_schedule_summary
 
 
 def _normalize_ip_address(value: str) -> str:
@@ -38,6 +38,34 @@ def _schema(default: str | None = None) -> vol.Schema:
         else vol.Required(CONF_IP_ADDRESS)
     )
     return vol.Schema({field: str})
+
+
+def _block_schema(defaults: dict[str, Any]) -> vol.Schema:
+    """Share the native form between adding and replacing a time block."""
+    return vol.Schema(
+        {
+            vol.Required(
+                "days", default=defaults.get("days", list(DAYS[:5]))
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=list(DAYS), multiple=True, translation_key="weekdays"
+                )
+            ),
+            vol.Required(
+                "start", default=defaults.get("start", "00:00:00")
+            ): selector.TimeSelector(),
+            vol.Required(
+                "end", default=defaults.get("end", "08:00:00")
+            ): selector.TimeSelector(),
+            vol.Required(
+                "period", default=defaults.get("period", "off_peak")
+            ): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=list(PERIODS), translation_key="tariff"
+                )
+            ),
+        }
+    )
 
 
 class V2CTrydanConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -142,6 +170,7 @@ class V2CTrydanOptionsFlow(config_entries.OptionsFlow):
 
     def __init__(self) -> None:
         self._draft: dict[str, Any] | None = None
+        self._edit_index: int | None = None
 
     async def async_step_init(self, user_input=None) -> ConfigFlowResult:
         if self._draft is None:
@@ -151,7 +180,13 @@ class V2CTrydanOptionsFlow(config_entries.OptionsFlow):
             self._draft.setdefault("blocks", [])
         return self.async_show_menu(
             step_id="init",
-            menu_options=["settings", "add_block", "remove_block", "save"],
+            menu_options=[
+                "settings",
+                "add_block",
+                "edit_block",
+                "remove_block",
+                "save",
+            ],
         )
 
     async def async_step_settings(self, user_input=None) -> ConfigFlowResult:
@@ -193,25 +228,41 @@ class V2CTrydanOptionsFlow(config_entries.OptionsFlow):
         return self.async_show_form(
             step_id="add_block",
             errors=errors,
-            data_schema=vol.Schema(
-                {
-                    vol.Required(
-                        "days", default=list(DAYS[:5])
-                    ): selector.SelectSelector(
-                        selector.SelectSelectorConfig(
-                            options=list(DAYS),
-                            multiple=True,
-                            translation_key="weekdays",
-                        )
-                    ),
-                    vol.Required("start", default="00:00:00"): selector.TimeSelector(),
-                    vol.Required("end", default="08:00:00"): selector.TimeSelector(),
-                    vol.Required("period", default="off_peak"): selector.SelectSelector(
-                        selector.SelectSelectorConfig(
-                            options=list(PERIODS), translation_key="tariff"
-                        )
-                    ),
-                }
+            data_schema=_block_schema(user_input or {}),
+        )
+
+    async def async_step_edit_block(self, user_input=None) -> ConfigFlowResult:
+        """Select an existing draft block, without removing it first."""
+        if not self._draft["blocks"]:
+            return await self.async_step_init()
+        if user_input is not None:
+            self._edit_index = int(user_input["block"])
+            return await self.async_step_edit_details()
+        return await self._async_block_selection("edit_block")
+
+    async def async_step_edit_details(self, user_input=None) -> ConfigFlowResult:
+        """Validate a replacement against the other blocks before changing draft."""
+        if self._edit_index is None or not 0 <= self._edit_index < len(
+            self._draft["blocks"]
+        ):
+            return await self.async_step_edit_block()
+        errors = {}
+        if user_input is not None:
+            candidate = deepcopy(self._draft)
+            candidate["blocks"][self._edit_index] = user_input
+            try:
+                WeeklySchedule.from_options(candidate)
+            except ValueError:
+                errors["base"] = "invalid_schedule"
+            else:
+                self._draft = candidate
+                self._edit_index = None
+                return await self.async_step_init()
+        return self.async_show_form(
+            step_id="edit_details",
+            errors=errors,
+            data_schema=_block_schema(
+                user_input or self._draft["blocks"][self._edit_index]
             ),
         )
 
@@ -222,18 +273,16 @@ class V2CTrydanOptionsFlow(config_entries.OptionsFlow):
         if user_input is not None:
             blocks.pop(int(user_input["block"]))
             return await self.async_step_init()
-        options = [
-            {
-                "value": str(index),
-                "label": (
-                    f"{', '.join(block['days'])}: "
-                    f"{block['start']} → {block['end']} ({block['period']})"
-                ),
-            }
-            for index, block in enumerate(blocks)
-        ]
+        return await self._async_block_selection("remove_block")
+
+    async def _async_block_selection(self, step_id: str) -> ConfigFlowResult:
+        options = await async_block_choices(
+            self.hass,
+            self._draft["blocks"],
+            self.context.get("language") or self.hass.config.language,
+        )
         return self.async_show_form(
-            step_id="remove_block",
+            step_id=step_id,
             data_schema=vol.Schema(
                 {
                     vol.Required("block"): selector.SelectSelector(

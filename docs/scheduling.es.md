@@ -1,4 +1,4 @@
-# Programación de carga — beta 1.4.0b2
+# Programación de carga — beta 1.4.0b3
 
 Esta función es opcional y experimental. La estable sigue siendo **1.3.3**.
 La beta no actualiza el firmware del cargador ni cambia la carga dinámica.
@@ -7,7 +7,7 @@ La beta no actualiza el firmware del cargador ni cambia la carga dinámica.
 
 1. Haz una copia de seguridad del HA de pruebas.
 2. Solo en ese HA, abre la integración en HACS y el menú de volver a descargar.
-   Muestra las versiones beta/prerelease si hace falta y elige **1.4.0b2**.
+   Muestra las versiones beta/prerelease si hace falta y elige **1.4.0b3**.
 3. Reinicia HA. Comprueba la versión y que tus entidades/sesiones siguen presentes.
 4. En producción conserva 1.3.3 y no habilites actualizaciones beta. La beta se
    publica como prerelease, sin sustituir la última release estable.
@@ -28,8 +28,15 @@ Todo lo editado es un borrador hasta **Guardar y aplicar**; cancelar no lo aplic
    permites cargar. Puedes dejar la selección vacía para no autorizar ninguna.
 3. **Guardar y aplicar** abre un resumen: habilitación, tramos, tarifas permitidas
    y huecos sin asignar. Revisa y marca **Aplicar estos horarios**; solo entonces
-   confirma para guardar. HA recarga la integración. Para corregir un tramo,
-   elimínalo y vuelve a añadirlo antes de guardar.
+   confirma para guardar. HA recarga la integración.
+
+Para cambiar un tramo existente, elige **Editar tramo horario**, selecciona el
+tramo y modifica los días, inicio, fin o tarifa ya rellenados. El cambio sustituye
+ese tramo en el borrador, sin borrarlo primero ni añadir otro. Se valida frente
+a los demás: si se solapa, conserva el original y permite corregirlo.
+**Guardar y aplicar** y la confirmación final siguen siendo necesarios para
+activar lo editado. Cancelar el flujo descarta el borrador. No hay excepciones
+por fecha: los horarios siguen siendo semanales.
 
 No se presupone ninguna tarifa comercial. Horas y días son los que tú indiques;
 los festivos no se calculan automáticamente. Máximo 100 bloques, sin solapamientos,

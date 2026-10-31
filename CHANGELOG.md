@@ -2,6 +2,19 @@
 
 All notable changes to this project are documented here.
 
+## 1.4.0b3
+
+### Beta: edit time blocks in place
+
+* Add an Edit block option with prefilled days, start/end time and tariff.
+* Validate a replacement against the other blocks; reject overlaps without
+  discarding the original or adding a duplicate. Changes stay in the options
+  draft until the final summary is explicitly confirmed.
+* Share add/edit form validation and translated edit/remove labels in English,
+  Spanish and French. Existing schedules and unrelated options are preserved.
+* No date exceptions, charger-policy changes, new entities or storage migration.
+* Prerelease only; stable remains 1.3.3.
+
 ## 1.4.0b2
 
 ### Beta: scheduling visibility and review

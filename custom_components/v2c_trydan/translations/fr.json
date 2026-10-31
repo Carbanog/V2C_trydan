@@ -35,6 +35,7 @@
         "menu_options": {
           "settings": "Réglages et tarifs autorisés",
           "add_block": "Ajouter une plage horaire",
+          "edit_block": "Modifier une plage horaire",
           "remove_block": "Supprimer une plage horaire",
           "save": "Enregistrer et appliquer"
         }
@@ -56,6 +57,8 @@
           "period": "Tarif"
         }
       },
+      "edit_block": {"title":"Modifier une plage horaire","description":"Choisissez la plage existante à modifier. Elle n’est pas supprimée.","data":{"block":"Modifier une plage horaire"}},
+      "edit_details": {"title":"Modifier les détails de la plage","description":"Les valeurs actuelles sont préremplies. Modifiez les jours, le début, la fin ou le tarif. Les changements restent un brouillon jusqu’à la confirmation de l’enregistrement.","data":{"days":"Jours de début de la plage","start":"Heure de début","end":"Heure de fin","period":"Tarif"}},
       "remove_block": {
         "title": "Supprimer une plage horaire",
         "description": "Choisissez la plage à supprimer. Les changements prennent effet après enregistrement.",

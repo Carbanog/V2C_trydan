@@ -11,6 +11,31 @@ from ..const import DOMAIN
 from .policy import DAYS, PERIODS, WeeklySchedule
 
 
+def _label(texts: dict[str, str], selector: str, value: str) -> str:
+    return texts.get(f"component.{DOMAIN}.selector.{selector}.options.{value}", value)
+
+
+def _block_label(block: dict[str, Any], texts: dict[str, str]) -> str:
+    return (
+        f"{', '.join(_label(texts, 'weekdays', day) for day in block['days'])}: "
+        f"{block['start'][:5]} → {block['end'][:5]} — "
+        f"{_label(texts, 'tariff', block['period'])}"
+    )
+
+
+async def async_block_choices(
+    hass: HomeAssistant,
+    blocks: list[dict[str, Any]],
+    language: str,
+) -> list[dict[str, str]]:
+    """Use the same translated day/tariff names for editing and removal."""
+    texts = await async_get_translations(hass, language, "selector", {DOMAIN})
+    return [
+        {"value": str(index), "label": _block_label(block, texts)}
+        for index, block in enumerate(blocks)
+    ]
+
+
 async def async_schedule_summary(
     hass: HomeAssistant,
     draft: dict[str, Any],
@@ -19,17 +44,11 @@ async def async_schedule_summary(
 ) -> dict[str, str]:
     """Describe a validated draft, never mutate or activate its configuration."""
     texts = await async_get_translations(hass, language, "selector", {DOMAIN})
-    prefix = f"component.{DOMAIN}.selector."
 
     def label(selector: str, value: str) -> str:
-        return texts.get(f"{prefix}{selector}.options.{value}", value)
+        return _label(texts, selector, value)
 
-    lines = [
-        f"- {', '.join(label('weekdays', day) for day in block['days'])}: "
-        f"{block['start'][:5]} → {block['end'][:5]} — "
-        f"{label('tariff', block['period'])}"
-        for block in draft["blocks"]
-    ]
+    lines = [f"- {_block_label(block, texts)}" for block in draft["blocks"]]
     gaps = schedule.coverage_gaps()
     gap_lines = []
     for day, name in enumerate(DAYS):

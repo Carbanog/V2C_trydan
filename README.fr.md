@@ -16,7 +16,7 @@ une programmation hebdomadaire par tarifs, indépendante du fournisseur d’éne
 | Canal | Version | Usage |
 | --- | --- | --- |
 | Stable | [1.3.3](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.3.3) | Suivi, commandes et sessions. |
-| Bêta volontaire | [1.4.0b2](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.4.0b2) | Programmation facultative ; installation de test uniquement. |
+| Bêta volontaire | [1.4.0b3](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.4.0b3) | Programmation facultative ; installation de test uniquement. |
 
 La bêta ne remplace pas la dernière version stable. Les fonctions marquées bêta
 ci-dessous sont expérimentales, pas disponibles dans 1.3.3. Voir le [journal des
@@ -77,7 +77,7 @@ identifiants, personnalisations et sessions stockées sont conservés.
 Utilisez **Reconfigurer** si l’IP change. Rechargez après une mise à jour du
 firmware pour découvrir les nouveaux champs facultatifs.
 
-Pour essayer **1.4.0b2**, choisissez-la explicitement dans la sélection de version
+Pour essayer **1.4.0b3**, choisissez-la explicitement dans la sélection de version
 de HACS, en affichant les préversions si nécessaire, uniquement sur le HA de test.
 N’activez pas les bêtas en production et ne laissez pas deux instances commander
 la même borne.
@@ -130,7 +130,7 @@ automatisations à créer. Plusieurs plages par jour, différents jours, tarifs
 Pointe/Intermédiaire/Heures creuses et passage à minuit sont possibles.
 Aucun horaire contractuel, jour férié ou prix n’est supposé ou téléchargé.
 
-Dans **Configurer**, ajoutez les plages, choisissez les tarifs et activez le module.
+Dans **Configurer**, ajoutez ou modifiez les plages, choisissez les tarifs et activez le module.
 **Enregistrer et appliquer** présente activation, plages et créneaux non définis,
 puis exige une confirmation. Les chevauchements sont refusés ; hors plage,
 la charge n’est pas autorisée.
@@ -154,7 +154,7 @@ inaperçu. La prochaine plage n’est pas une garantie de démarrage.
 Ne combinez pas cette politique avec OCPP/Octopus ou d’autres horaires de charge.
 Gardez la régulation dynamique et les protections électriques actives.
 
-[Guide détaillé de la bêta en anglais](https://github.com/Carbanog/V2C_trydan/blob/v1.4.0b2/docs/scheduling.md).
+[Guide détaillé de la bêta en anglais](https://github.com/Carbanog/V2C_trydan/blob/v1.4.0b3/docs/scheduling.md).
 Le passage en stable attend encore les essais physiques de recharge.
 
 ## Blueprints et automatisations
@@ -164,7 +164,7 @@ Ils ne sont jamais installés ou activés automatiquement.
 
 **Résumé et notifications de session**
 
-[![Importer dans Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0b2%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
+[![Importer dans Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0b3%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
 
 [Voir le YAML](blueprints/automation/session_summary.yaml). Actions au démarrage et
 après débranchement, sans répéter chaque pause OCPP. Les actions de fin disposent
@@ -181,7 +181,7 @@ data:
 
 **Alerte de puissance élevée**
 
-[![Importer dans Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0b2%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
+[![Importer dans Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0b3%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
 
 [Voir le YAML](blueprints/automation/high_power_alert.yaml). Déclenche les actions
 après dépassement d’un seuil pendant la durée choisie ; fournit `measured_power`.

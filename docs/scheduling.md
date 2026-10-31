@@ -1,9 +1,9 @@
-# Optional charging schedules — 1.4.0b2 beta
+# Optional charging schedules — 1.4.0b3 beta
 
 Stable production release remains **1.3.3**. This opt-in beta does not update
 charger firmware or change dynamic load protection. Install explicitly through
 HACS's re-download/version selection on a test HA only, enabling prereleases
-there if necessary and select **1.4.0b2**, then restart. Back up first. Do not enable beta updates on
+there if necessary and select **1.4.0b3**, then restart. Back up first. Do not enable beta updates on
 production or let two HA instances send commands to the same charger.
 
 ## Configure
@@ -15,7 +15,13 @@ a draft until **Save and apply**; cancelling discards the draft.
 2. In Settings, enable scheduling and select allowed tariffs (none is permitted).
 3. Save opens a summary of enabled state, blocks, allowed tariffs and uncovered
    intervals. Review it and explicitly confirm to apply; cancelling does not
-   change the existing configuration. To edit a block, remove it and add a replacement.
+   change the existing configuration.
+
+Use **Edit a time block** to choose an existing block and edit its prefilled
+days, start/end time and tariff. This replaces that block in the draft without
+deleting it first or adding a duplicate. Overlapping replacements are rejected
+without losing the original. Save and explicitly confirm the summary to apply;
+cancelling the flow discards the draft. No date-specific exceptions are added.
 
 There are no assumed utility hours, prices or automatic holidays. Up to 100
 blocks may cover different days and multiple intervals per day. Overlaps are

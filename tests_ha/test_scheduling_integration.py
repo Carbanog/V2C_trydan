@@ -12,6 +12,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.v2c_trydan.api import V2CTrydanApi, V2CTrydanConnectionError
 from custom_components.v2c_trydan.scheduling.policy import WeeklySchedule
+from custom_components.v2c_trydan.scheduling.presentation import async_block_choices
 
 DOMAIN = "v2c_trydan"
 
@@ -298,3 +299,120 @@ async def test_next_window_is_an_attribute_not_a_new_entity(hass):
             if "next_allowed_start" in s.attributes
         )
         assert status.attributes["next_allowed_start"] == "2026-11-02T23:00:00+01:00"
+
+
+async def start_edit(hass, entry_id, index="0"):
+    result = await hass.config_entries.options.async_init(entry_id)
+    flow = result["flow_id"]
+    result = await hass.config_entries.options.async_configure(
+        flow, {"next_step_id": "edit_block"}
+    )
+    assert result["step_id"] == "edit_block"
+    result = await hass.config_entries.options.async_configure(flow, {"block": index})
+    assert result["step_id"] == "edit_details"
+    return flow, result
+
+
+async def test_edit_prefills_replaces_and_preserves_other_settings(hass):
+    configured = options()
+    original = {
+        "days": ["mon"],
+        "start": "00:00:00",
+        "end": "08:00:00",
+        "period": "off_peak",
+    }
+    other = {
+        "days": ["mon"],
+        "start": "08:00:00",
+        "end": "10:00:00",
+        "period": "shoulder",
+    }
+    configured["scheduling"]["blocks"] = [original, other]
+    configured["unrelated"] = "keep"
+    entry = MockConfigEntry(
+        domain=DOMAIN, data={"ip_address": "192.0.2.10"}, options=deepcopy(configured)
+    )
+    entry.add_to_hass(hass)
+    flow, result = await start_edit(hass, entry.entry_id)
+    assert {
+        key.schema: key.default() for key in result["data_schema"].schema
+    } == original
+    changed = {
+        "days": ["tue"],
+        "start": "01:00:00",
+        "end": "06:00:00",
+        "period": "peak",
+    }
+    result = await hass.config_entries.options.async_configure(flow, changed)
+    assert result["type"] == "menu"
+    assert entry.options == configured
+    result = await hass.config_entries.options.async_configure(
+        flow, {"next_step_id": "save"}
+    )
+    assert result["type"] == "form"
+    assert entry.options == configured
+    result = await hass.config_entries.options.async_configure(flow, {"confirm": True})
+    assert result["type"] == "create_entry"
+    assert entry.options["scheduling"]["blocks"] == [changed, other]
+    assert entry.options["scheduling"]["enabled"] is True
+    assert entry.options["scheduling"]["allowed"] == ["off_peak"]
+    assert entry.options["unrelated"] == "keep"
+
+
+async def test_edit_rejects_overlap_but_not_the_replaced_block_itself(hass):
+    configured = options()
+    original = {
+        "days": ["mon"],
+        "start": "00:00:00",
+        "end": "08:00:00",
+        "period": "off_peak",
+    }
+    configured["scheduling"]["blocks"] = [
+        original,
+        {**original, "start": "08:00:00", "end": "10:00:00"},
+    ]
+    entry = MockConfigEntry(
+        domain=DOMAIN, data={"ip_address": "192.0.2.10"}, options=deepcopy(configured)
+    )
+    entry.add_to_hass(hass)
+    flow, _result = await start_edit(hass, entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        flow, {**original, "end": "09:00:00"}
+    )
+    assert result["errors"] == {"base": "invalid_schedule"}
+    assert entry.options == configured
+    result = await hass.config_entries.options.async_configure(flow, original)
+    assert result["type"] == "menu"
+    hass.config_entries.options.async_abort(flow)
+    assert entry.options == configured
+
+
+async def test_edit_with_no_blocks_returns_to_menu(hass):
+    entry = MockConfigEntry(domain=DOMAIN, data={"ip_address": "192.0.2.10"})
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"next_step_id": "edit_block"}
+    )
+    assert result["type"] == "menu"
+    assert not entry.options
+
+
+@pytest.mark.parametrize(
+    "language,day,tariff",
+    [
+        ("en", "Monday", "Off-peak"),
+        ("es", "Lunes", "Valle"),
+        ("fr", "Lundi", "Heures creuses"),
+    ],
+)
+async def test_edit_and_remove_choices_use_translated_labels(
+    hass, language, day, tariff
+):
+    entry = MockConfigEntry(domain=DOMAIN, data={"ip_address": "192.0.2.10"})
+    entry.add_to_hass(hass)
+    blocks = [
+        {"days": ["mon"], "start": "00:00:00", "end": "08:00:00", "period": "off_peak"}
+    ]
+    choices = await async_block_choices(hass, blocks, language)
+    assert choices == [{"value": "0", "label": f"{day}: 00:00 → 08:00 — {tariff}"}]

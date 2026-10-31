@@ -35,6 +35,7 @@
         "menu_options": {
           "settings": "Settings and allowed tariffs",
           "add_block": "Add a time block",
+          "edit_block": "Edit a time block",
           "remove_block": "Remove a time block",
           "save": "Save and apply"
         }
@@ -56,6 +57,8 @@
           "period": "Tariff"
         }
       },
+      "edit_block": {"title":"Edit a time block","description":"Choose the existing block to edit. It is not removed.","data":{"block":"Edit a time block"}},
+      "edit_details": {"title":"Edit block details","description":"The current values are prefilled. Edit days, start/end time or tariff. Changes remain a draft until you review and confirm Save.","data":{"days":"Days on which the block starts","start":"Start time","end":"End time","period":"Tariff"}},
       "remove_block": {
         "title": "Remove a time block",
         "description": "Choose a block to remove. Changes apply only after Save.",
