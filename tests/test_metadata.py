@@ -7,6 +7,7 @@ import json
 import re
 import struct
 from pathlib import Path
+from string import Formatter
 
 import pytest
 import yaml
@@ -92,6 +93,19 @@ def test_translation_files_have_the_same_keys(language: str) -> None:
             assert isinstance(value, str) and value.strip()
 
     assert_translated_text(translated)
+
+    def assert_placeholders_match(original: object, translation: object) -> None:
+        if isinstance(original, dict):
+            for key, value in original.items():
+                assert_placeholders_match(value, translation[key])
+        else:
+
+            def placeholders(value: str) -> set[str]:
+                return {field for _, field, _, _ in Formatter().parse(value) if field}
+
+            assert placeholders(original) == placeholders(translation)
+
+    assert_placeholders_match(english, translated)
 
 
 def test_service_translation_fields_match_service_metadata() -> None:

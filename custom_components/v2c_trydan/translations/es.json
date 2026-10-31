@@ -63,15 +63,21 @@
           "block": "Eliminar tramo horario"
         }
       },
+      "save_error": {"title":"Revisar errores del horario","description":"Horario no válido: revisa horas, días y solapamientos. Para habilitar hace falta al menos un tramo. Pulsa Enviar para volver al menú."},
       "save": {
-        "title": "Guardar y aplicar",
-        "description": "Horario no válido: revisa horas, días y solapamientos. Para habilitar hace falta al menos un tramo. Pulsa Enviar para volver al menú."
+        "title": "Revisar y aplicar horarios",
+        "description": "**Programación:** {enabled}\n\n### Tramos horarios\n{blocks}\n\n**Tarifas permitidas:** {allowed}\n\n### Tiempo sin asignar: {unassigned_minutes} minutos por semana\n{gaps}\n\nLos huecos no permiten cargar en Automático. 00:00 → 00:00 significa un día completo. Confirma abajo para guardar; cancelar deja intacta la configuración existente.",
+        "data": {
+          "confirm": "Aplicar estos horarios"
+        }
       }
     },
     "error": {
+      "confirm_required": "Confirma el resumen para aplicar los horarios.",
       "invalid_schedule": "Horario no válido: revisa horas, días y solapamientos. Para habilitar hace falta al menos un tramo. Pulsa Enviar para volver al menú."
     }
   },
+  "issues": {"scheduling_command_unconfirmed":{"title":"V2C Trydan: orden de carga sin confirmar","description":"La orden del programador para **{charger}** lleva al menos un minuto sin confirmarse. La carga puede no coincidir con la tarifa o pausa solicitada. Revisa el cargador, la conexión y Estado de programación; después de comprobar el estado real, selecciona explícitamente un modo para reintentar. No desactives las protecciones eléctricas. La integración no repite la orden a ciegas. Este aviso desaparece al confirmar, detectar la manguera desconectada o deshabilitar la programación."}},
   "services": {
     "set_intensity": {
       "name": "Establecer intensidad de carga",
@@ -131,6 +137,7 @@
     }
   },
   "selector": {
+    "scheduling_enabled": {"options":{"enabled":"Habilitada","disabled":"Deshabilitada"}},
     "tariff": {"options":{"peak":"Punta","shoulder":"Llano","off_peak":"Valle"}},
     "weekdays": {"options":{"mon":"Lunes","tue":"Martes","wed":"Miércoles","thu":"Jueves","fri":"Viernes","sat":"Sábado","sun":"Domingo"}},
     "dynamic_power_mode": {
@@ -156,7 +163,7 @@
     },
     "sensor": {
       "scheduling_period": {"name":"Tarifa actual","state":{"peak":"Punta","shoulder":"Llano","off_peak":"Valle","unassigned":"Sin asignar"}},
-      "scheduling_status": {"name":"Estado de programación","state":{"disabled":"Desactivado","unavailable":"Cargador no disponible","disconnected":"Manguera desconectada","charger_fault":"Fallo del cargador o conexión de manguera desconocida","incomplete_data":"Datos incompletos del cargador","command_unconfirmed":"Orden sin confirmar — revisa el estado y elige modo para reintentar","locked":"Cargador bloqueado","device_timer":"Horario del propio V2C activado — conflicto","manual_pause":"Pausado por el usuario u otro controlador","charge_now":"Excepción Cargar ahora","waiting_schedule":"Esperando una tarifa permitida","charging_allowed":"Carga permitida por horario"}},
+      "scheduling_status": {"name":"Estado de programación","state":{"disabled":"Desactivado","unavailable":"Cargador no disponible","disconnected":"Manguera desconectada","charger_fault":"Fallo del cargador o conexión de manguera desconocida","incomplete_data":"Datos incompletos del cargador","command_unconfirmed":"Orden sin confirmar — revisa el estado y elige modo para reintentar","locked":"Cargador bloqueado","device_timer":"Horario del propio V2C activado — conflicto","manual_pause":"Pausado por el usuario u otro controlador","charge_now":"Excepción Cargar ahora","waiting_schedule":"Esperando una tarifa permitida","charging_allowed":"Carga permitida por horario"},"state_attributes":{"next_allowed_start":{"name":"Próximo inicio de tarifa permitida"}}},
       "chargepower": { "name": "Potencia de Carga" },
       "chargeenergy": { "name": "Energía de Carga" },
       "session_energy": { "name": "Energía de la Sesión" },

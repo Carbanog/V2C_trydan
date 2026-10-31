@@ -1,9 +1,9 @@
-# Optional charging schedules — 1.4.0b1 beta
+# Optional charging schedules — 1.4.0b2 beta
 
 Stable production release remains **1.3.3**. This opt-in beta does not update
 charger firmware or change dynamic load protection. Install explicitly through
 HACS's re-download/version selection on a test HA only, enabling prereleases
-there if necessary, then restart. Back up first. Do not enable beta updates on
+there if necessary and select **1.4.0b2**, then restart. Back up first. Do not enable beta updates on
 production or let two HA instances send commands to the same charger.
 
 ## Configure
@@ -13,7 +13,9 @@ a draft until **Save and apply**; cancelling discards the draft.
 
 1. Add blocks: start days, start/end time, and Peak / Shoulder / Off-peak tariff.
 2. In Settings, enable scheduling and select allowed tariffs (none is permitted).
-3. Save to reload the entry. To edit a block, remove it and add a replacement.
+3. Save opens a summary of enabled state, blocks, allowed tariffs and uncovered
+   intervals. Review it and explicitly confirm to apply; cancelling does not
+   change the existing configuration. To edit a block, remove it and add a replacement.
 
 There are no assumed utility hours, prices or automatic holidays. Up to 100
 blocks may cover different days and multiple intervals per day. Overlaps are
@@ -50,6 +52,18 @@ Mode and pending intent are stored separately from session totals. An unconfirme
 command is not blindly repeated: a later read may confirm it. Otherwise review
 the charger and explicitly select a mode to retry. A failed checkpoint prevents
 the write. Restart and recovery re-evaluate the current local time.
+
+In b2, an attempted command still unconfirmed after at least 60 seconds raises
+one warning in **Settings → System → Repairs**. Confirmation, observed unplug
+or scheduler unload clears it. It does not configure mobile push notifications
+or detect incidents while HA is stopped. It never blindly retries the command.
+
+Scheduling status now has a **Next allowed tariff start** attribute while Auto
+is waiting. It is empty when already allowed, outside Auto or when no permitted
+window exists. It previews tariff permission, not a guaranteed vehicle start;
+locks, faults and availability still matter. There is no additional sensor.
+Generated summaries follow HA's language. UI and alert translations cover
+English, Spanish and French.
 
 HA must remain running and connected to enforce boundaries. During downtime
 the charger keeps its last state; timely stopping is **not guaranteed**. Polling

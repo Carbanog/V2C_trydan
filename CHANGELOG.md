@@ -2,6 +2,21 @@
 
 All notable changes to this project are documented here.
 
+## 1.4.0b2
+
+### Beta: scheduling visibility and review
+
+* Require explicit confirmation of a localized summary before applying options:
+  enabled state, blocks, allowed tariffs and all unassigned weekly intervals.
+* Show the next allowed tariff start as an attribute of Scheduling status while
+  Automatic is waiting, without adding another entity or promising an actual start.
+* Raise one translated HA Repairs warning if an attempted command remains
+  unconfirmed for at least 60 seconds. Clear on confirmation, observed unplug
+  or scheduler unload; never retry a command blindly or flood the UI.
+* Add coverage/preview/alert tests, real DST transition tests and real-HA tests
+  for summaries and translations in English, Spanish and French.
+* Remains prerelease only; 1.3.3 is still the stable production release.
+
 ## 1.4.0b1
 
 ### Beta: optional charging schedules

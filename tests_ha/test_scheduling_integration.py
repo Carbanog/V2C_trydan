@@ -1,12 +1,17 @@
 """Exercise actual HA setup/options/entity/lifecycle code, with a fake charger."""
 
 from copy import deepcopy
-from unittest.mock import patch
+from datetime import datetime
+from unittest.mock import AsyncMock, patch
+from zoneinfo import ZoneInfo
 
+import pytest
 from homeassistant.config_entries import ConfigEntryState
+from homeassistant.helpers import issue_registry as ir
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.v2c_trydan.api import V2CTrydanApi
+from custom_components.v2c_trydan.api import V2CTrydanApi, V2CTrydanConnectionError
+from custom_components.v2c_trydan.scheduling.policy import WeeklySchedule
 
 DOMAIN = "v2c_trydan"
 
@@ -71,9 +76,11 @@ async def setup_charger(hass, configured):
     ):
         assert await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
-        yield entry, data, command
-        if entry.state is ConfigEntryState.LOADED:
-            await hass.config_entries.async_unload(entry.entry_id)
+        try:
+            yield entry, data, command
+        finally:
+            if entry.state is ConfigEntryState.LOADED:
+                await hass.config_entries.async_unload(entry.entry_id)
 
 
 async def test_disabled_has_no_scheduler_entities_or_commands(hass):
@@ -144,6 +151,12 @@ async def test_options_flow_edits_draft_and_preserves_other_options(hass):
     result = await hass.config_entries.options.async_configure(
         flow, {"next_step_id": "save"}
     )
+    assert result["type"] == "form"
+    assert result["description_placeholders"]["unassigned_minutes"] == "9600"
+    assert "scheduling" not in entry.options
+    result = await hass.config_entries.options.async_configure(flow, {"confirm": False})
+    assert result["errors"] == {"base": "confirm_required"}
+    result = await hass.config_entries.options.async_configure(flow, {"confirm": True})
     assert result["type"] == "create_entry"
     assert entry.options["unrelated"] == "keep"
     assert entry.options["scheduling"]["enabled"] is False
@@ -180,5 +193,108 @@ async def test_options_reject_overlap_and_allow_adjacent_blocks(hass):
     result = await hass.config_entries.options.async_configure(
         flow, {"next_step_id": "save"}
     )
+    assert result["type"] == "form"
+    result = await hass.config_entries.options.async_configure(flow, {"confirm": True})
     assert result["type"] == "create_entry"
     assert len(entry.options["scheduling"]["blocks"]) == 2
+
+
+@pytest.mark.parametrize(
+    "language,label", [("en", "Off-peak"), ("es", "Valle"), ("fr", "Heures creuses")]
+)
+async def test_summary_uses_translations_in_each_supported_language(
+    hass, language, label
+):
+    hass.config.language = language
+    entry = MockConfigEntry(
+        domain=DOMAIN, data={"ip_address": "192.0.2.10"}, options=options()
+    )
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"next_step_id": "save"}
+    )
+    assert result["type"] == "form"
+    assert result["description_placeholders"]["allowed"] == label
+    assert result["description_placeholders"]["unassigned_minutes"] == "0"
+
+
+async def test_persistent_repair_alert_is_deduplicated_and_clears_on_confirmation(hass):
+    async for entry, data, _command in setup_charger(hass, options()):
+        await entry.runtime_data.async_refresh()
+        await hass.async_block_till_done()
+        manager = entry.runtime_data.scheduler
+        registry = ir.async_get(hass)
+        with (
+            patch.object(
+                manager.controller,
+                "write_pause",
+                AsyncMock(side_effect=V2CTrydanConnectionError("test failure")),
+            ),
+            patch(
+                "custom_components.v2c_trydan.scheduling.ha.monotonic", return_value=100
+            ) as clock,
+            patch.object(
+                ir, "async_create_issue", wraps=ir.async_create_issue
+            ) as create,
+        ):
+            with pytest.raises(V2CTrydanConnectionError):
+                await manager.async_set_mode("automatic")
+            assert registry.async_get_issue(DOMAIN, manager._issue_id) is None
+            clock.return_value = 160
+            await manager._async_update_presentation()
+            assert registry.async_get_issue(DOMAIN, manager._issue_id) is not None
+            await manager._async_update_presentation()
+            assert create.call_count == 1
+            data["Paused"] = 0
+            await entry.runtime_data.async_refresh()
+            await hass.async_block_till_done()
+            assert registry.async_get_issue(DOMAIN, manager._issue_id) is None
+
+
+@pytest.mark.parametrize(
+    "now,start,end,expected",
+    [
+        (
+            datetime(2026, 10, 25, 2, 45, fold=0),
+            "01:00",
+            "02:30",
+            "2026-10-25T02:00:00+01:00",
+        ),
+        (datetime(2027, 3, 28, 1, 59), "02:30", "03:30", "2027-03-28T03:00:00+02:00"),
+        (datetime(2027, 3, 28, 1, 59), "02:00", "02:45", "2027-04-04T02:00:00+02:00"),
+    ],
+)
+def test_preview_handles_real_dst_transitions(now, start, end, expected):
+    configured = WeeklySchedule.from_options(
+        {
+            "enabled": True,
+            "allowed": ["off_peak"],
+            "blocks": [
+                {"days": ["sun"], "start": start, "end": end, "period": "off_peak"}
+            ],
+        }
+    )
+    result = configured.next_allowed_start(
+        now.replace(tzinfo=ZoneInfo("Europe/Madrid"))
+    )
+    assert result.isoformat() == expected
+
+
+async def test_next_window_is_an_attribute_not_a_new_entity(hass):
+    configured = options()
+    configured["scheduling"]["blocks"][0].update(start="23:00", end="00:00")
+    async for entry, _data, _command in setup_charger(hass, configured):
+        manager = entry.runtime_data.scheduler
+        now = datetime(2026, 11, 2, 12, tzinfo=ZoneInfo("Europe/Madrid"))
+        with patch(
+            "custom_components.v2c_trydan.scheduling.ha.dt_util.now", return_value=now
+        ):
+            await manager.async_set_mode("automatic")
+        await hass.async_block_till_done()
+        status = next(
+            s
+            for s in hass.states.async_all("sensor")
+            if "next_allowed_start" in s.attributes
+        )
+        assert status.attributes["next_allowed_start"] == "2026-11-02T23:00:00+01:00"

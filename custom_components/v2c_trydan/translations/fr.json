@@ -63,15 +63,21 @@
           "block": "Supprimer une plage horaire"
         }
       },
+      "save_error": {"title":"Vérifier les erreurs de l’horaire","description":"Horaire non valide : vérifiez les heures, jours et chevauchements. L’activation nécessite au moins une plage. Validez pour revenir au menu."},
       "save": {
-        "title": "Enregistrer et appliquer",
-        "description": "Horaire non valide : vérifiez les heures, jours et chevauchements. L’activation nécessite au moins une plage. Validez pour revenir au menu."
+        "title": "Vérifier et appliquer les horaires",
+        "description": "**Programmation :** {enabled}\n\n### Plages horaires\n{blocks}\n\n**Tarifs autorisés :** {allowed}\n\n### Temps non défini : {unassigned_minutes} minutes par semaine\n{gaps}\n\nHors plage, la charge n’est pas autorisée en Automatique. 00:00 → 00:00 signifie une journée entière. Confirmez pour enregistrer ; annuler conserve la configuration existante.",
+        "data": {
+          "confirm": "Appliquer ces horaires"
+        }
       }
     },
     "error": {
+      "confirm_required": "Confirmez le résumé pour appliquer les horaires.",
       "invalid_schedule": "Horaire non valide : vérifiez les heures, jours et chevauchements. L’activation nécessite au moins une plage. Validez pour revenir au menu."
     }
   },
+  "issues": {"scheduling_command_unconfirmed":{"title":"V2C Trydan : commande de charge non confirmée","description":"La commande de programmation pour **{charger}** reste non confirmée depuis au moins une minute. La charge peut ne pas correspondre au tarif ou à la pause demandés. Vérifiez la borne, la connexion et l’état de programmation ; après vérification, sélectionnez explicitement un mode pour réessayer. Ne désactivez pas les protections électriques. L’intégration ne répète pas la commande à l’aveugle. Cet avertissement disparaît après confirmation, débranchement observé ou désactivation de la programmation."}},
   "services": {
     "set_intensity": {
       "name": "Régler l’intensité de charge",
@@ -131,6 +137,7 @@
     }
   },
   "selector": {
+    "scheduling_enabled": {"options":{"enabled":"Activée","disabled":"Désactivée"}},
     "tariff": {"options":{"peak":"Pointe","shoulder":"Intermédiaire","off_peak":"Heures creuses"}},
     "weekdays": {"options":{"mon":"Lundi","tue":"Mardi","wed":"Mercredi","thu":"Jeudi","fri":"Vendredi","sat":"Samedi","sun":"Dimanche"}},
     "dynamic_power_mode": {
@@ -156,7 +163,7 @@
     },
     "sensor": {
       "scheduling_period": {"name":"Tarif actuel","state":{"peak":"Pointe","shoulder":"Intermédiaire","off_peak":"Heures creuses","unassigned":"Non défini"}},
-      "scheduling_status": {"name":"État de la programmation","state":{"disabled":"Désactivée","unavailable":"Borne indisponible","disconnected":"Câble débranché","charger_fault":"Défaut de borne ou connexion du câble inconnue","incomplete_data":"Données de borne incomplètes","command_unconfirmed":"Commande non confirmée — vérifiez l’état et sélectionnez le mode pour réessayer","locked":"Borne verrouillée","device_timer":"Programmation V2C activée — conflit","manual_pause":"Pause par l’utilisateur ou un autre contrôleur","charge_now":"Dérogation Charger maintenant","waiting_schedule":"En attente d’un tarif autorisé","charging_allowed":"Charge autorisée par l’horaire"}},
+      "scheduling_status": {"name":"État de la programmation","state":{"disabled":"Désactivée","unavailable":"Borne indisponible","disconnected":"Câble débranché","charger_fault":"Défaut de borne ou connexion du câble inconnue","incomplete_data":"Données de borne incomplètes","command_unconfirmed":"Commande non confirmée — vérifiez l’état et sélectionnez le mode pour réessayer","locked":"Borne verrouillée","device_timer":"Programmation V2C activée — conflit","manual_pause":"Pause par l’utilisateur ou un autre contrôleur","charge_now":"Dérogation Charger maintenant","waiting_schedule":"En attente d’un tarif autorisé","charging_allowed":"Charge autorisée par l’horaire"},"state_attributes":{"next_allowed_start":{"name":"Prochain début de tarif autorisé"}}},
       "chargepower": { "name": "Puissance de charge" },
       "chargeenergy": { "name": "Énergie de charge" },
       "session_energy": { "name": "Énergie de la session" },

@@ -110,8 +110,16 @@ timer, policy store load, extra entities or scheduling writes are created.
   before issuing a single command, and reconciles pending writes with reads.
 * `scheduling/ha.py`: Store, coordinator/clock subscriptions, task cancellation
   and entity listeners. Scheduling state uses a separate storage key/version.
+* `scheduling/alerts.py`: monotonic 60-second debounce and deduplication for
+  unresolved-command Repairs warnings. No network IO or automatic retries.
+* `scheduling/presentation.py`: localized summaries using HA translation resources.
 * `config_flow.py`: edits an options draft with native HA forms; only Save
-  commits it. Options changes reload the entry to rebuild optional entities.
+  shows a summary and requires explicit confirmation before committing it.
+  Options changes reload the entry to rebuild optional entities.
+
+The next tariff window is an attribute, calculated off the event loop at most
+once per minute while Auto waits. The bounded UTC-minute search evaluates local
+time, handling real DST gaps/folds. It previews tariff permission, not actuation.
 
 Only `Paused` is written, through the same API lock used by manual controls.
 An HA pause-switch action selects Paused; resume selects Charge now. An

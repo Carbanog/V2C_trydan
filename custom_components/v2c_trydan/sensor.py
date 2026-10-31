@@ -425,3 +425,9 @@ class SchedulingStatusSensor(SchedulingEntity, SensorEntity):
     def native_value(self) -> str:
         decision = self.scheduler.controller.decision
         return decision.period if self._key == "scheduling_period" else decision.reason
+
+    @property
+    def extra_state_attributes(self) -> dict[str, str | None] | None:
+        if self._key != "scheduling_status":
+            return None
+        return {"next_allowed_start": self.scheduler.next_allowed_start}

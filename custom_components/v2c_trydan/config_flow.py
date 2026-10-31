@@ -22,6 +22,7 @@ from .api import (
 )
 from .const import DOMAIN
 from .scheduling.policy import DAYS, OPTION_KEY, PERIODS, WeeklySchedule
+from .scheduling.presentation import async_schedule_summary
 
 
 def _normalize_ip_address(value: str) -> str:
@@ -243,16 +244,34 @@ class V2CTrydanOptionsFlow(config_entries.OptionsFlow):
         )
 
     async def async_step_save(self, user_input=None) -> ConfigFlowResult:
-        if user_input is not None:
-            return await self.async_step_init()
         try:
-            WeeklySchedule.from_options(self._draft)
+            schedule = WeeklySchedule.from_options(self._draft)
             if self._draft["enabled"] and not self._draft["blocks"]:
                 raise ValueError("Configure at least one block")
         except ValueError:
             return self.async_show_form(
-                step_id="save", errors={"base": "invalid_schedule"}
+                step_id="save_error", errors={"base": "invalid_schedule"}
             )
-        return self.async_create_entry(
-            title="", data={**self.config_entry.options, OPTION_KEY: self._draft}
+        if user_input is not None and user_input.get("confirm") is True:
+            return self.async_create_entry(
+                title="", data={**self.config_entry.options, OPTION_KEY: self._draft}
+            )
+        summary = await async_schedule_summary(
+            self.hass,
+            self._draft,
+            schedule,
+            self.context.get("language") or self.hass.config.language,
         )
+        return self.async_show_form(
+            step_id="save",
+            description_placeholders=summary,
+            errors={"base": "confirm_required"} if user_input is not None else {},
+            data_schema=vol.Schema(
+                {
+                    vol.Required("confirm", default=False): selector.BooleanSelector(),
+                }
+            ),
+        )
+
+    async def async_step_save_error(self, user_input=None) -> ConfigFlowResult:
+        return await self.async_step_init()

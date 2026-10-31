@@ -1,4 +1,4 @@
-# Programación de carga — beta 1.4.0b1
+# Programación de carga — beta 1.4.0b2
 
 Esta función es opcional y experimental. La estable sigue siendo **1.3.3**.
 La beta no actualiza el firmware del cargador ni cambia la carga dinámica.
@@ -7,7 +7,7 @@ La beta no actualiza el firmware del cargador ni cambia la carga dinámica.
 
 1. Haz una copia de seguridad del HA de pruebas.
 2. Solo en ese HA, abre la integración en HACS y el menú de volver a descargar.
-   Muestra las versiones beta/prerelease si hace falta y elige **1.4.0b1**.
+   Muestra las versiones beta/prerelease si hace falta y elige **1.4.0b2**.
 3. Reinicia HA. Comprueba la versión y que tus entidades/sesiones siguen presentes.
 4. En producción conserva 1.3.3 y no habilites actualizaciones beta. La beta se
    publica como prerelease, sin sustituir la última release estable.
@@ -26,7 +26,9 @@ Todo lo editado es un borrador hasta **Guardar y aplicar**; cancelar no lo aplic
    (Punta, Llano o Valle). Repite para los demás tramos/días.
 2. **Ajustes y tarifas permitidas**: habilita la función y elige en qué tarifas
    permites cargar. Puedes dejar la selección vacía para no autorizar ninguna.
-3. **Guardar y aplicar**: HA recarga la integración. Para corregir un tramo,
+3. **Guardar y aplicar** abre un resumen: habilitación, tramos, tarifas permitidas
+   y huecos sin asignar. Revisa y marca **Aplicar estos horarios**; solo entonces
+   confirma para guardar. HA recarga la integración. Para corregir un tramo,
    elimínalo y vuelve a añadirlo antes de guardar.
 
 No se presupone ninguna tarifa comercial. Horas y días son los que tú indiques;
@@ -49,6 +51,12 @@ minutos y termine pocos minutos después, sin copiar supuestos horarios oficiale
 * Selector **Modo de programación de carga**: Automático / Cargar ahora / Pausado.
 * Sensor **Tarifa actual**: Punta / Llano / Valle / Sin asignar.
 * Sensor **Estado de programación**: explica el permiso o motivo de espera.
+
+Al abrir **Estado de programación**, su atributo **Próximo inicio de tarifa
+permitida** muestra la próxima franja cuando Automático espera. No añade otro
+sensor. Queda vacío si el horario ya permite cargar, el modo no es Automático
+o no hay ninguna franja permitida. Es una previsión del horario, no una promesa
+de que el vehículo comenzará: siguen contando el candado, fallos y disponibilidad.
 
 La primera activación empieza en **Pausado**. Selecciona Automático para empezar
 a obedecer horarios. Los siguientes arranques restauran el modo guardado.
@@ -76,6 +84,14 @@ confirmarla; si el estado sigue sin coincidir, revisa el cargador y selecciona
 explícitamente el modo para reintentar. Los fallos de almacenamiento también
 impiden enviar una orden sin guardar primero la intención.
 
+Desde b2, si una orden intentada sigue sin confirmarse durante al menos un
+minuto, aparece un aviso en **Ajustes → Sistema → Reparaciones**. No se repite
+en cada sondeo; desaparece al confirmarse, observar que se ha desenchufado o
+deshabilitar el módulo. No configura avisos push al móvil ni sustituye la
+supervisión del cargador. Sin HA funcionando no puede generar ese aviso.
+Los resúmenes generados siguen el idioma de HA; los textos de la interfaz y del
+aviso están disponibles en español, inglés y francés.
+
 HA debe estar encendido y comunicado. Si se apaga o falla la red, el cargador
 mantiene su estado; **no se garantiza detenerse a la hora límite**. Al recuperarse
 se recalcula. Al enchufar puede haber un retraso de detección por el sondeo y
@@ -96,6 +112,8 @@ Esto no es un mecanismo de seguridad ni una garantía contractual de tarifa.
 6. Comprueba un tramo nocturno, fin de semana y rechazo de solapamientos.
 7. Simula una pérdida de comunicación solo de forma segura: no cambies protecciones
    ni cortes red durante una operación crítica. Verifica disponibilidad y recuperación.
+8. Revisa los huecos del resumen y prueba cancelar antes de confirmar: no debe
+   aplicar cambios. Comprueba la próxima franja en los atributos del sensor.
 
 No se ha validado físicamente en tu instalación: esa es la finalidad de esta beta.
 

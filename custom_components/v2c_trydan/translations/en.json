@@ -63,15 +63,21 @@
           "block": "Remove a time block"
         }
       },
+      "save_error": {"title":"Review schedule errors","description":"Invalid schedule: check times, days and overlaps. Enabling requires at least one block. Press Submit to return to the menu."},
       "save": {
-        "title": "Save and apply",
-        "description": "Invalid schedule: check times, days and overlaps. Enabling requires at least one block. Press Submit to return to the menu."
+        "title": "Review and apply schedule",
+        "description": "**Scheduling:** {enabled}\n\n### Time blocks\n{blocks}\n\n**Allowed tariffs:** {allowed}\n\n### Unassigned time: {unassigned_minutes} minutes per week\n{gaps}\n\nUnassigned time does not permit charging in Automatic. 00:00 → 00:00 means a full day. Confirm below to save; cancelling leaves the existing configuration unchanged.",
+        "data": {
+          "confirm": "Apply this schedule"
+        }
       }
     },
     "error": {
+      "confirm_required": "Confirm the summary to apply the schedule.",
       "invalid_schedule": "Invalid schedule: check times, days and overlaps. Enabling requires at least one block. Press Submit to return to the menu."
     }
   },
+  "issues": {"scheduling_command_unconfirmed":{"title":"V2C Trydan: charging command unconfirmed","description":"The scheduling command for **{charger}** has not been confirmed for at least one minute. Charging may not match the requested tariff or pause. Check the charger, connection and Scheduling status; after reviewing the actual state, explicitly select a mode to retry. Do not disable electrical protections. The integration does not blindly repeat the command. This warning clears after confirmation, an observed unplug, or disabling scheduling."}},
   "services": {
     "set_intensity": {
       "name": "Set charge intensity",
@@ -131,6 +137,7 @@
     }
   },
   "selector": {
+    "scheduling_enabled": {"options":{"enabled":"Enabled","disabled":"Disabled"}},
     "tariff": {"options":{"peak":"Peak","shoulder":"Shoulder","off_peak":"Off-peak"}},
     "weekdays": {"options":{"mon":"Monday","tue":"Tuesday","wed":"Wednesday","thu":"Thursday","fri":"Friday","sat":"Saturday","sun":"Sunday"}},
     "dynamic_power_mode": {
@@ -156,7 +163,7 @@
     },
     "sensor": {
       "scheduling_period": {"name":"Current tariff","state":{"peak":"Peak","shoulder":"Shoulder","off_peak":"Off-peak","unassigned":"Unassigned"}},
-      "scheduling_status": {"name":"Scheduling status","state":{"disabled":"Disabled","unavailable":"Charger unavailable","disconnected":"Cable disconnected","charger_fault":"Charger fault or unknown cable state","incomplete_data":"Incomplete charger data","command_unconfirmed":"Command unconfirmed — review state and select mode to retry","locked":"Charger locked","device_timer":"V2C device timer enabled — conflict","manual_pause":"Paused by user or external controller","charge_now":"Charge now override","waiting_schedule":"Waiting for an allowed tariff","charging_allowed":"Charging permitted by schedule"}},
+      "scheduling_status": {"name":"Scheduling status","state":{"disabled":"Disabled","unavailable":"Charger unavailable","disconnected":"Cable disconnected","charger_fault":"Charger fault or unknown cable state","incomplete_data":"Incomplete charger data","command_unconfirmed":"Command unconfirmed — review state and select mode to retry","locked":"Charger locked","device_timer":"V2C device timer enabled — conflict","manual_pause":"Paused by user or external controller","charge_now":"Charge now override","waiting_schedule":"Waiting for an allowed tariff","charging_allowed":"Charging permitted by schedule"},"state_attributes":{"next_allowed_start":{"name":"Next allowed tariff start"}}},
       "chargepower": { "name": "Charge Power" },
       "chargeenergy": { "name": "Charge Energy" },
       "session_energy": { "name": "Session Energy" },

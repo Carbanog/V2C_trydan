@@ -1,6 +1,6 @@
 # V2C Trydan for Home Assistant
 
-> **1.4.0b1 is an opt-in beta.** Keep production on stable **1.3.3**.
+> **1.4.0b2 is an opt-in beta.** Keep production on stable **1.3.3**.
 > Scheduling is disabled by default. Read the [beta scheduling guide](docs/scheduling.md)
 > before enabling it on a test Home Assistant instance.
 
@@ -162,7 +162,7 @@ installed or enabled automatically. Import them through **Settings → Automatio
 
 ### Session summary and notifications
 
-[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0b1%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
+[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0b2%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
 
 - [View or copy the YAML](blueprints/automation/session_summary.yaml).
 - Runs actions on the first charging start and two minutes after disconnect,
@@ -189,7 +189,7 @@ data:
 
 ### High charging power alert
 
-[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0b1%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
+[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0b2%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
 
 - [View or copy the YAML](blueprints/automation/high_power_alert.yaml).
 - Runs an action after charging power exceeds the configured threshold for the

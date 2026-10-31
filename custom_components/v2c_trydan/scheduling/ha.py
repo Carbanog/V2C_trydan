@@ -6,16 +6,21 @@ import asyncio
 import logging
 from collections.abc import Callable
 from contextlib import suppress
+from datetime import UTC
+from time import monotonic
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.event import async_track_time_change
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
 
 from ..api import V2CTrydanError
 from ..const import DOMAIN
+from ..utils import cable_connected_from_charge_state
+from .alerts import CommandAlert
 from .controller import SchedulingController
 from .policy import ChargingPolicy, SchedulerState, WeeklySchedule
 
@@ -58,6 +63,12 @@ class SchedulingManager:
         self._task: asyncio.Task | None = None
         self._dirty = False
         self._stopped = False
+        self._alert = CommandAlert()
+        self._issue_id = f"scheduling_{entry.entry_id}_unconfirmed"
+        self._charger_name = entry.title
+        self.next_allowed_start: str | None = None
+        self._next_window_key = None
+        self._presentation_lock = asyncio.Lock()
 
     async def async_initialize(self) -> None:
         self.controller.restore(
@@ -99,6 +110,7 @@ class SchedulingManager:
                     "Scheduled pause/resume was not confirmed; review scheduler status"
                 )
             finally:
+                await self._async_update_presentation()
                 self._notify()
 
     async def async_set_mode(self, mode: str) -> None:
@@ -106,7 +118,66 @@ class SchedulingManager:
         try:
             await self.controller.async_evaluate(mode)
         finally:
+            await self._async_update_presentation()
             self._notify()
+
+    async def _async_update_presentation(self) -> None:
+        async with self._presentation_lock:
+            await self._async_refresh_presentation()
+
+    async def _async_refresh_presentation(self) -> None:
+        """No charger IO: debounce alerts and cache a local preview per minute."""
+        if self._stopped:
+            return
+        data = self._snapshot()
+        unresolved = self.controller.policy.state.pending_pause is not None and (
+            data is None
+            or cable_connected_from_charge_state(data.get("ChargeState")) is not False
+        )
+        action = self._alert.update(unresolved, monotonic())
+        if action is True:
+            ir.async_create_issue(
+                self.hass,
+                DOMAIN,
+                self._issue_id,
+                is_fixable=False,
+                severity=ir.IssueSeverity.WARNING,
+                translation_key="scheduling_command_unconfirmed",
+                translation_placeholders={"charger": self._charger_name},
+            )
+        elif action is False:
+            ir.async_delete_issue(self.hass, DOMAIN, self._issue_id)
+
+        policy = self.controller.policy
+        now = dt_util.now()
+        if (
+            policy.state.mode != "automatic"
+            or policy.schedule.period_at(now) in policy.schedule.allowed
+        ):
+            self.next_allowed_start = None
+            self._next_window_key = None
+            return
+        key = (
+            now.astimezone(UTC).replace(second=0, microsecond=0),
+            str(now.tzinfo),
+        )
+        if key != self._next_window_key:
+            next_start = await self.hass.async_add_executor_job(
+                policy.schedule.next_allowed_start, now
+            )
+            # A user may have changed mode while the executor was searching.
+            # Do not publish an Auto preview after a manual pause/override.
+            if (
+                not self._stopped
+                and policy.state.mode == "automatic"
+                and policy.schedule.period_at(dt_util.now())
+                not in policy.schedule.allowed
+            ):
+                self.next_allowed_start = next_start.isoformat() if next_start else None
+                self._next_window_key = key
+            else:
+                self.next_allowed_start = None
+                self._next_window_key = None
 
     @callback
     def async_add_listener(self, listener: Callable[[], None]) -> Callable[[], None]:
@@ -122,6 +193,7 @@ class SchedulingManager:
         """Unload without resuming a charger that may have been paused manually."""
         self._stopped = True
         self.controller.stop()
+        ir.async_delete_issue(self.hass, DOMAIN, self._issue_id)
         for unsubscribe in self._unsubscribers:
             unsubscribe()
         self._unsubscribers.clear()

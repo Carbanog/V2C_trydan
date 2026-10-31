@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
+from custom_components.v2c_trydan.scheduling.alerts import CommandAlert
 from custom_components.v2c_trydan.scheduling.controller import SchedulingController
 from custom_components.v2c_trydan.scheduling.policy import (
     DAYS,
@@ -287,3 +288,56 @@ async def test_stop_during_checkpoint_cannot_send_a_late_command(runtime):
     await controller.async_evaluate("automatic")
     await controller.async_evaluate("charge_now")
     assert writes == []
+
+
+def test_summary_coverage_includes_start_middle_and_end_gaps():
+    configured = schedule(
+        [block(["mon"], "01:00", "02:00"), block(["mon"], "03:00", "04:00")]
+    )
+    assert configured.coverage_gaps() == ((0, 60), (120, 180), (240, 10080))
+    assert sum(end - start for start, end in configured.coverage_gaps()) == 9960
+
+
+def test_full_week_has_no_unassigned_minutes():
+    assert schedule([block(start="00:00", end="00:00")]).coverage_gaps() == ()
+    assert schedule([]).coverage_gaps() == ((0, 10080),)
+
+
+def test_preview_finds_weekend_and_wraps_to_next_week():
+    configured = schedule([block(["sat", "sun"], "00:00", "00:00")])
+    assert configured.next_allowed_start(MONDAY) == datetime(2026, 11, 7)
+    assert configured.next_allowed_start(datetime(2026, 11, 8, 23, 59)) is None
+    monday_only = schedule([block(["mon"], "00:00", "06:00")])
+    assert monday_only.next_allowed_start(MONDAY) == datetime(2026, 11, 9)
+
+
+def test_preview_does_not_invent_permission_or_use_denied_tariffs():
+    assert schedule(allowed=[]).next_allowed_start(MONDAY) is None
+    assert schedule(enabled=False).next_allowed_start(MONDAY) is None
+    assert schedule([]).next_allowed_start(MONDAY) is None
+    configured = schedule(
+        [
+            block(["mon"], "08:00", "10:00", "peak"),
+            block(["mon"], "10:00", "12:00", "off_peak"),
+        ]
+    )
+    assert configured.next_allowed_start(MONDAY) == MONDAY.replace(hour=10)
+
+
+def test_alert_is_delayed_deduplicated_cleared_and_rearmed():
+    alert = CommandAlert()
+    assert alert.update(True, 100) is None
+    assert alert.update(True, 159.9) is None
+    assert alert.update(True, 160) is True
+    assert alert.update(True, 900) is None
+    assert alert.update(False, 901) is False
+    assert alert.update(False, 902) is None
+    assert alert.update(True, 903) is None
+    assert alert.update(True, 963) is True
+
+
+def test_short_failure_recovers_without_alert():
+    alert = CommandAlert()
+    assert alert.update(True, 0) is None
+    assert alert.update(False, 30) is None
+    assert not alert.active

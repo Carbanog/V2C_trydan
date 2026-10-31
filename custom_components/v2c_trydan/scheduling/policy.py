@@ -6,8 +6,9 @@ Unassigned time is denied, and overlaps (including across midnight) are invalid.
 
 from __future__ import annotations
 
+from bisect import bisect_right
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from itertools import pairwise
 from typing import Any
 
@@ -92,10 +93,48 @@ class WeeklySchedule:
     def period_at(self, now: datetime) -> str:
         """Use HA's local date/time, including its current UTC offset."""
         minute = now.weekday() * 1440 + now.hour * 60 + now.minute
-        return next(
-            (period for start, end, period in self.intervals if start <= minute < end),
-            "unassigned",
-        )
+        index = bisect_right(self.intervals, minute, key=lambda item: item[0]) - 1
+        if index >= 0 and minute < self.intervals[index][1]:
+            return self.intervals[index][2]
+        return "unassigned"
+
+    def coverage_gaps(self) -> tuple[tuple[int, int], ...]:
+        """Return uncovered weekly minute ranges, independently of permissions."""
+        gaps: list[tuple[int, int]] = []
+        end = 0
+        for start, stop, _period in self.intervals:
+            if start > end:
+                gaps.append((end, start))
+            end = stop
+        if end < 10080:
+            gaps.append((end, 10080))
+        return tuple(gaps)
+
+    def next_allowed_start(self, now: datetime) -> datetime | None:
+        """Find the next real allowed minute; None means no waiting window.
+
+        Walk on the UTC timeline for aware datetimes, then evaluate local tariff
+        time. This handles missing/repeated DST hours without inventing times.
+        The HA adapter runs this bounded search off the event loop, at most once
+        per minute while Auto is waiting. No network requests are involved.
+        """
+        if (
+            not self.enabled
+            or self.period_at(now) in self.allowed
+            or not any(period in self.allowed for _, _, period in self.intervals)
+        ):
+            return None
+        instant = now.astimezone(UTC) if now.tzinfo is not None else now
+        instant = instant.replace(second=0, microsecond=0)
+        # Eight real days cover a weekly cycle plus offset-transition margins.
+        for _ in range(8 * 1440):
+            instant += timedelta(minutes=1)
+            local = (
+                instant.astimezone(now.tzinfo) if now.tzinfo is not None else instant
+            )
+            if self.period_at(local) in self.allowed:
+                return local
+        return None
 
 
 @dataclass
