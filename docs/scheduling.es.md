@@ -1,4 +1,4 @@
-# Programación de carga — beta 1.4.0b4
+# Programación de carga — beta 1.4.0b3
 
 Esta función es opcional y experimental. La estable sigue siendo **1.3.3**.
 La beta no actualiza el firmware del cargador ni cambia la carga dinámica.
@@ -7,7 +7,7 @@ La beta no actualiza el firmware del cargador ni cambia la carga dinámica.
 
 1. Haz una copia de seguridad del HA de pruebas.
 2. Solo en ese HA, abre la integración en HACS y el menú de volver a descargar.
-   Muestra las versiones beta/prerelease si hace falta y elige **1.4.0b4**.
+   Muestra las versiones beta/prerelease si hace falta y elige **1.4.0b3**.
 3. Reinicia HA. Comprueba la versión y que tus entidades/sesiones siguen presentes.
 4. En producción conserva 1.3.3 y no habilites actualizaciones beta. La beta se
    publica como prerelease, sin sustituir la última release estable.
@@ -21,18 +21,6 @@ dinámica ni las protecciones del cargador.
 
 Abre **Ajustes → Dispositivos y servicios → V2C Trydan → Configurar**.
 Todo lo editado es un borrador hasta **Guardar y aplicar**; cancelar no lo aplica.
-
-Desde la beta b4, cada formulario incluye **Acción**.
-Elige **Volver al menú** y pulsa **Enviar**
-para salir sin aceptar los cambios de esa pantalla. Los pasos aceptados antes
-siguen en memoria, pero nada se guarda ni se aplica al cargador.
-**Cancelar todos los cambios**, desde el menú o desde Acción, descarta toda la
-edición; cerrar el diálogo hace lo mismo. Al abrir Configurar de nuevo se carga
-la configuración guardada, no lo cancelado. **Continuar con este formulario**
-acepta solo ese paso; **Guardar y aplicar** y su confirmación son la única
-forma de aplicar la configuración completa. Los botones inferiores pertenecen
-a HA: no se añade un botón Atrás al pie. Si un campo contiene un formato inválido
-y HA impide Enviar, cerrar el diálogo siempre permite cancelar.
 
 1. **Añadir tramo horario**: selecciona días, hora de inicio, fin y tarifa
    (Punta, Llano o Valle). Repite para los demás tramos/días.

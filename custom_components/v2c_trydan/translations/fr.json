@@ -37,100 +37,47 @@
           "add_block": "Ajouter une plage horaire",
           "edit_block": "Modifier une plage horaire",
           "remove_block": "Supprimer une plage horaire",
-          "save": "Enregistrer et appliquer",
-          "cancel": "Annuler tous les changements"
+          "save": "Enregistrer et appliquer"
         }
       },
       "settings": {
         "title": "Réglages et tarifs autorisés",
         "data": {
-          "navigation": "Action",
           "enabled": "Activer la programmation",
           "allowed": "Tarifs autorisés"
-        },
-        "data_description": {
-          "navigation": "Choisissez une action, puis validez. Revenir ignore les changements de cet écran ; Annuler abandonne tous les changements non enregistrés. Rien n’est appliqué avant confirmation de l’enregistrement."
         }
       },
       "add_block": {
         "title": "Ajouter une plage horaire",
         "description": "Heure locale de HA, précision à la minute. Une fin avant le début traverse minuit. De 00:00 à 00:00 signifie une journée entière. Les chevauchements sont interdits ; hors plage, la charge est en pause.",
         "data": {
-          "navigation": "Action",
           "days": "Jours de début de la plage",
           "start": "Heure de début",
           "end": "Heure de fin",
           "period": "Tarif"
-        },
-        "data_description": {
-          "navigation": "Choisissez une action, puis validez. Revenir ignore les changements de cet écran ; Annuler abandonne tous les changements non enregistrés. Rien n’est appliqué avant confirmation de l’enregistrement."
         }
       },
-      "edit_block": {
-        "title": "Modifier une plage horaire",
-        "description": "Choisissez la plage existante à modifier. Elle n’est pas supprimée.",
-        "data": {
-          "navigation": "Action",
-          "block": "Modifier une plage horaire"
-        },
-        "data_description": {
-          "navigation": "Choisissez une action, puis validez. Revenir ignore les changements de cet écran ; Annuler abandonne tous les changements non enregistrés. Rien n’est appliqué avant confirmation de l’enregistrement."
-        }
-      },
-      "edit_details": {
-        "title": "Modifier les détails de la plage",
-        "description": "Les valeurs actuelles sont préremplies. Modifiez les jours, le début, la fin ou le tarif. Les changements restent un brouillon jusqu’à la confirmation de l’enregistrement.",
-        "data": {
-          "navigation": "Action",
-          "days": "Jours de début de la plage",
-          "start": "Heure de début",
-          "end": "Heure de fin",
-          "period": "Tarif"
-        },
-        "data_description": {
-          "navigation": "Choisissez une action, puis validez. Revenir ignore les changements de cet écran ; Annuler abandonne tous les changements non enregistrés. Rien n’est appliqué avant confirmation de l’enregistrement."
-        }
-      },
+      "edit_block": {"title":"Modifier une plage horaire","description":"Choisissez la plage existante à modifier. Elle n’est pas supprimée.","data":{"block":"Modifier une plage horaire"}},
+      "edit_details": {"title":"Modifier les détails de la plage","description":"Les valeurs actuelles sont préremplies. Modifiez les jours, le début, la fin ou le tarif. Les changements restent un brouillon jusqu’à la confirmation de l’enregistrement.","data":{"days":"Jours de début de la plage","start":"Heure de début","end":"Heure de fin","period":"Tarif"}},
       "remove_block": {
         "title": "Supprimer une plage horaire",
         "description": "Choisissez la plage à supprimer. Les changements prennent effet après enregistrement.",
         "data": {
-          "navigation": "Action",
           "block": "Supprimer une plage horaire"
-        },
-        "data_description": {
-          "navigation": "Choisissez une action, puis validez. Revenir ignore les changements de cet écran ; Annuler abandonne tous les changements non enregistrés. Rien n’est appliqué avant confirmation de l’enregistrement."
         }
       },
-      "save_error": {
-        "title": "Vérifier les erreurs de l’horaire",
-        "description": "Horaire non valide : vérifiez les heures, jours et chevauchements. L’activation nécessite au moins une plage. Validez pour revenir au menu.",
-        "data": {
-          "navigation": "Action"
-        },
-        "data_description": {
-          "navigation": "Choisissez une action, puis validez. Revenir ignore les changements de cet écran ; Annuler abandonne tous les changements non enregistrés. Rien n’est appliqué avant confirmation de l’enregistrement."
-        }
-      },
+      "save_error": {"title":"Vérifier les erreurs de l’horaire","description":"Horaire non valide : vérifiez les heures, jours et chevauchements. L’activation nécessite au moins une plage. Validez pour revenir au menu."},
       "save": {
         "title": "Vérifier et appliquer les horaires",
         "description": "**Programmation :** {enabled}\n\n### Plages horaires\n{blocks}\n\n**Tarifs autorisés :** {allowed}\n\n### Temps non défini : {unassigned_minutes} minutes par semaine\n{gaps}\n\nHors plage, la charge n’est pas autorisée en Automatique. 00:00 → 00:00 signifie une journée entière. Confirmez pour enregistrer ; annuler conserve la configuration existante.",
         "data": {
-          "navigation": "Action",
           "confirm": "Appliquer ces horaires"
-        },
-        "data_description": {
-          "navigation": "Choisissez une action, puis validez. Revenir ignore les changements de cet écran ; Annuler abandonne tous les changements non enregistrés. Rien n’est appliqué avant confirmation de l’enregistrement."
         }
       }
     },
     "error": {
       "confirm_required": "Confirmez le résumé pour appliquer les horaires.",
-      "invalid_schedule": "Horaire non valide : vérifiez les heures, jours et chevauchements. L’activation nécessite au moins une plage. Validez pour revenir au menu.",
-      "choose_block": "Choisissez une plage, ou sélectionnez Revenir au menu ou Annuler tous les changements."
-    },
-    "abort": {
-      "changes_cancelled": "Changements annulés. La configuration enregistrée reste inchangée."
+      "invalid_schedule": "Horaire non valide : vérifiez les heures, jours et chevauchements. L’activation nécessite au moins une plage. Validez pour revenir au menu."
     }
   },
   "issues": {"scheduling_command_unconfirmed":{"title":"V2C Trydan : commande de charge non confirmée","description":"La commande de programmation pour **{charger}** reste non confirmée depuis au moins une minute. La charge peut ne pas correspondre au tarif ou à la pause demandés. Vérifiez la borne, la connexion et l’état de programmation ; après vérification, sélectionnez explicitement un mode pour réessayer. Ne désactivez pas les protections électriques. L’intégration ne répète pas la commande à l’aveugle. Cet avertissement disparaît après confirmation, débranchement observé ou désactivation de la programmation."}},
@@ -193,7 +140,6 @@
     }
   },
   "selector": {
-    "options_navigation": {"options":{"continue":"Continuer avec ce formulaire","back":"Revenir au menu","cancel":"Annuler tous les changements"}},
     "scheduling_enabled": {"options":{"enabled":"Activée","disabled":"Désactivée"}},
     "tariff": {"options":{"peak":"Pointe","shoulder":"Intermédiaire","off_peak":"Heures creuses"}},
     "weekdays": {"options":{"mon":"Lundi","tue":"Mardi","wed":"Mercredi","thu":"Jeudi","fri":"Vendredi","sat":"Samedi","sun":"Dimanche"}},

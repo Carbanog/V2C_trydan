@@ -1,25 +1,15 @@
-# Optional charging schedules — 1.4.0b4 beta
+# Optional charging schedules — 1.4.0b3 beta
 
 Stable production release remains **1.3.3**. This opt-in beta does not update
 charger firmware or change dynamic load protection. Install explicitly through
 HACS's re-download/version selection on a test HA only, enabling prereleases
-there if necessary and select **1.4.0b4**, then restart. Back up first. Do not enable beta updates on
+there if necessary and select **1.4.0b3**, then restart. Back up first. Do not enable beta updates on
 production or let two HA instances send commands to the same charger.
 
 ## Configure
 
 Open **Settings → Devices & services → V2C Trydan → Configure**. Changes remain
 a draft until **Save and apply**; cancelling discards the draft.
-
-Since beta b4, every form has an **Action** selector.
-Choose **Return to menu**, then **Submit**, to ignore changes
-on that screen. Previously accepted steps remain in memory but are not saved or
-applied. **Cancel all changes**, available in the menu and each form, discards the
-entire edit, as does closing the dialog. Reopening Configure loads saved options.
-**Continue with this form** accepts only that step; only explicitly confirming
-**Save and apply** persists the complete configuration. HA owns the footer
-buttons; there is no custom Back footer button. If a malformed field prevents
-submission in HA, closing the dialog still cancels the edit.
 
 1. Add blocks: start days, start/end time, and Peak / Shoulder / Off-peak tariff.
 2. In Settings, enable scheduling and select allowed tariffs (none is permitted).

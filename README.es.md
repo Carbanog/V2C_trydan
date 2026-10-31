@@ -16,7 +16,7 @@ programación semanal por tarifas, sin depender de una comercializadora.
 | Canal | Versión | Uso |
 | --- | --- | --- |
 | Estable | [1.3.3](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.3.3) | Monitorización, controles y sesiones. |
-| Beta voluntaria | [1.4.0b4](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.4.0b4) | Añade programación opcional; solo para pruebas. |
+| Beta voluntaria | [1.4.0b3](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.4.0b3) | Añade programación opcional; solo para pruebas. |
 
 La beta no sustituye la última estable. Sus funciones se describen aquí como
 experimentales, no como disponibles en 1.3.3. Consulta el [historial de cambios](CHANGELOG.md).
@@ -76,7 +76,7 @@ identificadores, personalizaciones y sesión almacenada. Si cambia la IP, utiliz
 **Reconfigurar**. Para novedades de firmware, recarga la integración y descubre
 los campos opcionales disponibles.
 
-Para probar **1.4.0b4**, selecciónala expresamente al volver a descargar en HACS,
+Para probar **1.4.0b3**, selecciónala expresamente al volver a descargar en HACS,
 mostrando prereleases si hace falta, solo en el HA de pruebas. No habilites betas
 en producción ni dejes dos instancias gobernando el mismo cargador.
 
@@ -132,10 +132,6 @@ En **Configurar**, añade o edita tramos, elige tarifas permitidas y habilita el
 **Guardar y aplicar** muestra un resumen de activación, horarios y huecos; confirma
 antes de aplicar. Los solapamientos se rechazan y los huecos no permiten cargar.
 
-Desde la beta b4, **Acción → Volver al menú → Enviar**
-sale de un formulario sin aceptar esa pantalla. **Cancelar todos los cambios**
-o cerrar descarta la edición completa. Solo la confirmación final guarda y aplica.
-
 | Modo | Comportamiento |
 | --- | --- |
 | Automático | Permite cargar solo en los periodos seleccionados. |
@@ -154,7 +150,7 @@ inadvertido. La próxima franja es una previsión, no una garantía de arranque.
 No combines esta política con OCPP/Octopus u otros horarios de carga, y mantén
 activas la regulación dinámica y las protecciones.
 
-[Guía completa de configuración, pruebas y recuperación de la beta](https://github.com/Carbanog/V2C_trydan/blob/v1.4.0b4/docs/scheduling.es.md).
+[Guía completa de configuración, pruebas y recuperación de la beta](https://github.com/Carbanog/V2C_trydan/blob/v1.4.0b3/docs/scheduling.es.md).
 Su promoción a estable sigue pendiente de pruebas físicas de carga.
 
 ## Blueprints y automatizaciones
@@ -164,7 +160,7 @@ No se instalan ni activan automáticamente.
 
 **Resumen y avisos de sesión**
 
-[![Importar en Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0b4%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
+[![Importar en Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0b3%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
 
 [Ver YAML](blueprints/automation/session_summary.yaml). Avisa al comenzar y después
 de desconectar, sin duplicar avisos por cada pausa. Sus acciones pueden usar
@@ -181,7 +177,7 @@ data:
 
 **Alerta de potencia elevada**
 
-[![Importar en Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0b4%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
+[![Importar en Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0b3%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
 
 [Ver YAML](blueprints/automation/high_power_alert.yaml). Ejecuta acciones tras superar
 un umbral durante el tiempo elegido; permite usar `measured_power`.

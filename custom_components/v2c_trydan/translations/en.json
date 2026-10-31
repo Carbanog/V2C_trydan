@@ -37,100 +37,47 @@
           "add_block": "Add a time block",
           "edit_block": "Edit a time block",
           "remove_block": "Remove a time block",
-          "save": "Save and apply",
-          "cancel": "Cancel all changes"
+          "save": "Save and apply"
         }
       },
       "settings": {
         "title": "Settings and allowed tariffs",
         "data": {
-          "navigation": "Action",
           "enabled": "Enable scheduling",
           "allowed": "Allowed tariffs"
-        },
-        "data_description": {
-          "navigation": "Choose an action, then Submit. Return ignores changes on this screen; Cancel discards all unsaved changes. Nothing is applied until Save and apply is confirmed."
         }
       },
       "add_block": {
         "title": "Add a time block",
         "description": "Local HA time, minute precision. End earlier than start crosses midnight. 00:00 to 00:00 means a full day. Overlaps are rejected; unassigned time is paused.",
         "data": {
-          "navigation": "Action",
           "days": "Days on which the block starts",
           "start": "Start time",
           "end": "End time",
           "period": "Tariff"
-        },
-        "data_description": {
-          "navigation": "Choose an action, then Submit. Return ignores changes on this screen; Cancel discards all unsaved changes. Nothing is applied until Save and apply is confirmed."
         }
       },
-      "edit_block": {
-        "title": "Edit a time block",
-        "description": "Choose the existing block to edit. It is not removed.",
-        "data": {
-          "navigation": "Action",
-          "block": "Edit a time block"
-        },
-        "data_description": {
-          "navigation": "Choose an action, then Submit. Return ignores changes on this screen; Cancel discards all unsaved changes. Nothing is applied until Save and apply is confirmed."
-        }
-      },
-      "edit_details": {
-        "title": "Edit block details",
-        "description": "The current values are prefilled. Edit days, start/end time or tariff. Changes remain a draft until you review and confirm Save.",
-        "data": {
-          "navigation": "Action",
-          "days": "Days on which the block starts",
-          "start": "Start time",
-          "end": "End time",
-          "period": "Tariff"
-        },
-        "data_description": {
-          "navigation": "Choose an action, then Submit. Return ignores changes on this screen; Cancel discards all unsaved changes. Nothing is applied until Save and apply is confirmed."
-        }
-      },
+      "edit_block": {"title":"Edit a time block","description":"Choose the existing block to edit. It is not removed.","data":{"block":"Edit a time block"}},
+      "edit_details": {"title":"Edit block details","description":"The current values are prefilled. Edit days, start/end time or tariff. Changes remain a draft until you review and confirm Save.","data":{"days":"Days on which the block starts","start":"Start time","end":"End time","period":"Tariff"}},
       "remove_block": {
         "title": "Remove a time block",
         "description": "Choose a block to remove. Changes apply only after Save.",
         "data": {
-          "navigation": "Action",
           "block": "Remove a time block"
-        },
-        "data_description": {
-          "navigation": "Choose an action, then Submit. Return ignores changes on this screen; Cancel discards all unsaved changes. Nothing is applied until Save and apply is confirmed."
         }
       },
-      "save_error": {
-        "title": "Review schedule errors",
-        "description": "Invalid schedule: check times, days and overlaps. Enabling requires at least one block. Press Submit to return to the menu.",
-        "data": {
-          "navigation": "Action"
-        },
-        "data_description": {
-          "navigation": "Choose an action, then Submit. Return ignores changes on this screen; Cancel discards all unsaved changes. Nothing is applied until Save and apply is confirmed."
-        }
-      },
+      "save_error": {"title":"Review schedule errors","description":"Invalid schedule: check times, days and overlaps. Enabling requires at least one block. Press Submit to return to the menu."},
       "save": {
         "title": "Review and apply schedule",
         "description": "**Scheduling:** {enabled}\n\n### Time blocks\n{blocks}\n\n**Allowed tariffs:** {allowed}\n\n### Unassigned time: {unassigned_minutes} minutes per week\n{gaps}\n\nUnassigned time does not permit charging in Automatic. 00:00 → 00:00 means a full day. Confirm below to save; cancelling leaves the existing configuration unchanged.",
         "data": {
-          "navigation": "Action",
           "confirm": "Apply this schedule"
-        },
-        "data_description": {
-          "navigation": "Choose an action, then Submit. Return ignores changes on this screen; Cancel discards all unsaved changes. Nothing is applied until Save and apply is confirmed."
         }
       }
     },
     "error": {
       "confirm_required": "Confirm the summary to apply the schedule.",
-      "invalid_schedule": "Invalid schedule: check times, days and overlaps. Enabling requires at least one block. Press Submit to return to the menu.",
-      "choose_block": "Choose a time block, or select Return to menu or Cancel all changes."
-    },
-    "abort": {
-      "changes_cancelled": "Changes cancelled. The saved configuration has not changed."
+      "invalid_schedule": "Invalid schedule: check times, days and overlaps. Enabling requires at least one block. Press Submit to return to the menu."
     }
   },
   "issues": {"scheduling_command_unconfirmed":{"title":"V2C Trydan: charging command unconfirmed","description":"The scheduling command for **{charger}** has not been confirmed for at least one minute. Charging may not match the requested tariff or pause. Check the charger, connection and Scheduling status; after reviewing the actual state, explicitly select a mode to retry. Do not disable electrical protections. The integration does not blindly repeat the command. This warning clears after confirmation, an observed unplug, or disabling scheduling."}},
@@ -193,7 +140,6 @@
     }
   },
   "selector": {
-    "options_navigation": {"options":{"continue":"Continue with this form","back":"Return to menu","cancel":"Cancel all changes"}},
     "scheduling_enabled": {"options":{"enabled":"Enabled","disabled":"Disabled"}},
     "tariff": {"options":{"peak":"Peak","shoulder":"Shoulder","off_peak":"Off-peak"}},
     "weekdays": {"options":{"mon":"Monday","tue":"Tuesday","wed":"Wednesday","thu":"Thursday","fri":"Friday","sat":"Saturday","sun":"Sunday"}},

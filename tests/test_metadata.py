@@ -44,34 +44,6 @@ def test_json_files_are_valid() -> None:
         assert isinstance(json.loads(path.read_text(encoding="utf-8")), dict)
 
 
-@pytest.mark.parametrize("language", ["en", "es", "fr"])
-def test_options_navigation_is_translated_on_every_form(language: str) -> None:
-    """Navigation actions must never be shown as raw backend identifiers."""
-    texts = json.loads(
-        (INTEGRATION / "translations" / f"{language}.json").read_text(encoding="utf-8")
-    )
-    assert set(texts["selector"]["options_navigation"]["options"]) == {
-        "continue",
-        "back",
-        "cancel",
-    }
-    assert texts["options"]["step"]["init"]["menu_options"]["cancel"]
-    assert texts["options"]["abort"]["changes_cancelled"]
-    assert texts["options"]["error"]["choose_block"]
-    for step in (
-        "settings",
-        "add_block",
-        "edit_block",
-        "edit_details",
-        "remove_block",
-        "save",
-        "save_error",
-    ):
-        form = texts["options"]["step"][step]
-        assert form["data"]["navigation"]
-        assert form["data_description"]["navigation"]
-
-
 def test_funding_uses_the_project_support_url() -> None:
     """Expose optional support through GitHub without third-party widgets."""
     funding = yaml.safe_load((ROOT / ".github" / "FUNDING.yml").read_text())
