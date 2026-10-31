@@ -6,6 +6,10 @@ All notable changes to this project are documented here.
 
 ### Fixed
 
+* Replace deprecated global device-registry lookups with config-entry-scoped
+  lookups during legacy identifier migration. Older HA versions use scoped
+  enumeration without calling the deprecated method. Existing registry IDs and
+  user customizations are preserved.
 * Supply the V2C brand icon locally so HACS branding validation does not depend
   on a separate upstream entry for the `v2c_trydan` domain.
 * Add a regression check for the PNG asset. Charger communication, controls,
