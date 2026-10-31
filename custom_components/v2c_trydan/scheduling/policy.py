@@ -164,7 +164,6 @@ class ChargingPolicy:
             if self.state.mode == "charge_now" and self.state.force_connected:
                 self.state.mode = "automatic"
                 self.state.force_connected = False
-            self.state.last_paused = None
             return Decision(period, "disconnected")
         if connected is None:
             return Decision(period, "charger_fault")

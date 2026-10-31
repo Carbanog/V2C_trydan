@@ -183,6 +183,14 @@ def test_external_pause_latches_until_an_explicit_mode_selection():
     assert policy.evaluate(MONDAY, snapshot(Paused=1)).pause is False
 
 
+def test_unplug_does_not_erase_evidence_of_a_new_external_pause():
+    policy = ChargingPolicy(schedule(), SchedulerState(mode="automatic"))
+    policy.evaluate(MONDAY, snapshot())
+    policy.evaluate(MONDAY, snapshot(ChargeState=0))
+    policy.evaluate(MONDAY, snapshot(Paused=1))
+    assert policy.state.mode == "paused"
+
+
 def test_repeated_local_hour_uses_wall_clock_not_utc():
     for offset in [1, 2]:
         local = MONDAY.replace(hour=2, tzinfo=timezone(timedelta(hours=offset)))

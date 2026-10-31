@@ -3,6 +3,7 @@
 from copy import deepcopy
 from unittest.mock import patch
 
+from homeassistant.config_entries import ConfigEntryState
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.v2c_trydan.api import V2CTrydanApi
@@ -71,7 +72,7 @@ async def setup_charger(hass, configured):
         assert await hass.config_entries.async_setup(entry.entry_id)
         await hass.async_block_till_done()
         yield entry, data, command
-        if getattr(entry, "runtime_data", None) is not None:
+        if entry.state is ConfigEntryState.LOADED:
             await hass.config_entries.async_unload(entry.entry_id)
 
 
@@ -103,9 +104,19 @@ async def test_enabled_entities_pause_override_and_unload(hass):
         )
         await hass.async_block_till_done()
         assert data["Paused"] == 0
-        data["ChargeState"] = 0
-        await entry.runtime_data.async_request_refresh()
+        # A request_refresh may be debounced. Simulate the next actual poll,
+        # then reload to exercise HA Store and subscriptions, not a fake registry.
+        await entry.runtime_data.async_refresh()
         await hass.async_block_till_done()
+        assert await hass.config_entries.async_reload(entry.entry_id)
+        await hass.async_block_till_done()
+        assert manager._stopped
+        manager = entry.runtime_data.scheduler
+        assert manager.controller.policy.state.mode == "charge_now"
+        data["ChargeState"] = 0
+        await entry.runtime_data.async_refresh()
+        await hass.async_block_till_done()
+        assert entry.runtime_data.data["ChargeState"] == 0
         assert manager.controller.policy.state.mode == "automatic"
         assert await hass.config_entries.async_unload(entry.entry_id)
         assert manager._stopped
@@ -137,3 +148,37 @@ async def test_options_flow_edits_draft_and_preserves_other_options(hass):
     assert entry.options["unrelated"] == "keep"
     assert entry.options["scheduling"]["enabled"] is False
     assert len(entry.options["scheduling"]["blocks"]) == 1
+
+
+async def test_options_reject_overlap_and_allow_adjacent_blocks(hass):
+    entry = MockConfigEntry(domain=DOMAIN, data={"ip_address": "192.0.2.10"})
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    flow = result["flow_id"]
+    first = {
+        "days": ["mon"],
+        "start": "00:00:00",
+        "end": "08:00:00",
+        "period": "off_peak",
+    }
+    await hass.config_entries.options.async_configure(
+        flow, {"next_step_id": "add_block"}
+    )
+    await hass.config_entries.options.async_configure(flow, first)
+    await hass.config_entries.options.async_configure(
+        flow, {"next_step_id": "add_block"}
+    )
+    result = await hass.config_entries.options.async_configure(
+        flow, {**first, "start": "07:00:00", "end": "09:00:00"}
+    )
+    assert result["errors"] == {"base": "invalid_schedule"}
+    assert not entry.options
+    result = await hass.config_entries.options.async_configure(
+        flow, {**first, "start": "08:00:00", "end": "09:00:00"}
+    )
+    assert result["type"] == "menu"
+    result = await hass.config_entries.options.async_configure(
+        flow, {"next_step_id": "save"}
+    )
+    assert result["type"] == "create_entry"
+    assert len(entry.options["scheduling"]["blocks"]) == 2
