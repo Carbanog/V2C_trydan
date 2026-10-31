@@ -267,3 +267,15 @@ async def test_cancellation_keeps_pending_intent_for_reconciliation(runtime):
     assert saves[-1]["pending_pause"] is False
     await controller.async_evaluate()
     controller.write_pause.assert_awaited_once()
+
+
+async def test_stop_during_checkpoint_cannot_send_a_late_command(runtime):
+    controller, _data, writes, _saves = runtime
+
+    async def stop_on_save(state):
+        controller.stop()
+
+    controller.save = stop_on_save
+    await controller.async_evaluate("automatic")
+    await controller.async_evaluate("charge_now")
+    assert writes == []

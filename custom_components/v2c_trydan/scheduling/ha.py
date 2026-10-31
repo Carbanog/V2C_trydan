@@ -121,6 +121,7 @@ class SchedulingManager:
     async def async_stop(self) -> None:
         """Unload without resuming a charger that may have been paused manually."""
         self._stopped = True
+        self.controller.stop()
         for unsubscribe in self._unsubscribers:
             unsubscribe()
         self._unsubscribers.clear()

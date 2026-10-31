@@ -37,6 +37,11 @@ class SchedulingController:
         self.decision = Decision("unassigned", "unavailable")
         self._lock = asyncio.Lock()
         self._saved = policy.state.as_dict()
+        self._active = True
+
+    def stop(self) -> None:
+        """Reject queued work; a command already sent cannot be recalled."""
+        self._active = False
 
     def restore(self, state: SchedulerState) -> None:
         """Restore only before listeners start or commands can be scheduled."""
@@ -46,21 +51,27 @@ class SchedulingController:
     async def async_evaluate(self, mode: str | None = None) -> None:
         """Serialize user actions and clock/data updates on the same policy."""
         async with self._lock:
+            if not self._active:
+                return
             if mode is not None:
                 self.policy.set_mode(mode, self.snapshot())
             self.decision = self.policy.evaluate(self.now(), self.snapshot())
             await self._async_save_if_changed()
-            if self.decision.pause is None:
+            if self.decision.pause is None or not self._active:
                 return
             pause = self.decision.pause
             self.policy.state.pending_pause = pause
             await self._async_save_if_changed()
+            if not self._active:
+                return
             # Keep the pending checkpoint on any write failure or cancellation.
             # A follow-up read may still prove that the command was applied.
             try:
                 await self.write_pause(pause)
             finally:
                 self.decision = Decision(self.decision.period, "command_unconfirmed")
+            if not self._active:
+                return
             await self.refresh()
             self.decision = self.policy.evaluate(self.now(), self.snapshot())
             await self._async_save_if_changed()
