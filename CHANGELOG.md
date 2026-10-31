@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here.
 
-## Unreleased
+## 1.4.0b4
 
 * Add Return to menu and Cancel all changes actions to every scheduling form,
   including invalid-summary recovery, plus Cancel in the main options menu.
@@ -12,6 +12,7 @@ All notable changes to this project are documented here.
 * Translate navigation, cancellation and selection errors in English, Spanish
   and French, with regression tests using Home Assistant's actual options flow.
 * No charger API, scheduling policy, session storage or runtime dependency changes.
+* Prerelease only; stable remains 1.3.3. Previous releases remain available for rollback.
 
 ## 1.4.0b3
 
