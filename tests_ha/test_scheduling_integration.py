@@ -5,6 +5,8 @@ from unittest.mock import patch
 
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.v2c_trydan.api import V2CTrydanApi
+
 DOMAIN = "v2c_trydan"
 
 
@@ -55,12 +57,14 @@ async def setup_charger(hass, configured):
         data[key] = value
 
     with (
-        patch(
-            f"custom_components.{DOMAIN}.api.V2CTrydanApi.async_get_realtime_data",
+        patch.object(
+            V2CTrydanApi,
+            "async_get_realtime_data",
             side_effect=read,
         ),
-        patch(
-            f"custom_components.{DOMAIN}.api.V2CTrydanApi.async_write",
+        patch.object(
+            V2CTrydanApi,
+            "async_write",
             side_effect=write,
         ) as command,
     ):
