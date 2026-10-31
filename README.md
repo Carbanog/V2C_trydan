@@ -32,6 +32,11 @@ serialized requests and graceful handling of temporary failures.
 
 ## Installation
 
+Version **1.3.3** replaces deprecated device-registry lookups and includes the
+local V2C icon (served by HA 2026.3 and later). Update through HACS and restart
+Home Assistant; do not delete or recreate the integration. Charger controls,
+entity IDs and session storage are unchanged. See [CHANGELOG.md](CHANGELOG.md).
+
 [![Open this repository in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Carbanog&repository=V2C_trydan&category=integration)
 
 The button opens this custom repository directly in HACS. Select **Download**,
@@ -153,7 +158,7 @@ installed or enabled automatically. Import them through **Settings → Automatio
 
 ### Session summary and notifications
 
-[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.2%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
+[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.3%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
 
 - [View or copy the YAML](blueprints/automation/session_summary.yaml).
 - Runs actions on the first charging start and two minutes after disconnect,
@@ -180,7 +185,7 @@ data:
 
 ### High charging power alert
 
-[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.2%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
+[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.3%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
 
 - [View or copy the YAML](blueprints/automation/high_power_alert.yaml).
 - Runs an action after charging power exceeds the configured threshold for the
