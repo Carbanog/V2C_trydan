@@ -16,7 +16,7 @@ weekly tariff scheduling without relying on an energy provider.
 | Channel | Version | Purpose |
 | --- | --- | --- |
 | Stable | [1.3.3](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.3.3) | Monitoring, controls and sessions. |
-| Opt-in beta | [1.4.0b2](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.4.0b2) | Adds optional scheduling; test installations only. |
+| Opt-in beta | [1.4.0b3](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.4.0b3) | Adds optional scheduling; test installations only. |
 
 The beta does not replace the latest stable release. Features labelled beta below
 are experimental, not part of 1.3.3. See the [changelog](CHANGELOG.md).
@@ -74,7 +74,7 @@ Update through HACS and restart. Do not delete/recreate the integration:
 existing IDs, customizations and stored sessions are retained. Use **Reconfigure**
 if the IP changes. Reload after firmware upgrades to discover available optional fields.
 
-To try **1.4.0b2**, explicitly select it in HACS's re-download/version selector,
+To try **1.4.0b3**, explicitly select it in HACS's re-download/version selector,
 showing prereleases if needed, on test HA only. Do not enable beta updates in
 production or let two HA instances govern the same charger.
 
@@ -124,7 +124,7 @@ automations to create. Configure multiple blocks per day, different weekdays,
 Peak/Shoulder/Off-peak labels and overnight intervals. Utility hours, holidays
 and prices are not assumed or fetched.
 
-In **Configure**, add blocks, choose permitted tariffs and enable the module.
+In **Configure**, add or edit blocks, choose permitted tariffs and enable the module.
 **Save and apply** shows enabled state, blocks and gaps, then requires explicit
 confirmation. Overlaps are rejected; unassigned time does not permit charging.
 
@@ -146,7 +146,7 @@ The next window previews tariff permission, not a guaranteed vehicle start.
 Do not combine with OCPP/Octopus or other charging schedules. Leave dynamic
 regulation and electrical protections enabled.
 
-[Full beta setup, physical-test and rollback guide](https://github.com/Carbanog/V2C_trydan/blob/v1.4.0b2/docs/scheduling.md).
+[Full beta setup, physical-test and rollback guide](https://github.com/Carbanog/V2C_trydan/blob/v1.4.0b3/docs/scheduling.md).
 Promotion to stable is pending physical charging checks.
 
 ## Blueprints and automations
