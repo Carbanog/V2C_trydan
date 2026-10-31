@@ -1,8 +1,15 @@
+<img src="custom_components/v2c_trydan/brand/icon.png" alt="V2C" width="64" align="right">
+
 # V2C Trydan pour Home Assistant
 
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz/)
 [![Stable release](https://img.shields.io/github/v/release/Carbanog/V2C_trydan.svg)](https://github.com/Carbanog/V2C_trydan/releases/)
+[![Validation](https://github.com/Carbanog/V2C_trydan/actions/workflows/validate.yml/badge.svg?branch=main)](https://github.com/Carbanog/V2C_trydan/actions/workflows/validate.yml)
+[![MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 [English](README.md) · [Español](README.es.md) · [Français](README.fr.md)
+
+[Installer](#installation) · [Entités](#entités-et-configuration) · [Sessions](#comptabilisation-des-sessions) · [Programmation bêta](#programmation-par-tarifs--bêta-14-uniquement) · [Blueprints](#blueprints-et-automatisations) · [Tableaux de bord](#tableaux-de-bord)
 
 Commande locale de la borne, suivi complet des sessions et outils facultatifs
 pour gérer la recharge depuis Home Assistant.
@@ -10,6 +17,14 @@ pour gérer la recharge depuis Home Assistant.
 V2C Trydan réunit commandes quotidiennes, sessions conservées entre les pauses
 et redémarrages, diagnostics et exemples d’automatisations. La branche bêta ajoute
 une programmation hebdomadaire par tarifs, indépendante du fournisseur d’énergie.
+
+## Aperçu
+
+| Tableau natif | Tableau Mushroom |
+| :---: | :---: |
+| [![Tableau natif](docs/images/dashboard-native.png)](docs/images/dashboard-native.png) | [![Tableau Mushroom](docs/images/dashboard-mushroom.png)](docs/images/dashboard-mushroom.png) |
+
+Exemples réels de tableaux de bord. Captures en espagnol ; les entités suivent la langue de HA.
 
 ## Versions et périmètre
 
@@ -25,15 +40,12 @@ modifications](CHANGELOG.md), en anglais. Ce projet s’installe dans HACS comme
 
 ## Fonctions principales
 
-- HTTP local : aucun compte V2C Cloud ni Octopus/OCPP requis.
-- Pause, verrouillage et intensité, avec réglages avancés facultatifs.
-- Énergie et temps actif de toute la session malgré les remises à zéro des
-  compteurs partiels pendant les pauses.
-- Restauration de la session après redémarrage de HA.
-- Requêtes partagées et sérialisées, tentatives limitées et diagnostic de
-  communication, également utiles sur les liaisons CPL/Wi-Fi limitées.
-- Nouvelle adresse IP sans recréer l’intégration ; données sensibles connues masquées.
-- Blueprints, tableaux de bord et interface en français, espagnol et anglais.
+| Fonction | Ce qu’elle apporte |
+| --- | --- |
+| **Commande locale** | Pause, verrouillage et intensité par HTTP local. Aucun compte V2C Cloud ni dépendance à Octopus/OCPP. |
+| **Sessions complètes** | Énergie et temps actif cumulés malgré les pauses, remises à zéro des compteurs et redémarrages de HA. |
+| **Communication et diagnostic** | Requêtes partagées et sérialisées, tentatives limitées, données sensibles connues masquées et changement d’IP sans recréer l’intégration. |
+| **Extensions facultatives** | Blueprints importables, tableaux natif/Mushroom et interface en français, espagnol et anglais. La programmation hebdomadaire reste en bêta. |
 
 La tolérance aux pannes ne supprime pas les problèmes réseau et ne garantit pas la connexion.
 
@@ -198,11 +210,8 @@ de notification, pas le SOC fourni par le véhicule ni de nouveaux capteurs.
 Copiez le YAML dans une carte manuelle et adaptez les identifiants à votre
 installation. Les exemples ne modifient jamais automatiquement vos tableaux.
 
-| Tableau natif | Tableau Mushroom |
-| :---: | :---: |
-| [![Tableau natif](docs/images/dashboard-native.png)](docs/images/dashboard-native.png) | [![Tableau Mushroom](docs/images/dashboard-mushroom.png)](docs/images/dashboard-mushroom.png) |
+Consultez les [captures des tableaux](#aperçu) en début de page. Cliquez sur une image pour l’agrandir.
 
-Les captures montrent l’interface espagnole ; les entités suivent la langue de HA.
 
 ## Actions de compatibilité
 
