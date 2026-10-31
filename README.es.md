@@ -1,304 +1,255 @@
 # V2C Trydan para Home Assistant
 
-[![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://www.hacs.xyz/)
-[![GitHub release](https://img.shields.io/github/v/release/Carbanog/V2C_trydan.svg)](https://github.com/Carbanog/V2C_trydan/releases/)
-[![English](https://img.shields.io/badge/lang-en-red.svg)](README.md)
-[![Español](https://img.shields.io/badge/lang-es-yellow.svg)](README.es.md)
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz/)
+[![Stable release](https://img.shields.io/github/v/release/Carbanog/V2C_trydan.svg)](https://github.com/Carbanog/V2C_trydan/releases/)
+[English](README.md) · [Español](README.es.md) · [Français](README.fr.md)
 
-Integración local para monitorizar y controlar cargadores **V2C Trydan** desde
-Home Assistant. Está diseñada especialmente para conexiones PLC o Wi-Fi que
-necesitan peticiones espaciadas, serializadas y tolerantes a fallos puntuales.
+Control local del cargador, seguimiento completo de las sesiones y herramientas
+opcionales para gestionar la carga desde Home Assistant.
 
-> [!IMPORTANT]
-> Proyecto comunitario independiente, sin relación oficial con V2C. Deriva del
-> trabajo original de [Rain1971](https://github.com/Rain1971/V2C_trydant) y se
-> proporciona sin garantías. Prueba las versiones beta en una instalación de
-> Home Assistant de pruebas antes de utilizarlas en producción.
+V2C Trydan combina controles de uso diario, sesiones persistentes entre pausas y
+reinicios, diagnósticos y ejemplos de automatización. La rama beta incorpora
+programación semanal por tarifas, sin depender de una comercializadora.
 
-## Funciones destacadas
+## Versiones y alcance
 
-- Comunicación HTTP completamente local y sin dependencias Python externas.
-- Una lectura coordinada cada 15 segundos para todas las entidades.
-- Reintentos y peticiones serializadas para proteger conexiones débiles.
-- Controles de pausa, bloqueo e intensidad.
-- **Energía y tiempo activo completos de la sesión**, incluso cuando OCPP o la
-  aplicación pausa, reanuda y reinicia los contadores parciales del cargador.
-- Persistencia de la sesión entre reinicios de Home Assistant.
-- Estado de carga descriptivo y detección inmediata de problemas del medidor.
-- Cambio de IP desde la interfaz sin recrear entidades ni automatizaciones.
-- Diagnósticos que ocultan IP, SSID e identificadores sensibles.
-- Blueprints y ejemplos de panel opcionales.
-- Interfaz de la integración traducida al español, inglés y francés.
+| Canal | Versión | Uso |
+| --- | --- | --- |
+| Estable | [1.3.3](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.3.3) | Monitorización, controles y sesiones. |
+| Beta voluntaria | [1.4.0b2](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.4.0b2) | Añade programación opcional; solo para pruebas. |
+
+La beta no sustituye la última estable. Sus funciones se describen aquí como
+experimentales, no como disponibles en 1.3.3. Consulta el [historial de cambios](CHANGELOG.md).
+Este repositorio se instala en HACS como **repositorio personalizado**; no se
+presenta como incluido en su catálogo predeterminado.
+
+## Funciones principales
+
+- HTTP local: no necesita cuenta de V2C Cloud ni Octopus/OCPP para funcionar.
+- Controles de pausa, bloqueo e intensidad; ajustes avanzados opcionales.
+- Energía y tiempo activo de toda la sesión, incluso si el cargador reinicia
+  contadores parciales durante las pausas.
+- Restauración de la sesión después de reiniciar HA.
+- Peticiones compartidas y serializadas, reintentos acotados y diagnóstico de
+  comunicación, útiles también en conexiones PLC o Wi-Fi limitadas.
+- Cambio de IP sin recrear la integración y diagnósticos con campos sensibles ocultos.
+- Blueprints, paneles de ejemplo e interfaz en español, inglés y francés.
+
+La tolerancia a fallos no elimina problemas de red ni garantiza la conexión.
+
+## Requisitos y compatibilidad
+
+Necesitas acceso HTTP local al Trydan desde HA. Reserva su dirección en el router
+y comprueba `http://IP_DEL_CARGADOR/RealTimeData` desde la misma red.
+No expongas esa API a Internet.
+
+Las pruebas incluyen respuestas reales anonimizadas de firmware 2.4.6 y 2.5.1;
+no equivalen a validar físicamente todas las versiones o instalaciones. Los campos
+opcionales se detectan por su presencia, no solo por el número de firmware.
+La versión 2.5.2 y los montajes Trydan Pro maestro/secundario no están validados.
+
+Las medidas L1 de corriente y tensión aparecen si el cargador las devuelve.
+El proyecto no expone medidas L2/L3 ni controles de luces; estos últimos se
+retiraron por estados locales inconsistentes. El icono local requiere HA 2026.3
+o posterior para mostrarse mediante la API de marcas.
 
 ## Instalación
 
-La versión **1.3.3** sustituye las búsquedas obsoletas del registro de dispositivos
-e incluye el icono local de V2C (compatible con HA 2026.3 y posteriores). Actualiza
-desde HACS y reinicia Home Assistant; no borres ni recrees la integración.
-Los controles, identificadores de entidades y almacenamiento de sesiones no
-cambian. Consulta [CHANGELOG.md](CHANGELOG.md).
+[![Añadir a HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Carbanog&repository=V2C_trydan&category=integration)
 
-[![Abrir este repositorio en HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Carbanog&repository=V2C_trydan&category=integration)
+1. Haz una copia de seguridad de HA.
+2. Usa el botón o añade `https://github.com/Carbanog/V2C_trydan` en HACS como
+   repositorio personalizado de tipo **Integración**.
+3. Descarga la estable **1.3.3** y reinicia HA.
+4. Ve a **Ajustes → Dispositivos y servicios → Añadir integración → V2C Trydan**.
+5. Introduce la IP local del cargador.
 
-El botón abre directamente este repositorio personalizado dentro de HACS. Pulsa
-**Descargar**, reinicia Home Assistant y continúa desde el paso 3. Si el enlace
-no puede abrir tu instancia, utiliza el procedimiento manual:
+Sin HACS: descarga una release y copia únicamente `custom_components/v2c_trydan`
+en `/config/custom_components/v2c_trydan`; reinicia y sigue desde el paso 4.
+No instales a la vez dos componentes que utilicen el dominio `v2c_trydan`.
+Evita controladores o automatizaciones que envíen órdenes contradictorias.
 
-1. En HACS, añade `https://github.com/Carbanog/V2C_trydan` como repositorio
-   personalizado de tipo **Integración**.
-2. Instala V2C Trydan y reinicia Home Assistant.
-3. Abre **Ajustes → Dispositivos y servicios → Añadir integración**.
-4. Busca **V2C Trydan** e introduce la dirección IP local del cargador.
+## Actualizar, probar una beta y volver atrás
 
-Es muy recomendable reservar esa dirección en el DHCP del router. Si cambia,
-utiliza **Reconfigurar** en el menú de la integración; no es necesario borrarla.
+Actualiza desde HACS y reinicia HA. No borres ni recrees la integración: conserva
+identificadores, personalizaciones y sesión almacenada. Si cambia la IP, utiliza
+**Reconfigurar**. Para novedades de firmware, recarga la integración y descubre
+los campos opcionales disponibles.
 
-## Experiencia inicial deliberadamente sencilla
+Para probar **1.4.0b2**, selecciónala expresamente al volver a descargar en HACS,
+mostrando prereleases si hace falta, solo en el HA de pruebas. No habilites betas
+en producción ni dejes dos instancias gobernando el mismo cargador.
 
-Una instalación nueva habilita únicamente las entidades de uso habitual. Los
-ajustes internos, datos solares, batería doméstica y diagnóstico detallado siguen
-disponibles desde la página del dispositivo, pero comienzan deshabilitados.
+Para volver a estable, revisa la pausa real, deshabilita la programación si la
+estabas usando, descarga **1.3.3** y reinicia. Deshabilitar o descargar el módulo
+no reanuda automáticamente la carga. Las entidades exclusivas de una beta pueden
+quedar no disponibles al volver atrás; no se borran registros de usuario.
 
-Deshabilitar una entidad en Home Assistant **no cambia la configuración del
-cargador**. Por ejemplo, la carga dinámica continuará activa si así está
-configurada en la aplicación V2C.
+## Entidades y configuración
 
-### Habilitadas inicialmente
+| Grupo | Contenido |
+| --- | --- |
+| Controles diarios | Pausar carga, bloquear cargador e intensidad manual. |
+| Sesión | Energía de la sesión, tiempo activo y botón opcional de reinicio. |
+| Monitorización | Potencia y energía parcial, estado de carga, potencia de casa, manguera y cargando. |
+| Configuración opcional | Límites de intensidad, carga/modo dinámico, temporizador y pausa dinámica. |
+| Diagnóstico y medidas opcionales | Medidor, firmware, red, Wi-Fi, estados internos, tensión y corriente L1. |
+| Programación beta | Modo, tarifa actual y estado; solo al habilitar el módulo. |
 
-| Entidad | Tipo | Uso |
-| --- | --- | --- |
-| Potencia de carga | Sensor | Potencia entregada al vehículo. |
-| Energía de carga | Sensor | Contador parcial informado por el firmware. |
-| Energía de la sesión | Sensor | Total local que suma todos los tramos hasta la siguiente conexión. |
-| Tiempo activo de la sesión | Sensor | Tiempo activo local que suma todos los tramos. |
-| Estado de carga | Sensor | Estado detallado del cargador. |
-| Potencia de casa | Sensor | Consumo medido por el sistema dinámico. |
-| Manguera conectada | Sensor binario | Disparador fiable para automatizaciones de sesión. |
-| Cargando | Sensor binario | Indica flujo de carga activo. |
-| Problema del medidor | Sensor binario | Advierte de cualquier código de error del medidor. |
-| Pausar carga | Interruptor | Pausa o reanuda manualmente. |
-| Bloquear cargador | Interruptor | Controla el bloqueo del cargador. |
-| Intensidad de carga | Número | Ajusta la intensidad manual entre 6 y 32 A. |
+En instalaciones nuevas los ajustes avanzados, datos solares/de batería y muchos
+diagnósticos comienzan deshabilitados. Las elecciones de instalaciones existentes
+se conservan. Habilita lo necesario en **Ajustes → Dispositivos y servicios →
+Entidades**, incluyendo las deshabilitadas en el filtro. Habilitar una entidad
+no modifica el cargador hasta utilizar su control.
 
-### Avanzadas o de diagnóstico
+Selecciona tu idioma en el perfil de HA. No se renombran identificadores existentes,
+nombres personalizados ni textos escritos manualmente en paneles.
 
-Permanecen deshabilitadas inicialmente: potencia fotovoltaica y de batería,
-tensión, potencia contratada, intensidad mínima y máxima, carga dinámica, modo
-dinámico, temporizador, pausa dinámica, estados internos duplicados (incluido el
-`Tiempo de Carga` parcial del firmware), código del medidor, firmware, IP, SSID,
-señal Wi-Fi e identificador del dispositivo.
+## Cómo se contabilizan las sesiones
 
-Se pueden habilitar individualmente en **Ajustes → Dispositivos y servicios →
-Entidades**. Los cambios de valores predeterminados no deshabilitan entidades que
-un usuario ya hubiera activado en una versión anterior.
+**Energía de carga** es el contador parcial del cargador. **Energía de la sesión**
+y **Tiempo activo de la sesión** acumulan los incrementos entre pausas y reinicios
+de esos contadores. No dependen de Octopus: también sirven con carga manual.
 
-Para habilitar una entidad opcional, incluye las deshabilitadas en la lista,
-abre la que necesites y actívala en su configuración. Habilitar una entidad de
-configuración no cambia el cargador hasta que utilices su control.
+Al desenchufar se conservan los totales; al detectar la siguiente conexión se
+inicia una sesión nueva. Un fallo del cargador no se interpreta como una nueva
+conexión. El estado se guarda independientemente de Recorder.
+El botón opcional de reinicio permite corregir una sesión excepcional.
 
-El sensor de kilómetros, el objetivo de carga en kilómetros, el control de precio
-máximo y la planificación PVPC del proyecto de Rain1971 no forman parte de esta
-integración: no son entidades ocultas o deshabilitadas. Por eso sus paneles
-antiguos pueden referenciar entidades que aquí no existen. Las estimaciones de
-autonomía y coste del blueprint de resumen son variables para las notificaciones,
-no entidades ni controles automáticos de carga.
+La presentación usa dos decimales; el tiempo se conserva internamente en segundos.
+Si una entidad antigua muestra segundos, puedes elegir horas en su configuración
+sin reiniciar el acumulado. La energía borrada por el cargador mientras HA estaba
+apagado no puede reconstruirse.
 
-Este proyecto y la integración de Rain1971 utilizan el mismo dominio
-`v2c_trydan`. No instales ambas implementaciones a la vez en la misma instancia
-de HA.
+## Programación por tarifas — solo beta 1.4
 
-Después de instalar la versión 1.3.2 o posterior, selecciona francés
-en tu perfil de HA y reinicia HA tras actualizar la integración. No se renombran
-los identificadores existentes, los nombres personalizados ni los títulos
-escritos en los paneles. El francés no está incluido en la versión 1.3.1 publicada
-anteriormente.
+Módulo separado, opcional y **desactivado inicialmente**, sin crear ayudantes ni
+automatizaciones. Permite varios tramos por día, horarios distintos según el día,
+periodos Punta/Llano/Valle y pasos por medianoche. No presupone horarios comerciales
+ni calcula festivos o precios.
 
-### Medidas reales con firmware 2.5.1
+En **Configurar**, añade tramos, elige tarifas permitidas y habilita el módulo.
+**Guardar y aplicar** muestra un resumen de activación, horarios y huecos; confirma
+antes de aplicar. Los solapamientos se rechazan y los huecos no permiten cargar.
 
-Si `RealTimeData` incluye `IntensityMeasure_L1` y `VoltageMeasure_L1`, se crean
-**Corriente Medida L1** y **Tensión Medida L1**, deshabilitadas inicialmente y con
-dos decimales. Se habilitan desde la lista de entidades del dispositivo. Son
-medidas reales: no equivalen a la intensidad solicitada ni al voltaje de
-referencia de la instalación. Un cero comunicado por el cargador en reposo se
-conserva como cero.
+| Modo | Comportamiento |
+| --- | --- |
+| Automático | Permite cargar solo en los periodos seleccionados. |
+| Cargar ahora | Ignora las tarifas hasta observar conexión y después desenchufado. |
+| Pausado | Mantiene la parada hasta elegir otro modo. |
 
-Las respuestas anonimizadas de firmware 2.4.6 y 2.5.1 se utilizan en las pruebas.
-Los equipos anteriores que no devuelven estos campos no crean esas entidades.
-Tras actualizar el firmware, recarga la integración para detectar los campos
-nuevos. `GridPower`, las fases L2/L3, las luces y `ChargeMode` no añaden controles
-ni entidades en esta actualización.
+La primera activación comienza en Pausado. El módulo solo actúa sobre `Paused`:
+no desbloquea ni cambia intensidad o carga dinámica. Al habilitarlo, el interruptor
+habitual de pausa selecciona Pausado al activarse y Cargar ahora al desactivarse.
+El estado explica la espera, incluye la próxima franja como atributo y genera
+un aviso en **Reparaciones** si una orden sigue sin confirmarse durante un minuto.
 
-## Estadísticas de la sesión
+**HA debe estar encendido y comunicado.** Una caída puede impedir detenerse a la
+hora prevista; un ciclo de desenchufado completo durante la caída puede pasar
+inadvertido. La próxima franja es una previsión, no una garantía de arranque.
+No combines esta política con OCPP/Octopus u otros horarios de carga, y mantén
+activas la regulación dinámica y las protecciones.
 
-`Energía de Carga` reproduce el valor `ChargeEnergy` del cargador. Algunos
-controladores externos, incluido OCPP, pueden dividir una conexión física en
-varios tramos y reiniciar ese valor entre pausas.
+[Guía completa de configuración, pruebas y recuperación de la beta](https://github.com/Carbanog/V2C_trydan/blob/v1.4.0b2/docs/scheduling.es.md).
+Su promoción a estable sigue pendiente de pruebas físicas de carga.
 
-`Energía de la Sesión` y `Tiempo Activo de la Sesión` suman los incrementos de
-todos esos tramos mientras la manguera permanece conectada. Los resultados se
-conservan al desconectar para que una automatización pueda leerlos posteriormente
-y se reinician al conectar un nuevo vehículo. Se guardan periódicamente sin
-depender del Recorder.
+## Blueprints y automatizaciones
 
-Los estados de error del cargador no demuestran que se haya desenchufado la
-manguera. Durante ellos el acumulador conserva la sesión y sus últimos contadores
-válidos, sin iniciar una sesión nueva al recuperarse.
+Son opcionales y se importan por separado desde [blueprints/automation](blueprints/automation).
+No se instalan ni activan automáticamente.
 
-El tiempo se conserva internamente en segundos, pero las instalaciones nuevas lo
-mostrarán en horas con dos decimales. Si la entidad ya se creó con `1.3.0b5`,
-Home Assistant respeta su unidad anterior: abre la entidad, pulsa el engranaje y
-cambia **Unidad de medida** de `s` a `h`. No se pierde el acumulado ni el histórico.
-
-El botón avanzado `Reiniciar Estadísticas de Sesión` permite corregir
-manualmente un caso excepcional sin volver a contar los valores parciales.
-
-> [!NOTE]
-> Si Home Assistant permanece apagado durante varios tramos completos que el
-> cargador posteriormente borra, la integración no puede recuperar esa energía.
-
-## Automatizaciones reutilizables
-
-Los blueprints están en la carpeta [`blueprints/automation`](blueprints/automation)
-del repositorio. No se instalan ni activan automáticamente. Puedes importarlos
-desde **Ajustes → Automatizaciones y escenas → Blueprints → Importar blueprint**
-o utilizar estos accesos directos:
-
-### Resumen y avisos de sesión
+**Resumen y avisos de sesión**
 
 [![Importar en Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.3%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
 
-- [Ver o copiar el YAML](blueprints/automation/session_summary.yaml).
-- Ejecuta acciones al comenzar la primera carga y dos minutos después de
-  desconectar, sin crear avisos repetidos por las pausas de OCPP.
-- La acción final puede utilizar `session_kwh`, `session_seconds`,
-  `session_hours`, `session_duration`, `estimated_percent`, `estimated_cost` y
-  `estimated_range_km`.
+[Ver YAML](blueprints/automation/session_summary.yaml). Avisa al comenzar y después
+de desconectar, sin duplicar avisos por cada pausa. Sus acciones pueden usar
+`session_kwh`, `session_seconds`, `session_hours`, `session_duration`,
+`estimated_percent`, `estimated_cost` y `estimated_range_km`.
 
-Ejemplo para **Acciones al finalizar** (sustituye el servicio de notificación):
-
+Ejemplo para la acción de fin; sustituye el servicio de notificación:
 ```yaml
 action: notify.mobile_app_tu_movil
 data:
-  title: Carga del coche finalizada
-  message: >-
-    Se han cargado {{ session_kwh }} kWh en {{ session_duration }}.
-    {% if estimated_percent is not none %}
-      Batería añadida estimada: {{ estimated_percent }} %.
-    {% endif %}
-    {% if estimated_cost is not none %}
-      Coste estimado: {{ estimated_cost }} €.
-    {% endif %}
+  title: Carga finalizada
+  message: "{{ session_kwh }} kWh · {{ session_duration }}"
 ```
 
-### Alerta de potencia elevada
+**Alerta de potencia elevada**
 
 [![Importar en Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.3%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
 
-- [Ver o copiar el YAML](blueprints/automation/high_power_alert.yaml).
-- Ejecuta una acción cuando la potencia de carga supera el umbral durante el
-  tiempo configurado y ofrece la variable `measured_power`.
+[Ver YAML](blueprints/automation/high_power_alert.yaml). Ejecuta acciones tras superar
+un umbral durante el tiempo elegido; permite usar `measured_power`.
 
-Ejemplo para **Acciones de alerta**:
+Capacidad, eficiencia, precio y consumo del vehículo son entradas opcionales del
+blueprint. Sus porcentajes, coste y autonomía son estimaciones para los avisos,
+no el SOC comunicado por el coche ni sensores nuevos.
 
-```yaml
-action: notify.mobile_app_tu_movil
-data:
-  title: Potencia de carga elevada
-  message: El coche está cargando a {{ measured_power | round(0) }} W.
-```
+## Paneles
 
-En el selector de acciones del blueprint puedes crear estas notificaciones desde
-la interfaz o elegir **Editar en YAML** y pegar el bloque correspondiente.
+- [Nativo](dashboards/native.es.yaml): tarjetas estándar de HA.
+- [Mushroom](dashboards/mushroom.es.yaml): requiere Mushroom y Mini Graph Card.
 
-La capacidad de batería, eficiencia, precio y autonomía pertenecen al vehículo o
-al contrato, no al cargador. Por eso forman parte del blueprint y no de las
-entidades principales de la integración. Los porcentajes calculados representan
-**energía añadida estimada**, no el estado real de carga comunicado por el coche.
-
-## Paneles de ejemplo
-
-- [Panel nativo](dashboards/native.es.yaml): solo utiliza tarjetas incluidas en
-  Home Assistant.
-- [Panel Mushroom](dashboards/mushroom.es.yaml): requiere Mushroom y Mini Graph
-  Card.
-
-Copia el YAML en una tarjeta manual y adapta los identificadores si Home
-Assistant generó nombres diferentes. Estos ejemplos no modifican ningún panel
-automáticamente.
-
-### Capturas
+Copia el YAML en una tarjeta manual y adapta los identificadores a tu instalación.
+El proyecto no modifica tus paneles automáticamente.
 
 | Panel nativo | Panel Mushroom |
 | :---: | :---: |
-| [![Panel nativo de Home Assistant](docs/images/dashboard-native.png)](docs/images/dashboard-native.png) | [![Panel Mushroom](docs/images/dashboard-mushroom.png)](docs/images/dashboard-mushroom.png) |
-
-Pulsa cualquiera de las capturas para abrirla a tamaño original.
+| [![Panel nativo](docs/images/dashboard-native.png)](docs/images/dashboard-native.png) | [![Panel Mushroom](docs/images/dashboard-mushroom.png)](docs/images/dashboard-mushroom.png) |
 
 ## Acciones compatibles
 
-| Acción | Descripción |
-| --- | --- |
-| `v2c_trydan.set_intensity` | Establece la intensidad manual. |
-| `v2c_trydan.set_min_intensity` | Establece el límite dinámico inferior. |
-| `v2c_trydan.set_max_intensity` | Establece el límite dinámico superior. |
-| `v2c_trydan.set_dynamic_power_mode` | Cambia la estrategia dinámica entre 0 y 5. |
+Para automatizaciones nuevas, utiliza preferentemente entidades `switch`,
+`number` y `select`. También se conservan estas acciones:
+`v2c_trydan.set_intensity`, `v2c_trydan.set_min_intensity`,
+`v2c_trydan.set_max_intensity` y `v2c_trydan.set_dynamic_power_mode`.
+Permiten indicar `config_entry_id` cuando hay varios cargadores.
 
-Para automatizaciones nuevas se recomienda controlar directamente las entidades
-`number`, `select` y `switch`. Las acciones se conservan por compatibilidad y
-permiten seleccionar el cargador cuando existe más de uno.
+No sustituyen todos los ajustes de la app V2C. No modifiques límites, carga
+dinámica o modos avanzados si forman parte de la protección de tu instalación.
 
-> [!WARNING]
-> La aplicación V2C ofrece configuraciones que la API local no expone, como
-> límites horarios de potencia. No cambies carga dinámica, temporizador o modos
-> avanzados desde Home Assistant si forman parte de la protección de tu
-> instalación o si un proveedor controla la carga mediante OCPP.
+## Diagnóstico y límites
 
-## Parámetros técnicos
+Una lectura compartida cada **15 s**, timeout de **20 s** y hasta **3 intentos**
+para fallos transitorios, separados por **2 s**. Las peticiones se serializan por
+cargador. Los errores HTTP permanentes, redirecciones y respuestas inválidas no
+se ocultan. Las órdenes requieren `OK` y no se repiten a ciegas.
 
-| Parámetro | Valor |
-| --- | --- |
-| Actualización principal | 15 segundos |
-| Timeout de lectura | 20 segundos |
-| Intentos de lectura | Hasta 3 para fallos transitorios, con 2 segundos entre intentos |
-| Concurrencia | Una petición por cargador |
-| Persistencia de sesión | Al cambiar la conexión y durante cargas prolongadas |
+Ante un problema, habilita el registro de depuración desde la integración,
+espera al fallo y recuperación, desactívalo y descarga el registro y los diagnósticos.
+Estos incluyen duración, intentos, último fallo y recuperación observada.
+Una recuperación automática no demuestra por sí sola que el origen sea la red.
+La IP, SSID e ID se ocultan en los campos conocidos del diagnóstico, pero revisa
+cualquier registro o captura antes de publicarlo.
 
-Los controles de luz se retiraron tras probarlos físicamente con el firmware
-2.4.6: el estado de la API local no coincidía de forma fiable con el cargador ni
-con la aplicación V2C. Solo volverán si se puede garantizar un estado coherente.
+No incluye SOC real, objetivo de carga en kilómetros, PVPC ni optimización
+automática de precios. La programación beta tampoco ofrece garantías de seguridad
+o de cumplimiento de tarifa durante caídas de HA o de comunicación.
 
-## Diagnóstico
+## Contribuir y preparar HACS
 
-- Comprueba `http://IP_DEL_CARGADOR/RealTimeData` desde la misma red.
-- Los fallos temporales dejan las entidades no disponibles y Home Assistant
-  vuelve a intentarlo automáticamente.
-- Descarga el informe desde el menú de la integración para adjuntarlo a una
-  incidencia; los datos sensibles se ocultan.
-- Consulta [`docs/architecture.md`](docs/architecture.md) para conocer módulos,
-  invariantes, compatibilidad y criterios de contribución.
+Publica problemas en [Issues](https://github.com/Carbanog/V2C_trydan/issues) con
+versión de integración, HA, firmware, pasos y datos revisados para evitar información privada.
+Los idiomas mantenidos son español, inglés y francés; se agradecen correcciones
+nativas. Añadiremos otros cuando exista demanda y mantenimiento.
 
-Ante un fallo de comunicación, el aviso indica el número de intentos, su duración
-y la categoría del último error (por ejemplo, timeout, error de conexión o código
-HTTP). Un HTTP 4xx permanente o una respuesta incompleta se informa de inmediato;
-los fallos transitorios se reintentan. Las órdenes requieren la confirmación
-`OK` y no se repiten automáticamente si falla la respuesta.
+[Arquitectura y desarrollo](docs/architecture.md) ·
+[Lista de preparación del catálogo HACS](docs/hacs-readiness.md) — en inglés.
 
-El informe de diagnóstico incluye `communication`: la última lectura, el último
-fallo aunque ya se haya recuperado, los fallos consecutivos y la última duración
-observada hasta la recuperación. No incluye cuerpos de respuesta ni mensajes
-arbitrarios del transporte. Esa duración es el intervalo observado por HA, no
-una medida exacta del tiempo que estuvo caída la red.
+Las comprobaciones incluyen Ruff, pytest, hassfest y HACS. La rama beta añade
+pruebas con HA real y cargador simulado; no sustituyen pruebas físicas.
+La incorporación al catálogo HACS requiere una solicitud y revisión separadas.
 
-Para investigar un episodio, activa **Habilitar registro de depuración** en el
-menú de la integración, espera al fallo y a su recuperación, y después desactívalo
-y descarga el registro. Los intentos aparecen en DEBUG y la recuperación en INFO;
-sin depuración, INFO puede no aparecer con el nivel habitual de HA. Adjunta también
-el diagnóstico y la versión de HA. Estos datos permitirán distinguir la causa;
-una recuperación automática por sí sola no identifica un problema de red o del
-cargador.
+## Licencia y créditos
 
-## Créditos
+Proyecto independiente mantenido por [Carbanog](https://github.com/Carbanog),
+no afiliado a V2C ni a Home Assistant. El punto de partida fue el trabajo de
+[Rain1971](https://github.com/Rain1971/V2C_trydant); el desarrollo actual conserva
+ese reconocimiento y ha evolucionado con sus propias funciones y estructura.
 
-- [Rain1971](https://github.com/Rain1971/V2C_trydant), autor de la base original.
-- La comunidad de Home Assistant y las herramientas de IA utilizadas durante el
-  desarrollo y la revisión del proyecto.
+[Licencia MIT](LICENSE), con los avisos de los autores originales y de Carbanog
+conservados. Agradecimientos a la comunidad y a las herramientas de IA utilizadas
+durante el desarrollo y la revisión. La procedencia del icono está documentada
+en [brand-assets](docs/brand-assets.md).
+Apoyo opcional en **Sponsor this project**, en el lateral del repositorio.

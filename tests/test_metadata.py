@@ -13,6 +13,7 @@ import yaml
 
 ROOT = Path(__file__).parents[1]
 INTEGRATION = ROOT / "custom_components" / "v2c_trydan"
+READMES = ("README.md", "README.es.md", "README.fr.md")
 
 
 def test_local_brand_icon_is_valid_png() -> None:
@@ -279,19 +280,19 @@ def test_blueprint_release_links_are_current_and_documented() -> None:
             f"/blob/v{version}/blueprints/automation/{path.name}"
             in blueprint["blueprint"]["source_url"]
         )
-        for readme_name in ("README.md", "README.es.md"):
+        for readme_name in READMES:
             readme = (ROOT / readme_name).read_text(encoding="utf-8")
             assert f"blueprints/automation/{path.name}" in readme
             assert f"v{version}%2Fblueprints%2Fautomation%2F{path.name}" in readme
 
 
-def test_hacs_install_link_is_available_in_both_readmes() -> None:
+def test_hacs_install_link_is_available_in_all_readmes() -> None:
     """Keep the one-click custom-repository installation path discoverable."""
     install_url = (
         "https://my.home-assistant.io/redirect/hacs_repository/"
         "?owner=Carbanog&repository=V2C_trydan&category=integration"
     )
-    for readme_name in ("README.md", "README.es.md"):
+    for readme_name in READMES:
         readme = (ROOT / readme_name).read_text(encoding="utf-8")
         assert "https://my.home-assistant.io/badges/hacs_repository.svg" in readme
         assert install_url in readme
@@ -304,6 +305,36 @@ def test_dashboard_screenshots_are_local_and_documented() -> None:
         image_path = ROOT / relative_path
         assert image_path.is_file()
         assert image_path.stat().st_size > 0
-        for readme_name in ("README.md", "README.es.md"):
+        for readme_name in READMES:
             readme = (ROOT / readme_name).read_text(encoding="utf-8")
             assert relative_path in readme
+
+
+def test_supported_languages_have_readmes_and_navigation() -> None:
+    """Do not publish a language selector pointing at a missing translation."""
+    for language_file in (INTEGRATION / "translations").glob("*.json"):
+        language = language_file.stem
+        readme_name = "README.md" if language == "en" else f"README.{language}.md"
+        assert (ROOT / readme_name).is_file()
+        for other in READMES:
+            assert f"]({readme_name})" in (ROOT / other).read_text(encoding="utf-8")
+
+
+def test_relative_readme_links_resolve_inside_repository() -> None:
+    """Protect install guides, YAML examples, images, credits and navigation."""
+    for readme_name in READMES:
+        readme = (ROOT / readme_name).read_text(encoding="utf-8")
+        for link in re.findall(r"\]\(([^\s)]+)\)", readme):
+            if ":" in link or link.startswith("#"):
+                continue
+            target = (ROOT / link.split("#", 1)[0]).resolve()
+            assert target.is_relative_to(ROOT.resolve())
+            assert target.exists(), (readme_name, link)
+
+
+def test_original_license_credit_is_preserved() -> None:
+    """Documentation cleanup must not remove the inherited MIT attribution."""
+    license_text = (ROOT / "LICENSE").read_text(encoding="utf-8")
+    assert "MIT License" in license_text
+    assert "Copyright (c) 2023 Rafael S." in license_text
+    assert "Copyright (c) 2026 Carbanog" in license_text
