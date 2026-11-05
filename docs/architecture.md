@@ -51,7 +51,9 @@ predictable behavior on PLC and weak Wi-Fi networks over request throughput.
     the accumulator or coupling presentation to persistence.
 11. Only charge state `0` proves disconnection; `1` and `2` prove connection.
     Fault/unknown snapshots do not update session baselines or trigger a new
-    session on recovery. Existing binary-entity state mapping is unchanged.
+    session on recovery. The cable binary sensor reads this same persisted
+    connection state, retaining the last reliable value through faults. With no
+    reliable observation yet, the connection is unknown, never a fabricated unplug.
 12. Successful snapshots contain finite, non-negative core power/counters and
     an integer charge state. Optional/new firmware fields are not required.
 13. Writes require `OK` and are not retried because the command may have executed
@@ -146,6 +148,13 @@ pytest
 ```
 
 GitHub Actions additionally runs Home Assistant `hassfest` and HACS validation.
+Actions are pinned to reviewed revisions. HA tests retain the fixture package's
+2026.10.4 baseline and run a separate 2026.11.0 compatibility environment using
+`uv pip install --system -r requirements_ha_test.txt --override requirements_ha_current.txt`.
+The explicit test-only override replaces the fixture's HA pin and resolves HA's
+dependencies together; it does not alter production requirements or claim that
+the fixture package officially supports that version. Update both pins when
+refreshing compatibility. Passing CI is not a physical charging test.
 Every behavior change should include focused tests. API and session-state behavior
 belong in fast unit tests; config flows, entity setup, registry migrations, and actions
 should use Home Assistant integration tests as coverage is expanded.

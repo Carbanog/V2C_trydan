@@ -157,12 +157,12 @@ Gardez la régulation dynamique et les protections électriques actives.
 [Guide détaillé de la bêta en anglais](https://github.com/Carbanog/V2C_trydan/blob/v1.4.0b3/docs/scheduling.md).
 Le passage en stable attend encore les essais physiques de recharge.
 
-## Blueprints et automatisations
-
 Les mesures L1 facultatives sont détectées à la première lecture au démarrage.
 Après une mise à jour du firmware, rechargez l’intégration pour découvrir les
 nouveaux champs. Avec le temporisateur V2C actif, la programmation HA n’envoie
 ni pause ni reprise, même en dehors des tarifs autorisés : désactivez ces horaires.
+
+## Blueprints et automatisations
 
 Les imports facultatifs sont dans [blueprints/automation](blueprints/automation).
 Ils ne sont jamais installés ou activés automatiquement.
@@ -195,12 +195,12 @@ Capacité, rendement, prix et consommation du véhicule sont des paramètres
 facultatifs du blueprint. Pourcentage ajouté, coût et autonomie sont des estimations
 de notification, pas le SOC fourni par le véhicule ni de nouveaux capteurs.
 
-## Tableaux de bord
-
 La notification de début peut attendre plusieurs jours après branchement. Cette
 attente ne survit pas à un redémarrage de HA ni au rechargement des automatisations ;
 ce n’est pas une file persistante. Mettez à jour/réimportez le blueprint existant
 pour recevoir les corrections.
+
+## Tableaux de bord
 
 - [Natif, exemple en anglais](dashboards/native.en.yaml) : cartes standard de HA.
 - [Mushroom, exemple en anglais](dashboards/mushroom.en.yaml) : nécessite Mushroom et Mini Graph Card.

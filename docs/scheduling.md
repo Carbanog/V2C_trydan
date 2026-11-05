@@ -54,6 +54,11 @@ incomplete snapshots prevent resuming. Disable conflicting V2C app timers,
 OCPP and other charging automations before enabling this policy; closing an
 app is not enough. Dynamic regulation and electrical protections must stay on.
 
+An active device `Timer` blocks **both pause and resume commands**, including
+outside allowed tariffs. Scheduling status exposes the timer conflict; selecting
+Automatic does not override it. Disable V2C app schedules before using this module.
+This conservative behavior avoids competing controllers, not just unwanted starts.
+
 Mode and pending intent are stored separately from session totals. An unconfirmed
 command is not blindly repeated: a later read may confirm it. Otherwise review
 the charger and explicitly select a mode to retry. A failed checkpoint prevents
@@ -78,11 +83,6 @@ during an outage cannot be identified reliably. This is not a safety mechanism
 or a guarantee of tariff compliance.
 
 ## Beta checks and rollback
-
-An active device `Timer` blocks **both pause and resume commands**, including
-outside allowed tariffs. Scheduling status exposes the timer conflict; selecting
-Automatic does not override it. Disable V2C app schedules before using this module.
-This conservative behavior avoids competing controllers, not just unwanted starts.
 
 Test disabled behavior first, then short allowed/denied blocks, manual pause,
 Charge now followed by unplug, restart in each mode, night/weekend intervals,

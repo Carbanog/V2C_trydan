@@ -39,6 +39,7 @@ jobs:
   integration:
     name: Home Assistant scheduling tests (${{ matrix.ha }})
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -61,7 +62,12 @@ jobs:
           python -m pip install uv==0.13.7
           uv pip install --system -r requirements_ha_test.txt --override requirements_ha_current.txt
       - name: Exercise options, setup, entities and unload with real HA
-        run: pytest tests_ha -q -o asyncio_mode=auto
+        # HA 2026.11 installs its httpx2 alias at import. Import it before the
+        # older fixture/plugin collection imports httpx, matching HA startup.
+        run: >-
+          python -c "import homeassistant; import pytest;
+          raise SystemExit(pytest.main(['tests_ha', '-vv', '--tb=short',
+          '--timeout=60', '--timeout-method=thread', '-o', 'asyncio_mode=auto']))"
 
   hacs:
     name: HACS validation
