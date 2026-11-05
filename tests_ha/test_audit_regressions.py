@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 import yaml
 from homeassistant.exceptions import ServiceValidationError
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.script import Script, async_validate_actions_config
 from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import async_fire_time_changed
@@ -142,7 +143,7 @@ async def test_blueprint_waits_for_first_charge_after_two_days(hass):
     # Exercise the actual first-charge branch. The outer choose creates tracked
     # child tasks, which block HA's test drain while this branch intentionally waits.
     start_sequence = config["actions"][0]["choose"][0]["sequence"]
-    actions = await async_validate_actions_config(hass, start_sequence)
+    actions = await async_validate_actions_config(hass, cv.SCRIPT_SCHEMA(start_sequence))
     runner = Script(hass, actions, "Example session notifications", "automation")
     # An intentionally waiting script is background work. A tracked automation
     # trigger would make block_till_done wait for the very charge we must simulate.
