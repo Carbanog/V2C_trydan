@@ -39,6 +39,7 @@ from .scheduling.ha import STORE_VERSION as SCHEDULER_STORE_VERSION
 from .scheduling.ha import SchedulingManager
 from .scheduling.ha import store_key as scheduler_store_key
 from .scheduling.policy import OPTION_KEY, WeeklySchedule
+from .utils import validate_intensity
 
 PLATFORMS: tuple[Platform, ...] = (
     Platform.SENSOR,
@@ -165,6 +166,12 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         value = call.data.get(field)
         if field == "dynamic_power_mode" and value is None:
             value = call.data["DynamicPowerMode"]
+
+        if charger_key in {"Intensity", "MinIntensity", "MaxIntensity"}:
+            try:
+                validate_intensity(charger_key, value, coordinator.data)
+            except ValueError as err:
+                raise ServiceValidationError(str(err)) from err
 
         try:
             await coordinator.api.async_write(charger_key, value)

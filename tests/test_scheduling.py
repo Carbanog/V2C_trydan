@@ -132,6 +132,16 @@ def test_no_selected_tariff_pauses_even_inside_a_block():
     assert policy.evaluate(MONDAY, snapshot()).pause is True
 
 
+@pytest.mark.parametrize("mode", ["automatic", "charge_now", "paused"])
+@pytest.mark.parametrize("hour", [7, 9])
+def test_device_timer_conflict_never_sends_pause_or_resume(mode, hour):
+    policy = ChargingPolicy(schedule(), SchedulerState(mode=mode))
+    decision = policy.evaluate(MONDAY.replace(hour=hour), snapshot(Timer=1))
+    assert decision.reason == "device_timer"
+    assert decision.pause is None
+    assert policy.state.mode == mode
+
+
 @pytest.mark.parametrize(
     "data,reason",
     [

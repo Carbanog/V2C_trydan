@@ -2,6 +2,23 @@
 
 All notable changes to this project are documented here.
 
+## Unreleased
+
+* Preserve the last reliable cable connection in the plug binary sensor during
+  fault states, using the same persisted session state. Do not emit false unplug
+  or replug events on recovery. Session accumulation rules are unchanged.
+* Reconfigure the charger IP through the entry listener only, avoiding duplicate
+  reloads and the HA 2026.12 deprecated config-flow combination.
+* Remove the session blueprint's 24-hour first-charge timeout. HA restarts or
+  automation reloads still cancel its in-memory wait; update imported blueprints.
+* Validate current controls and legacy services against observed charger limits.
+* Export only reviewed diagnostic telemetry; omit unknown firmware/config fields.
+* Pin CI actions to verified revisions and add a separate HA 2026.11 compatibility
+  probe while retaining the HA 2026.10.4 baseline.
+* Document the device timer conflict (no pause OR resume), optional capability
+  discovery at startup, and blueprint lifecycle limitations.
+* No navigation redesign, session schema migration, new entities or stable release.
+
 ## 1.4.0b3
 
 ### Beta: edit time blocks in place

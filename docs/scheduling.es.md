@@ -86,6 +86,11 @@ La función solo escribe `Paused`, no `Dynamic`, intensidades, `Locked` o `Timer
 Si detecta el candado, un temporizador V2C activo, un fallo o datos incompletos,
 no reanuda. Configuración y modo sobreviven a los reinicios de HA.
 
+Con `Timer` activo **no se envía ninguna orden de pausa ni reanudación**, incluso
+fuera de las tarifas permitidas. El estado muestra el conflicto con el temporizador;
+seleccionar Automático no lo elimina. Desactiva los horarios de la app V2C antes
+de usar esta programación. No se fuerza el temporizador ni se oculta el conflicto.
+
 Una orden sin confirmar no se repite a ciegas. Una lectura posterior puede
 confirmarla; si el estado sigue sin coincidir, revisa el cargador y selecciona
 explícitamente el modo para reintentar. Los fallos de almacenamiento también

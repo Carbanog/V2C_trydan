@@ -130,11 +130,9 @@ actions:
           - wait_template: >-
               {{ is_state(charging_entity, 'on') or
                  is_state(cable_entity, 'off') }}
-            timeout:
-              hours: 24
-            continue_on_timeout: false
           - condition: template
-            value_template: "{{ is_state(charging_entity, 'on') }}"
+            value_template: >-
+              {{ is_state(cable_entity, 'on') and is_state(charging_entity, 'on') }}
           - sequence: !input start_actions
       - conditions: "{{ trigger.id == 'disconnected' }}"
         sequence:

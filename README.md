@@ -149,6 +149,9 @@ regulation and electrical protections enabled.
 [Full beta setup, physical-test and rollback guide](https://github.com/Carbanog/V2C_trydan/blob/v1.4.0b3/docs/scheduling.md).
 Promotion to stable is pending physical charging checks.
 
+Optional L1 capabilities are discovered on the first read at setup. Reload the
+integration after a firmware update to discover fields newly provided by the charger.
+
 ## Blueprints and automations
 
 Optional imports live in [blueprints/automation](blueprints/automation).
@@ -162,6 +165,10 @@ They are never automatically installed or enabled.
 without repeating every OCPP pause. Finish actions can use `session_kwh`,
 `session_seconds`, `session_hours`, `session_duration`, `estimated_percent`,
 `estimated_cost` and `estimated_range_km`.
+
+The start action can wait several days after connection. Like other HA waits,
+it does not survive an HA restart or automation reload; this is not a persistent
+notification queue. Update/re-import an existing blueprint to receive fixes.
 
 Example finish action; replace the notification service:
 ```yaml

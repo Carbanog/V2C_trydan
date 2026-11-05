@@ -1,0 +1,3 @@
+# CI compatibility probe only. Overrides the test plugin's older HA pin;
+# production has no added dependency. Keep the baseline suite unchanged.
+homeassistant==2026.11.0

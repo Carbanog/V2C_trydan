@@ -18,7 +18,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .coordinator import V2CTrydanDataUpdateCoordinator
 from .entity import V2CTrydanEntity
-from .utils import value_as_int
+from .utils import cable_connected_from_charge_state, value_as_int
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -41,7 +41,9 @@ BINARY_SENSORS: tuple[V2CBinarySensorEntityDescription, ...] = (
         key="connected",
         translation_key="connected",
         device_class=BinarySensorDeviceClass.PLUG,
-        value_fn=lambda data: _charge_state_is(data, (1, 2)),
+        value_fn=lambda data: cable_connected_from_charge_state(
+            data.get("ChargeState")
+        ),
     ),
     V2CBinarySensorEntityDescription(
         key="charging",
@@ -103,4 +105,8 @@ class V2CTrydanBinarySensor(V2CTrydanEntity, BinarySensorEntity):
     @property
     def is_on(self) -> bool | None:
         """Return whether the binary sensor is on."""
+        if self.entity_description.key == "connected":
+            # Faults do not prove an unplug. Reuse the persisted session state,
+            # including when HA restarts while the charger reports a fault.
+            return self.coordinator.cable_connected
         return self.entity_description.value_fn(self.coordinator.data)

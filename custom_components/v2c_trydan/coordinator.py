@@ -75,6 +75,11 @@ class V2CTrydanDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._session_tracker = SessionTracker(SessionState.from_dict(stored_state))
         self._last_session_save = monotonic()
 
+    @property
+    def cable_connected(self) -> bool | None:
+        """Expose the same last reliable physical connection as the session tracker."""
+        return self._session_tracker.state.cable_connected
+
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch the complete realtime payload."""
         try:

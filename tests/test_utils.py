@@ -2,12 +2,41 @@
 
 from __future__ import annotations
 
+import pytest
+
 from custom_components.v2c_trydan.utils import (
     cable_connected_from_charge_state,
+    validate_intensity,
     value_as_bool,
     value_as_float,
     value_as_int,
 )
+
+
+@pytest.mark.parametrize(
+    "key,value,data",
+    [
+        ("MinIntensity", 16, {"MaxIntensity": 15}),
+        ("MaxIntensity", 6, {"MinIntensity": 7}),
+        ("Intensity", 16, {"MinIntensity": 6, "MaxIntensity": 15}),
+        ("Intensity", 6, {"MinIntensity": 7, "MaxIntensity": 15}),
+        ("MinIntensity", 6, {}),
+        ("MaxIntensity", 15, {"MinIntensity": "invalid"}),
+        ("Intensity", True, {"MinIntensity": 6, "MaxIntensity": 15}),
+        ("Intensity", 6.5, {"MinIntensity": 6, "MaxIntensity": 15}),
+        ("Intensity", 33, {"MinIntensity": 6, "MaxIntensity": 32}),
+    ],
+)
+def test_invalid_intensity_never_bypasses_charger_limits(key, value, data):
+    with pytest.raises(ValueError):
+        validate_intensity(key, value, data)
+
+
+@pytest.mark.parametrize(
+    "key,value", [("MinIntensity", 15), ("MaxIntensity", 6), ("Intensity", 15)]
+)
+def test_intensity_limit_equality_is_allowed(key, value):
+    validate_intensity(key, value, {"MinIntensity": 6, "MaxIntensity": 15})
 
 
 def test_only_explicit_cable_states_establish_connection() -> None:

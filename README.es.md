@@ -48,7 +48,9 @@ no equivalen a validar físicamente todas las versiones o instalaciones. Los cam
 opcionales se detectan por su presencia, no solo por el número de firmware.
 La versión 2.5.2 y los montajes Trydan Pro maestro/secundario no están validados.
 
-Las medidas L1 de corriente y tensión aparecen si el cargador las devuelve.
+Las medidas L1 de corriente y tensión aparecen si el cargador las devuelve en la
+primera lectura. Tras actualizar firmware, recarga la integración para detectar
+capacidades nuevas; no se descubren entidades opcionales durante el sondeo.
 El proyecto no expone medidas L2/L3 ni controles de luces; estos últimos se
 retiraron por estados locales inconsistentes. El icono local requiere HA 2026.3
 o posterior para mostrarse mediante la API de marcas.
@@ -166,6 +168,10 @@ No se instalan ni activan automáticamente.
 de desconectar, sin duplicar avisos por cada pausa. Sus acciones pueden usar
 `session_kwh`, `session_seconds`, `session_hours`, `session_duration`,
 `estimated_percent`, `estimated_cost` y `estimated_range_km`.
+
+El aviso de inicio puede esperar varios días desde la conexión. Como otras
+esperas de HA, no sobrevive a un reinicio ni a recargar automatizaciones; no es
+una cola persistente. Actualiza/reimporta un blueprint existente para recibir cambios.
 
 Ejemplo para la acción de fin; sustituye el servicio de notificación:
 ```yaml

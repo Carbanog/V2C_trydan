@@ -79,6 +79,11 @@ or a guarantee of tariff compliance.
 
 ## Beta checks and rollback
 
+An active device `Timer` blocks **both pause and resume commands**, including
+outside allowed tariffs. Scheduling status exposes the timer conflict; selecting
+Automatic does not override it. Disable V2C app schedules before using this module.
+This conservative behavior avoids competing controllers, not just unwanted starts.
+
 Test disabled behavior first, then short allowed/denied blocks, manual pause,
 Charge now followed by unplug, restart in each mode, night/weekend intervals,
 overlap rejection and safe communication recovery. Check actual charging and

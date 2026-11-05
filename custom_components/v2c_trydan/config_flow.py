@@ -119,7 +119,9 @@ class V2CTrydanConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 legacy_unique_id = entry.data[CONF_IP_ADDRESS]
                 if entry.unique_id != legacy_unique_id:
                     self._abort_if_unique_id_mismatch()
-                return self.async_update_reload_and_abort(
+                # The entry listener performs the reload for data and options.
+                # Requesting another reload here races with that listener.
+                return self.async_update_and_abort(
                     entry,
                     unique_id=unique_id,
                     data_updates={CONF_IP_ADDRESS: host},
