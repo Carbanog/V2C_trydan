@@ -2,7 +2,12 @@
 
 All notable changes to this project are documented here.
 
-## Unreleased
+## 1.4.0b5
+
+### Beta: audit corrections and regression coverage
+
+* Prerelease only; stable remains 1.3.3. Beta 4 stays withdrawn. Keep the native
+  beta 3 configuration forms and preserve existing schedules and sessions.
 
 * Preserve the last reliable cable connection in the plug binary sensor during
   fault states, using the same persisted session state. Do not emit false unplug

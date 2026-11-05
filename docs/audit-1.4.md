@@ -23,8 +23,8 @@ no revisados e inicio de carga tras 49 horas. El cargador de pruebas es simulado
 
 La batería rápida local tiene 219 pruebas. El resultado de HA, hassfest y HACS
 debe consultarse para el commit concreto; no queda implícito por pasar las pruebas
-rápidas. La versión instalable b3 no incorpora estas correcciones sin una nueva
-publicación; tampoco se modifica una etiqueta existente.
+rápidas. Las correcciones se distribuyen en **1.4.0b5**, publicada como prerelease;
+la b3 y sus etiquetas originales no se modifican. La estable sigue siendo 1.3.3.
 
 Antes de promover 1.4 a estable siguen pendientes las comprobaciones físicas de
 [la guía de programación](scheduling.es.md): límites horarios, pausa externa,

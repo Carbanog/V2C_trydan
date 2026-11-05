@@ -1,4 +1,4 @@
-# Programación de carga — beta 1.4.0b3
+# Programación de carga — beta 1.4.0b5
 
 Esta función es opcional y experimental. La estable sigue siendo **1.3.3**.
 La beta no actualiza el firmware del cargador ni cambia la carga dinámica.
@@ -7,7 +7,7 @@ La beta no actualiza el firmware del cargador ni cambia la carga dinámica.
 
 1. Haz una copia de seguridad del HA de pruebas.
 2. Solo en ese HA, abre la integración en HACS y el menú de volver a descargar.
-   Muestra las versiones beta/prerelease si hace falta y elige **1.4.0b3**.
+   Muestra las versiones beta/prerelease si hace falta y elige **1.4.0b5**.
 3. Reinicia HA. Comprueba la versión y que tus entidades/sesiones siguen presentes.
 4. En producción conserva 1.3.3 y no habilites actualizaciones beta. La beta se
    publica como prerelease, sin sustituir la última release estable.

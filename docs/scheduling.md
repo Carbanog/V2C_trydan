@@ -1,9 +1,9 @@
-# Optional charging schedules — 1.4.0b3 beta
+# Optional charging schedules — 1.4.0b5 beta
 
 Stable production release remains **1.3.3**. This opt-in beta does not update
 charger firmware or change dynamic load protection. Install explicitly through
 HACS's re-download/version selection on a test HA only, enabling prereleases
-there if necessary and select **1.4.0b3**, then restart. Back up first. Do not enable beta updates on
+there if necessary and select **1.4.0b5**, then restart. Back up first. Do not enable beta updates on
 production or let two HA instances send commands to the same charger.
 
 ## Configure
