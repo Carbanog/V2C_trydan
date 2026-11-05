@@ -37,37 +37,42 @@ jobs:
       - uses: home-assistant/actions/hassfest@86d4564712fa02543c808e3a693dd04f9d3f8361
 
   integration:
-    name: Home Assistant scheduling tests (${{ matrix.ha }})
+    name: Home Assistant scheduling tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    strategy:
-      fail-fast: false
-      matrix:
-        ha: [baseline, current]
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.14"
           cache: pip
-          cache-dependency-path: |
-            requirements_ha_test.txt
-            requirements_ha_current.txt
+          cache-dependency-path: requirements_ha_test.txt
       - name: Install HA test environment
-        if: matrix.ha == 'baseline'
         run: python -m pip install -r requirements_ha_test.txt
-      - name: Install current HA compatibility environment
-        if: matrix.ha == 'current'
-        run: |
-          python -m pip install uv==0.13.7
-          uv pip install --system -r requirements_ha_test.txt --override requirements_ha_current.txt
       - name: Exercise options, setup, entities and unload with real HA
-        # HA 2026.11 installs its httpx2 alias at import. Import it before the
-        # older fixture/plugin collection imports httpx, matching HA startup.
         run: >-
-          python -c "import homeassistant; import pytest;
-          raise SystemExit(pytest.main(['tests_ha', '-vv', '--tb=short',
-          '--timeout=60', '--timeout-method=thread', '-o', 'asyncio_mode=auto']))"
+          pytest tests_ha -vv --tb=short --timeout=60 --timeout-method=thread
+          -o asyncio_mode=auto
+
+  current-imports:
+    name: Home Assistant 2026.11 import smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: requirements_ha_current.txt
+      - name: Install current HA without the incompatible older test fixtures
+        run: python -m pip install -r requirements_ha_current.txt
+      - name: Import all integration platforms with current HA APIs
+        run: >-
+          python -c "import homeassistant; from importlib import import_module;
+          modules = ('binary_sensor', 'button', 'config_flow', 'diagnostics',
+          'number', 'select', 'sensor', 'switch');
+          [import_module('custom_components.v2c_trydan.' + name) for name in modules]"
 
   hacs:
     name: HACS validation

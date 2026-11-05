@@ -13,7 +13,7 @@ No es una auditoría de penetración ni una prueba del cargador físico.
 | Campos L1 detectados solo al iniciar | Confirmada; descubrimiento opcional, no pérdida de telemetría principal. | Documentado que una recarga detecta capacidades nuevas. No se añade descubrimiento dinámico innecesario. |
 | Diagnósticos exportan campos futuros desconocidos | Confirmada como riesgo preventivo, no filtración demostrada. | Lista explícita de telemetría revisada; campos desconocidos omitidos e identificadores conocidos ocultos. |
 | Acciones CI siguiendo ramas móviles | Confirmada. | Fijadas a SHA consultados en sus repositorios; también checkout/setup-python. |
-| Pruebas anteriores no demuestran compatibilidad con HA 2026.11 | Correcto. | Nueva comprobación separada con 2026.11.0, manteniendo la base 2026.10.4. Consultar el resultado del commit en CI, no los resultados antiguos de b3. |
+| Pruebas anteriores no demuestran compatibilidad con HA 2026.11 | Correcto. | La herramienta de fixtures aún fija 2026.10.4 y falla al arrancar contra 2026.11 por cambios en HTTPX y funciones internas de logger. Se conserva la base y se añade solo una prueba de importación con HA 2026.11 real, no equivalente a validar configuración/funcionamiento completo. No se parchean internals para aparentar compatibilidad. |
 
 ## Pruebas y criterios para publicar
 

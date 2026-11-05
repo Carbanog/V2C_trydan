@@ -148,13 +148,13 @@ pytest
 ```
 
 GitHub Actions additionally runs Home Assistant `hassfest` and HACS validation.
-Actions are pinned to reviewed revisions. HA tests retain the fixture package's
-2026.10.4 baseline and run a separate 2026.11.0 compatibility environment using
-`uv pip install --system -r requirements_ha_test.txt --override requirements_ha_current.txt`.
-The explicit test-only override replaces the fixture's HA pin and resolves HA's
-dependencies together; it does not alter production requirements or claim that
-the fixture package officially supports that version. Update both pins when
-refreshing compatibility. Passing CI is not a physical charging test.
+Actions are pinned to reviewed revisions. HA integration tests retain the fixture
+package's 2026.10.4 baseline. A separate 2026.11.0 smoke test imports every platform
+using the actual HA package, without fixtures. The older fixture package cannot
+start with 2026.11 (HTTPX initialization and removed private logger test hooks).
+Do not patch HA internals or claim full 2026.11 test coverage from this smoke test;
+upgrade the fixture package when a compatible release is available. Passing CI
+is not a physical charging test.
 Every behavior change should include focused tests. API and session-state behavior
 belong in fast unit tests; config flows, entity setup, registry migrations, and actions
 should use Home Assistant integration tests as coverage is expanded.

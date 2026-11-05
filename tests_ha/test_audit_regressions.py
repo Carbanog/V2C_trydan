@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 import yaml
 from homeassistant.exceptions import ServiceValidationError
-from homeassistant.setup import async_setup_component
+from homeassistant.helpers.script import Script, async_validate_actions_config
 from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import async_fire_time_changed
 
@@ -135,23 +135,33 @@ async def test_blueprint_waits_for_first_charge_after_two_days(hass):
     )
     path = Path(__file__).parents[1] / "blueprints/automation/session_summary.yaml"
     config = yaml.load(path.read_text(encoding="utf-8"), Loader=BlueprintLoader)
-    config.pop("blueprint")
-    config["alias"] = "Example session notifications"
     calls = []
     hass.bus.async_listen("example_charge_started", lambda event: calls.append(event))
-    hass.states.async_set(inputs["cable_connected"], "off")
-    hass.states.async_set(inputs["charging"], "off")
-    assert await async_setup_component(hass, "automation", {"automation": config})
-    await hass.async_block_till_done()
     hass.states.async_set(inputs["cable_connected"], "on")
-    await hass.async_block_till_done()
-    async_fire_time_changed(hass, dt_util.utcnow() + timedelta(hours=49))
-    await hass.async_block_till_done()
-    assert not calls
-    hass.states.async_set(inputs["charging"], "on")
-    await hass.async_block_till_done()
-    assert len(calls) == 1
     hass.states.async_set(inputs["charging"], "off")
-    hass.states.async_set(inputs["charging"], "on")
-    await hass.async_block_till_done()
-    assert len(calls) == 1
+    actions = await async_validate_actions_config(hass, config["actions"])
+    runner = Script(hass, actions, "Example session notifications", "automation")
+    # An intentionally waiting script is background work. A tracked automation
+    # trigger would make block_till_done wait for the very charge we must simulate.
+    task = hass.async_create_background_task(
+        runner.async_run({**config["variables"], "trigger": {"id": "connected"}}),
+        "example session notification test",
+        eager_start=True,
+    )
+    try:
+        await hass.async_block_till_done()
+        async_fire_time_changed(hass, dt_util.utcnow() + timedelta(hours=49))
+        await hass.async_block_till_done()
+        assert not calls
+        assert runner.is_running
+        hass.states.async_set(inputs["charging"], "on")
+        await task
+        await hass.async_block_till_done()
+        assert len(calls) == 1
+        hass.states.async_set(inputs["charging"], "off")
+        hass.states.async_set(inputs["charging"], "on")
+        await hass.async_block_till_done()
+        assert len(calls) == 1
+    finally:
+        await runner.async_stop()
+        await task

@@ -13,8 +13,9 @@ All notable changes to this project are documented here.
   automation reloads still cancel its in-memory wait; update imported blueprints.
 * Validate current controls and legacy services against observed charger limits.
 * Export only reviewed diagnostic telemetry; omit unknown firmware/config fields.
-* Pin CI actions to verified revisions and add a separate HA 2026.11 compatibility
-  probe while retaining the HA 2026.10.4 baseline.
+* Pin CI actions to verified revisions and add an HA 2026.11 import smoke test,
+  retaining the full HA 2026.10.4 baseline. Full 2026.11 integration tests await
+  compatible upstream fixtures; do not patch private HA internals to simulate them.
 * Document the device timer conflict (no pause OR resume), optional capability
   discovery at startup, and blueprint lifecycle limitations.
 * No navigation redesign, session schema migration, new entities or stable release.
