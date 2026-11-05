@@ -139,7 +139,10 @@ async def test_blueprint_waits_for_first_charge_after_two_days(hass):
     hass.bus.async_listen("example_charge_started", lambda event: calls.append(event))
     hass.states.async_set(inputs["cable_connected"], "on")
     hass.states.async_set(inputs["charging"], "off")
-    actions = await async_validate_actions_config(hass, config["actions"])
+    # Exercise the actual first-charge branch. The outer choose creates tracked
+    # child tasks, which block HA's test drain while this branch intentionally waits.
+    start_sequence = config["actions"][0]["choose"][0]["sequence"]
+    actions = await async_validate_actions_config(hass, start_sequence)
     runner = Script(hass, actions, "Example session notifications", "automation")
     # An intentionally waiting script is background work. A tracked automation
     # trigger would make block_till_done wait for the very charge we must simulate.
