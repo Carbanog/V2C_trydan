@@ -1,5 +1,6 @@
 """Regression tests from the beta audit; all charger IO is simulated."""
 
+from dataclasses import replace
 from datetime import timedelta
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
@@ -9,6 +10,7 @@ import yaml
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_platform
 from homeassistant.helpers.script import Script, async_validate_actions_config
 from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import async_fire_time_changed
@@ -32,15 +34,29 @@ async def test_unknown_firmware_enum_publishes_unknown_not_error(hass, key, fiel
         data[field] = raw
         await entry.runtime_data.async_refresh()
         description = next(item for item in TRYDAN_SENSORS if item.key == key)
-        sensor = V2CTrydanSensor(entry.runtime_data, description)
-        sensor.hass = hass
-        sensor.entity_id = f"sensor.example_{key}"
+        # Register with the real platform so unit/translation/state handling is
+        # exercised too. A test-only unique key avoids changing disabled entities.
+        sensor = V2CTrydanSensor(
+            entry.runtime_data,
+            replace(
+                description, key=f"example_{key}", entity_registry_enabled_default=True
+            ),
+        )
+        platform = next(
+            item
+            for item in entity_platform.async_get_platforms(hass, DOMAIN)
+            if item.domain == "sensor"
+        )
+        await platform.async_add_entities([sensor])
+        await hass.async_block_till_done()
         assert sensor.native_value is None
-        sensor.async_write_ha_state()
         assert hass.states.get(sensor.entity_id).state == "unknown"
         # Known values remain valid; new firmware codes remain in raw diagnostics.
-        entry.runtime_data.data[field] = 2
+        data[field] = 2
+        await entry.runtime_data.async_refresh()
+        await hass.async_block_till_done()
         assert sensor.native_value == "2"
+        assert hass.states.get(sensor.entity_id).state == "2"
 
 
 async def test_config_flow_uses_short_probe_policy(hass):

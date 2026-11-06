@@ -1,16 +1,16 @@
-# Programación de carga — beta 1.4.0b5
+# Programación de carga — 1.4.0
 
-Esta función es opcional y experimental. La estable sigue siendo **1.3.3**.
-La beta no actualiza el firmware del cargador ni cambia la carga dinámica.
+Función opcional de **1.4.0**, desactivada por defecto; requiere HA **2026.3.1+**.
+No actualiza el firmware del cargador ni cambia la carga dinámica.
 
-## Instalación aislada
+## Instalación y primera comprobación
 
-1. Haz una copia de seguridad del HA de pruebas.
-2. Solo en ese HA, abre la integración en HACS y el menú de volver a descargar.
-   Muestra las versiones beta/prerelease si hace falta y elige **1.4.0b5**.
+1. Haz una copia de seguridad de HA.
+2. Abre la integración en HACS y descarga **1.4.0**.
 3. Reinicia HA. Comprueba la versión y que tus entidades/sesiones siguen presentes.
-4. En producción conserva 1.3.3 y no habilites actualizaciones beta. La beta se
-   publica como prerelease, sin sustituir la última release estable.
+4. Supervisa los primeros cambios reales de horario. Las pruebas automatizadas
+   no certifican el comportamiento físico en tu instalación. Conserva 1.3.3 y
+   la copia de seguridad para recuperación.
 
 No pruebes órdenes desde dos instancias de HA que gobiernen el mismo cargador.
 Desactiva los horarios/OCPP/automatizaciones que puedan enviar órdenes de carga
@@ -113,7 +113,7 @@ Esto no es un mecanismo de seguridad ni una garantía contractual de tarifa.
 
 ## Pruebas antes de usarlo habitualmente
 
-1. Deshabilitado: mismo comportamiento que 1.3.3, sin entidades de programación.
+1. Deshabilitado: no debe crear entidades de programación ni enviar órdenes horarias.
 2. Habilita un horario corto: primero Pausado, después Automático; verifica pausa
    y reanudación reales y el contador acumulado al cruzar el límite.
 3. Fuera de horario: Cargar ahora carga; una pausa normal no cancela la excepción.
@@ -127,13 +127,13 @@ Esto no es un mecanismo de seguridad ni una garantía contractual de tarifa.
 8. Revisa los huecos del resumen y prueba cancelar antes de confirmar: no debe
    aplicar cambios. Comprueba la próxima franja en los atributos del sensor.
 
-No se ha validado físicamente en tu instalación: esa es la finalidad de esta beta.
+La publicación no afirma haber validado físicamente el programador en tu instalación.
 
 ## Deshabilitar o volver a estable
 
 Desmarca Habilitar programación y Guarda. No se envía una reanudación automática:
 el cargador puede seguir pausado y debes revisarlo antes de reanudar manualmente.
-Para volver a estable, descarga **1.3.3** desde HACS y reinicia HA. Conserva la copia
+Para recuperar la estable anterior, descarga **1.3.3** desde HACS y reinicia HA. Conserva la copia
 de seguridad. La sesión usa el mismo almacenamiento de antes; el estado del
-programador está separado. Las entidades exclusivas de la beta pueden quedar
+programador está separado. Las entidades de programación pueden quedar
 no disponibles en el registro al volver atrás; no se borran registros de usuario.

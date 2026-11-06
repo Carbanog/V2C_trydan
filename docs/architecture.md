@@ -99,7 +99,7 @@ Advanced charger settings remain represented as entities for capable users, but
 are categorized as configuration and disabled by default when accidental changes
 could conflict with V2C app schedules, load protection, or OCPP control.
 
-## Optional scheduling (1.4 beta)
+## Optional scheduling (1.4)
 
 Scheduling is a local opt-in policy, not firmware telemetry or a change to the
 HTTP API. The coordinator exposes an optional manager reference but continues
@@ -134,7 +134,7 @@ are not repeated on every clock/poll event. A fresh read can confirm them;
 otherwise the user must inspect the state and explicitly select a mode to retry.
 Disabling/unloading never automatically resumes a paused charger. HA/network
 outages cannot enforce boundaries, and an unplug/replug entirely during an
-outage cannot reliably be detected. See the beta guide for testing and rollback.
+outage cannot reliably be detected. See the scheduling guide for testing and rollback.
 
 ## Development
 
@@ -148,8 +148,9 @@ pytest
 ```
 
 GitHub Actions additionally runs Home Assistant `hassfest` and HACS validation.
-Actions are pinned to reviewed revisions. HA integration tests retain the fixture
-package's 2026.10.4 baseline. A separate 2026.11.0 smoke test imports every platform
+Actions are pinned to reviewed revisions. HA integration tests cover the declared
+minimum 2026.3.1 and the 2026.10.4 baseline with version-matched fixtures. A separate
+2026.11.0 smoke test imports every platform
 using the actual HA package, without fixtures. The older fixture package cannot
 start with 2026.11 (HTTPX initialization and removed private logger test hooks).
 Do not patch HA internals or claim full 2026.11 test coverage from this smoke test;

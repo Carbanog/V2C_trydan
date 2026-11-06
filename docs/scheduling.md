@@ -1,10 +1,10 @@
-# Optional charging schedules — 1.4.0b5 beta
+# Optional charging schedules — 1.4.0
 
-Stable production release remains **1.3.3**. This opt-in beta does not update
-charger firmware or change dynamic load protection. Install explicitly through
-HACS's re-download/version selection on a test HA only, enabling prereleases
-there if necessary and select **1.4.0b5**, then restart. Back up first. Do not enable beta updates on
-production or let two HA instances send commands to the same charger.
+Included in stable **1.4.0**, disabled by default. Requires HA **2026.3.1+**.
+It does not update charger firmware or change dynamic load protection. Back up,
+download 1.4.0 in HACS and restart. Supervise the first real charging transitions;
+automated tests do not certify physical behavior in your installation. Never let
+two HA instances send commands to the same charger.
 
 ## Configure
 
@@ -82,7 +82,7 @@ can allow brief charging immediately after plugging in. An unplug/replug entirel
 during an outage cannot be identified reliably. This is not a safety mechanism
 or a guarantee of tariff compliance.
 
-## Beta checks and rollback
+## Supervised checks and rollback
 
 Test disabled behavior first, then short allowed/denied blocks, manual pause,
 Charge now followed by unplug, restart in each mode, night/weekend intervals,
@@ -93,7 +93,7 @@ validated on your installation. Software tests use explicit fake charger data.
 Disable scheduling in options and Save to remove its subscriptions/entities;
 this does not automatically resume the charger. Review the current pause state.
 To roll back, re-download **1.3.3** in HACS and restart. Session storage is unchanged;
-scheduler state is separate. Beta-only entities may remain unavailable in the
+scheduler state is separate. Scheduling entities may remain unavailable in the
 registry after rollback; user registry records are not automatically deleted.
 
 See the [detailed Spanish test guide](scheduling.es.md) for the full checklist.

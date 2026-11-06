@@ -1,4 +1,4 @@
-# Revisión de la auditoría de 1.4.0b3
+# Auditorías previas a 1.4.0
 
 Contraste con el código publicado y correcciones del 5 de noviembre de 2026.
 No es una auditoría de penetración ni una prueba del cargador físico.
@@ -24,15 +24,41 @@ no revisados e inicio de carga tras 49 horas. El cargador de pruebas es simulado
 La batería rápida local tiene 219 pruebas. El resultado de HA, hassfest y HACS
 debe consultarse para el commit concreto; no queda implícito por pasar las pruebas
 rápidas. Las correcciones se distribuyen en **1.4.0b5**, publicada como prerelease;
-la b3 y sus etiquetas originales no se modifican. La estable sigue siendo 1.3.3.
+la b3 y sus etiquetas originales no se modifican. Esa revisión precede a la estable 1.4.0.
 
-Antes de promover 1.4 a estable siguen pendientes las comprobaciones físicas de
+Siguen pendientes en la instalación del propietario las comprobaciones físicas de
 [la guía de programación](scheduling.es.md): límites horarios, pausa externa,
 Cargar ahora/desenchufado, reinicio y recuperación de comunicación. No hay cambios
-de navegación, migración de sesiones ni una nueva versión estable en esta revisión.
+de navegación ni migración de sesiones. Se autorizó expresamente publicar 1.4.0
+estable sin presentar esas comprobaciones físicas como realizadas.
 
 La API sigue siendo HTTP local sin cifrado: no exponerla a Internet. Conservar
 copias de seguridad y la estable anterior para recuperación. Un fallo de HA o
 red puede impedir pausar a tiempo; la integración no garantiza una tarifa.
 
 Fuente de la deprecación: [Home Assistant Contributors](https://contributors.home-assistant.io/blog/2026/05/07/config-entry-listener-together-with-reloading-methods/).
+
+## Revisión de la auditoría sobre 1.3.3 — 6 de noviembre
+
+* Enums: se confirmó que ChargeState=7 y SlaveError=11 podían salir de las opciones
+  declaradas. Ahora códigos desconocidos o fraccionarios publican desconocido,
+  conservando la telemetría bruta en los diagnósticos. Se prueba la publicación
+  real de la entidad y su recuperación a un código conocido.
+* Colas: se conserva el bloqueo durante la lectura/reintentos para no solapar IO.
+  Las escrituras esperan como máximo 10 segundos antes de enviarse. Expirar o
+  cancelar esa espera no deja tareas ni órdenes tardías; el timeout de escritura
+  sigue separado. El refresco posterior puede tardar: no se promete respuesta
+  completa ni parada eléctrica en 10/20 segundos.
+* Configuración: una IP se comprueba con un intento y timeout HTTP de 10 segundos;
+  el sondeo periódico mantiene tres intentos de 20 segundos.
+* Compatibilidad: mínima soportada HA 2026.3.1, con fixtures propios 0.13.317 y
+  suite separada de la base 2026.10.4. No se deduce compatibilidad de una API aislada.
+* Firmware: sus metadatos se actualizan al cambiar la lectura sin recargar ni
+  modificar nombres personalizados. Un campo ausente no borra la versión anterior.
+* Intensidades y SHA de CI ya se corrigieron en b5. No se calcula un límite de
+  amperios a partir de ContractedPower ignorando consumo doméstico y regulación.
+* GridPower/ChargeMode, fases extra y un criterio de horario independiente de
+  tarifas son ampliaciones, no defectos que deban mezclarse con esta corrección.
+* Se conservan los flags estadísticos por compatibilidad y el nombre del equipo;
+  revisar nombres, capturas y logs antes de compartirlos. El debounce se documenta,
+  no se fuerzan sondeos extra que puedan saturar la conexión.

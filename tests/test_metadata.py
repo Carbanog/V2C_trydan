@@ -268,6 +268,13 @@ def test_manifest_version_matches_latest_changelog() -> None:
     assert manifest["version"] == latest_heading
 
 
+def test_supported_minimum_has_a_dedicated_ha_environment() -> None:
+    metadata = json.loads((ROOT / "hacs.json").read_text(encoding="utf-8"))
+    assert metadata["homeassistant"] == "2026.3.1"
+    minimum = (ROOT / "requirements_ha_min_test.txt").read_text(encoding="utf-8")
+    assert "pytest-homeassistant-custom-component==0.13.317" in minimum
+
+
 def test_retired_light_platform_is_not_loaded() -> None:
     """Unreliable beta light controls must not return accidentally."""
     init_source = (INTEGRATION / "__init__.py").read_text(encoding="utf-8")

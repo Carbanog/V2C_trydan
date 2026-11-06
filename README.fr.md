@@ -9,13 +9,13 @@
 
 [English](README.md) · [Español](README.es.md) · [Français](README.fr.md)
 
-[Installer](#installation) · [Entités](#entités-et-configuration) · [Sessions](#comptabilisation-des-sessions) · [Programmation bêta](#programmation-par-tarifs--bêta-14-uniquement) · [Blueprints](#blueprints-et-automatisations) · [Tableaux de bord](#tableaux-de-bord)
+[Installer](#installation) · [Entités](#entités-et-configuration) · [Sessions](#comptabilisation-des-sessions) · [Programmation](#programmation-facultative) · [Blueprints](#blueprints-et-automatisations) · [Tableaux de bord](#tableaux-de-bord)
 
 Commande locale de la borne, suivi complet des sessions et outils facultatifs
 pour gérer la recharge depuis Home Assistant.
 
 V2C Trydan réunit commandes quotidiennes, sessions conservées entre les pauses
-et redémarrages, diagnostics et exemples d’automatisations. La branche bêta ajoute
+et redémarrages, diagnostics et exemples d’automatisations. Elle comprend
 une programmation hebdomadaire par tarifs, indépendante du fournisseur d’énergie.
 
 ## Aperçu
@@ -30,12 +30,13 @@ Exemples réels de tableaux de bord. Captures en espagnol ; les entités suivent
 
 | Canal | Version | Usage |
 | --- | --- | --- |
-| Stable | [1.3.3](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.3.3) | Suivi, commandes et sessions. |
-| Bêta volontaire | [1.4.0b5](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.4.0b5) | Programmation facultative ; installation de test uniquement. |
+| Stable | [1.4.0](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.4.0) | Suivi, commandes, sessions et programmation facultative. |
+| Stable précédente | [1.3.3](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.3.3) | Retour arrière sans programmation. |
 
-La bêta ne remplace pas la dernière version stable. Les fonctions marquées bêta
-ci-dessous sont expérimentales, pas disponibles dans 1.3.3. Voir le [journal des
-modifications](CHANGELOG.md), en anglais. Ce projet s’installe dans HACS comme
+La programmation est désactivée par défaut. Les tests automatisés ne certifient
+pas le comportement physique dans chaque installation ; surveillez les premiers
+changements de plage. Voir le [journal des modifications](CHANGELOG.md), en anglais.
+Ce projet s’installe dans HACS comme
 **dépôt personnalisé**, sans prétendre figurer dans son catalogue par défaut.
 
 ## Fonctions principales
@@ -45,11 +46,14 @@ modifications](CHANGELOG.md), en anglais. Ce projet s’installe dans HACS comme
 | **Commande locale** | Pause, verrouillage et intensité par HTTP local. Aucun compte V2C Cloud ni dépendance à Octopus/OCPP. |
 | **Sessions complètes** | Énergie et temps actif cumulés malgré les pauses, remises à zéro des compteurs et redémarrages de HA. |
 | **Communication et diagnostic** | Requêtes partagées et sérialisées, tentatives limitées, données sensibles connues masquées et changement d’IP sans recréer l’intégration. |
-| **Extensions facultatives** | Blueprints importables, tableaux natif/Mushroom et interface en français, espagnol et anglais. La programmation hebdomadaire reste en bêta. |
+| **Extensions facultatives** | Programmation hebdomadaire, blueprints importables, tableaux natif/Mushroom et interface en français, espagnol et anglais. |
 
 La tolérance aux pannes ne supprime pas les problèmes réseau et ne garantit pas la connexion.
 
 ## Prérequis et compatibilité
+
+Home Assistant **2026.3.1 ou ultérieur** est requis. Les tests HA complets couvrent
+ce minimum et 2026.10.4 ; 2026.11 ne dispose que d’un test d’importation.
 
 HA doit pouvoir joindre l’API HTTP locale de Trydan. Réservez son adresse dans
 le routeur et vérifiez `http://IP_DE_LA_BORNE/RealTimeData` sur le même réseau.
@@ -72,7 +76,7 @@ utilise l’API de marques disponible depuis HA 2026.3.
 1. Sauvegardez HA.
 2. Utilisez le bouton ou ajoutez `https://github.com/Carbanog/V2C_trydan` comme
    dépôt personnalisé de type **Intégration** dans HACS.
-3. Téléchargez la stable **1.3.3**, puis redémarrez HA.
+3. Téléchargez la stable **1.4.0**, puis redémarrez HA.
 4. Ouvrez **Paramètres → Appareils et services → Ajouter une intégration → V2C Trydan**.
 5. Saisissez l’adresse IP locale de la borne.
 
@@ -84,19 +88,24 @@ envoyant des commandes contradictoires.
 
 ## Mises à jour, bêta et retour arrière
 
+La configuration IP fait une requête HTTP avec un délai de 10 secondes. Le suivi
+normal conserve trois tentatives de 20 secondes. Une commande en attente de la
+connexion partagée pendant plus de 10 secondes est refusée **sans être envoyée**,
+sans exécution différée. Une commande envoyée garde son délai séparé de 10 secondes
+et n’est pas répétée : une confirmation perdue ne prouve pas l’absence d’exécution.
+Le rafraîchissement des états peut être regroupé. Ces délais ne garantissent pas un arrêt électrique.
+
 Mettez à jour via HACS et redémarrez. Ne supprimez pas l’intégration : les
 identifiants, personnalisations et sessions stockées sont conservés.
 Utilisez **Reconfigurer** si l’IP change. Rechargez après une mise à jour du
 firmware pour découvrir les nouveaux champs facultatifs.
 
-Pour essayer **1.4.0b5**, choisissez-la explicitement dans la sélection de version
-de HACS, en affichant les préversions si nécessaire, uniquement sur le HA de test.
-N’activez pas les bêtas en production et ne laissez pas deux instances commander
-la même borne.
+Les futures préversions nécessitent une sélection explicite dans HACS. Préférez
+une installation de test et ne laissez jamais deux instances commander la même borne.
 
 Pour revenir à la stable, vérifiez la pause réelle, désactivez la programmation
 si elle était utilisée, téléchargez **1.3.3** et redémarrez. Désactiver/décharger
-ne reprend jamais automatiquement la charge. Les entités propres à la bêta
+ne reprend jamais automatiquement la charge. Les entités de programmation
 peuvent rester indisponibles ; les entrées utilisateur ne sont pas supprimées.
 
 ## Entités et configuration
@@ -108,7 +117,7 @@ peuvent rester indisponibles ; les entrées utilisateur ne sont pas supprimées.
 | Suivi | Puissance/énergie partielle, état de charge, puissance maison, câble et charge active. |
 | Réglages facultatifs | Limites d’intensité, charge/mode dynamique, programmateur et pause dynamique. |
 | Diagnostics/mesures facultatifs | Compteur, firmware, réseau, Wi-Fi, états internes et mesures L1. |
-| Programmation bêta | Mode, tarif et état ; seulement après activation. |
+| Programmation facultative | Mode, tarif et état ; seulement après activation. |
 
 Les nouvelles installations désactivent initialement les réglages avancés, les
 données photovoltaïques/batterie et de nombreux diagnostics. Les choix existants
@@ -135,7 +144,7 @@ ancienne entité affiche encore les secondes, choisissez les heures dans ses
 réglages sans réinitialiser le total. L’énergie effacée par la borne pendant
 l’arrêt de HA ne peut pas être reconstruite.
 
-## Programmation par tarifs — bêta 1.4 uniquement
+## Programmation facultative
 
 Module séparé, facultatif et **désactivé par défaut**, sans assistants ni
 automatisations à créer. Plusieurs plages par jour, différents jours, tarifs
@@ -166,8 +175,9 @@ inaperçu. La prochaine plage n’est pas une garantie de démarrage.
 Ne combinez pas cette politique avec OCPP/Octopus ou d’autres horaires de charge.
 Gardez la régulation dynamique et les protections électriques actives.
 
-[Guide détaillé de la bêta en anglais](https://github.com/Carbanog/V2C_trydan/blob/v1.4.0b5/docs/scheduling.md).
-Le passage en stable attend encore les essais physiques de recharge.
+[Guide détaillé de la bêta en anglais](https://github.com/Carbanog/V2C_trydan/blob/v1.4.0/docs/scheduling.md).
+Vérifiez les limites horaires et la pause manuelle sur votre installation. Cette
+publication ne prétend pas avoir effectué ces essais physiques supervisés.
 
 Les mesures L1 facultatives sont détectées à la première lecture au démarrage.
 Après une mise à jour du firmware, rechargez l’intégration pour découvrir les
@@ -181,7 +191,7 @@ Ils ne sont jamais installés ou activés automatiquement.
 
 **Résumé et notifications de session**
 
-[![Importer dans Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0b5%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
+[![Importer dans Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
 
 [Voir le YAML](blueprints/automation/session_summary.yaml). Actions au démarrage et
 après débranchement, sans répéter chaque pause OCPP. Les actions de fin disposent
@@ -198,7 +208,7 @@ data:
 
 **Alerte de puissance élevée**
 
-[![Importer dans Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0b5%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
+[![Importer dans Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
 
 [Voir le YAML](blueprints/automation/high_power_alert.yaml). Déclenche les actions
 après dépassement d’un seuil pendant la durée choisie ; fournit `measured_power`.
@@ -249,7 +259,7 @@ IP, SSID et identifiant connus sont masqués dans les diagnostics ; vérifiez to
 journal ou capture avant publication.
 
 Pas de SOC réel du véhicule, objectif en kilomètres, PVPC ni optimisation
-automatique des prix. La programmation bêta n’est pas une protection de sécurité
+automatique des prix. La programmation n’est pas une protection de sécurité
 ou une garantie tarifaire pendant les pannes de HA ou du réseau.
 
 ## Contribuer et préparer HACS
@@ -263,7 +273,7 @@ selon la demande et les possibilités de maintenance.
 [Architecture et développement](docs/architecture.md) ·
 [Préparation du catalogue HACS](docs/hacs-readiness.md) — documents en anglais.
 
-Les contrôles incluent Ruff, pytest, hassfest et HACS. La branche bêta teste aussi
+Les contrôles incluent Ruff, pytest, hassfest et HACS. CI teste aussi
 le cycle HA réel avec une borne simulée ; cela ne remplace pas les essais physiques.
 L’inclusion dans le catalogue HACS nécessite une demande et une revue séparées.
 

@@ -12,12 +12,13 @@ document. Review the live requirements again before submitting.
   and root `hacs.json`.
 * Local brand icon, with source and trademark notes in [brand-assets.md](brand-assets.md).
 * MIT license with original and current-author notices preserved.
-* Stable GitHub release **1.3.3** retained as latest; **1.4.0b3** is a prerelease.
+* Stable **1.4.0** includes optional scheduling, disabled by default; retain 1.3.3
+  and historical prereleases for rollback. `hacs.json` declares HA 2026.3.1 minimum.
 * Independent domain `v2c_trydan`, not the built-in `v2c` domain. This is not a
   test distribution of Home Assistant core's V2C integration.
 * README coverage in English, Spanish and French; install/update/rollback,
   diagnostics, limitations, opt-in extensions and credits are documented.
-* Python checks, hassfest and HACS validation are enabled. Beta scheduling also
+* Python checks, hassfest and HACS validation are enabled. Scheduling also
   has real-HA lifecycle tests with a mocked charger, not physical certification.
 
 The optional `categories` manifest key is deferred because the published

@@ -2,7 +2,13 @@
 
 All notable changes to this project are documented here.
 
-## Unreleased
+## 1.4.0
+
+* Include optional weekly tariff scheduling in the stable release, disabled by
+  default. First activation starts Paused; Automatic and Charge now require user
+  intent. Existing schedules and session checkpoints are preserved.
+* No supervised physical scheduling test was performed for this release;
+  validate tariff boundaries and manual overrides in your installation.
 
 * Publish unknown firmware enum codes as unknown, retaining raw diagnostic values.
   Reject fractional and malformed enum codes rather than assigning a false state.
