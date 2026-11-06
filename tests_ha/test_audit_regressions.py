@@ -8,13 +8,69 @@ import pytest
 import yaml
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.script import Script, async_validate_actions_config
 from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import async_fire_time_changed
 
 from custom_components.v2c_trydan.api import V2CTrydanApi
 from custom_components.v2c_trydan.diagnostics import async_get_config_entry_diagnostics
+from custom_components.v2c_trydan.sensor import TRYDAN_SENSORS, V2CTrydanSensor
 from tests_ha.test_scheduling_integration import DOMAIN, setup_charger
+
+
+@pytest.mark.parametrize(
+    "key,field,raw",
+    [
+        ("charge_state", "ChargeState", 7),
+        ("meter_error", "SlaveError", 11),
+        ("meter_error", "SlaveError", 1.5),
+    ],
+)
+async def test_unknown_firmware_enum_publishes_unknown_not_error(hass, key, field, raw):
+    async for entry, data, _command in setup_charger(hass, {}):
+        data[field] = raw
+        await entry.runtime_data.async_refresh()
+        description = next(item for item in TRYDAN_SENSORS if item.key == key)
+        sensor = V2CTrydanSensor(entry.runtime_data, description)
+        sensor.hass = hass
+        sensor.entity_id = f"sensor.example_{key}"
+        assert sensor.native_value is None
+        sensor.async_write_ha_state()
+        assert hass.states.get(sensor.entity_id).state == "unknown"
+        # Known values remain valid; new firmware codes remain in raw diagnostics.
+        entry.runtime_data.data[field] = 2
+        assert sensor.native_value == "2"
+
+
+async def test_config_flow_uses_short_probe_policy(hass):
+    with (
+        patch.object(
+            V2CTrydanApi, "async_get_realtime_data", return_value={"ID": "example-new"}
+        ) as read,
+        patch.object(hass.config_entries, "async_setup", return_value=True),
+    ):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": "user"}, data={"ip_address": "192.0.2.25"}
+        )
+        await hass.async_block_till_done()
+    assert result["type"] == "create_entry"
+    read.assert_awaited_once_with(attempts=1, request_timeout=10)
+
+
+async def test_firmware_metadata_updates_without_reload_and_preserves_name(hass):
+    async for entry, data, _command in setup_charger(hass, {}):
+        registry = dr.async_get(hass)
+        device = next(iter(dr.async_entries_for_config_entry(registry, entry.entry_id)))
+        registry.async_update_device(device.id, name_by_user="Example custom name")
+        data["FirmwareVersion"] = "2.5.2"
+        await entry.runtime_data.async_refresh()
+        updated = registry.async_get(device.id)
+        assert updated.sw_version == "2.5.2"
+        assert updated.name_by_user == "Example custom name"
+        data.pop("FirmwareVersion")
+        await entry.runtime_data.async_refresh()
+        assert registry.async_get(device.id).sw_version == "2.5.2"
 
 
 def entity_id(hass, entry, suffix):

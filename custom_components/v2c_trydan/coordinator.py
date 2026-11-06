@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
@@ -46,6 +47,8 @@ class V2CTrydanDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.api = api
         self.scheduler: SchedulingManager | None = None
         self.host = api.host
+        self._entry_id = entry.entry_id
+        self._last_firmware_version: str | None = None
         self.device_id = (
             entry.unique_id
             if entry.unique_id and entry.unique_id != api.host
@@ -92,6 +95,23 @@ class V2CTrydanDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if not self._device_id_initialized:
             self.device_id = device_identifier(data, self.device_id)
             self._device_id_initialized = True
+
+        firmware = data.get("FirmwareVersion")
+        if (
+            isinstance(firmware, str)
+            and firmware
+            and firmware != self._last_firmware_version
+        ):
+            # Update metadata only on a change, without another charger request
+            # or overwriting user-selected names and other device properties.
+            registry = dr.async_get(self.hass)
+            for device in dr.async_entries_for_config_entry(registry, self._entry_id):
+                if (
+                    DOMAIN,
+                    self.device_id,
+                ) in device.identifiers and device.sw_version != firmware:
+                    registry.async_update_device(device.id, sw_version=firmware)
+            self._last_firmware_version = firmware
 
         session_update = self._session_tracker.update(
             data.get("ChargeState"),

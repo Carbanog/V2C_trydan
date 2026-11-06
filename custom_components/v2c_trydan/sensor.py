@@ -28,7 +28,7 @@ from .const import SESSION_ACTIVE_TIME_KEY, SESSION_ENERGY_KEY
 from .coordinator import V2CTrydanDataUpdateCoordinator
 from .entity import SchedulingEntity, V2CTrydanEntity
 from .scheduling.policy import PERIODS
-from .utils import value_as_float, value_as_int
+from .utils import value_as_float
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -47,9 +47,21 @@ def _rounded_float(value: Any) -> int | None:
 
 def _integer_string(value: Any) -> str | None:
     """Return the integer value formatted for an enum sensor."""
-    converted = value_as_int(value)
-    return str(converted) if converted is not None else None
+    converted = value_as_float(value)
+    return (
+        str(int(converted))
+        if converted is not None and converted.is_integer()
+        else None
+    )
 
+
+def _enum_value(value: Any, options: list[str] | tuple[str, ...]) -> str | None:
+    """Keep unsupported firmware codes unknown instead of breaking HA state writes."""
+    converted = _integer_string(value)
+    return converted if converted in options else None
+
+
+_CHARGE_STATES = tuple(str(state) for state in range(7))
 
 _METER_ERROR_CODES: tuple[str, ...] = tuple(
     str(code)
@@ -133,8 +145,8 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         key="charge_state",
         translation_key="chargestate",
         device_class=SensorDeviceClass.ENUM,
-        options=[str(state) for state in range(7)],
-        value_fn=lambda data: _integer_string(data.get("ChargeState")),
+        options=list(_CHARGE_STATES),
+        value_fn=lambda data: _enum_value(data.get("ChargeState"), _CHARGE_STATES),
     ),
     V2CSensorEntityDescription(
         key="charge_time",
@@ -293,7 +305,7 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         entity_registry_enabled_default=False,
         device_class=SensorDeviceClass.ENUM,
         options=list(_METER_ERROR_CODES),
-        value_fn=lambda data: _integer_string(data.get("SlaveError")),
+        value_fn=lambda data: _enum_value(data.get("SlaveError"), _METER_ERROR_CODES),
     ),
     V2CSensorEntityDescription(
         key="timer",

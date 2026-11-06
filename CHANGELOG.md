@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented here.
 
+## Unreleased
+
+* Publish unknown firmware enum codes as unknown, retaining raw diagnostic values.
+  Reject fractional and malformed enum codes rather than assigning a false state.
+* Bound command queue waiting to 10 seconds before sending, separately from the
+  existing 10-second write timeout. Queue expiry never leaves a delayed command.
+  Normal polling retains three attempts, 20-second reads and serialized IO.
+* Use a single 10-second request for config-flow IP probes, not the normal poll retry policy.
+* Update the registered firmware version on observed changes without a reload,
+  preserving custom device names and keeping metadata when a field is missing.
+* Declare HA 2026.3.1 as the supported minimum and test its real HA environment
+  separately from 2026.10.4. HA 2026.11 remains an import-only smoke test.
+* No new tariff model, telemetry entities, light controls or session schema changes.
+
 ## 1.4.0b5
 
 ### Beta: audit corrections and regression coverage

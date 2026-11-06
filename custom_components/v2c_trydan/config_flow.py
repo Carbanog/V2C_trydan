@@ -20,7 +20,7 @@ from .api import (
     V2CTrydanInvalidResponseError,
     device_identifier,
 )
-from .const import DOMAIN
+from .const import CONFIG_READ_TIMEOUT, DOMAIN
 from .scheduling.policy import DAYS, OPTION_KEY, PERIODS, WeeklySchedule
 from .scheduling.presentation import async_block_choices, async_schedule_summary
 
@@ -152,7 +152,9 @@ class V2CTrydanConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         api = V2CTrydanApi(async_get_clientsession(self.hass), host)
         try:
-            data = await api.async_get_realtime_data()
+            data = await api.async_get_realtime_data(
+                attempts=1, request_timeout=CONFIG_READ_TIMEOUT
+            )
         except V2CTrydanConnectionError:
             errors["base"] = "cannot_connect"
             return None
