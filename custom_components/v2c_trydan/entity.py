@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .api import V2CTrydanError
 from .const import DOMAIN
 from .coordinator import V2CTrydanDataUpdateCoordinator
+from .utils import validate_intensity
 
 
 class V2CTrydanEntity(CoordinatorEntity):
@@ -35,8 +36,34 @@ class V2CTrydanEntity(CoordinatorEntity):
 
     async def _async_write(self, key: str, value: int) -> None:
         """Write a value and refresh all entities."""
+        if key in {"Intensity", "MinIntensity", "MaxIntensity"}:
+            try:
+                validate_intensity(key, value, self.coordinator.data)
+            except ValueError as err:
+                raise ServiceValidationError(str(err)) from err
         try:
+            if key == "Paused" and self.coordinator.scheduler is not None:
+                await self.coordinator.scheduler.async_set_mode(
+                    "paused" if value else "charge_now"
+                )
+                return
             await self.coordinator.api.async_write(key, value)
         except V2CTrydanError as err:
             raise HomeAssistantError(str(err)) from err
         await self.coordinator.async_request_refresh()
+
+
+class SchedulingEntity(V2CTrydanEntity):
+    """Subscribe to policy changes as well as charger snapshots."""
+
+    def __init__(self, coordinator: V2CTrydanDataUpdateCoordinator, key: str) -> None:
+        super().__init__(coordinator, key)
+        if coordinator.scheduler is None:
+            raise ValueError("Scheduling is not enabled")
+        self.scheduler = coordinator.scheduler
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        self.async_on_remove(
+            self.scheduler.async_add_listener(self.async_write_ha_state)
+        )

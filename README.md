@@ -9,13 +9,13 @@
 
 [English](README.md) · [Español](README.es.md) · [Français](README.fr.md)
 
-[Install](#installation) · [Entities](#entities-and-configuration) · [Sessions](#session-accounting) · [Scheduling beta](#tariff-scheduling--14-beta-only) · [Blueprints](#blueprints-and-automations) · [Dashboards](#dashboards)
+[Install](#installation) · [Entities](#entities-and-configuration) · [Sessions](#session-accounting) · [Scheduling](#optional-charging-schedules) · [Blueprints](#blueprints-and-automations) · [Dashboards](#dashboards)
 
 Local charger control, complete charging-session tracking, and optional tools
 for managing charging from Home Assistant.
 
 V2C Trydan combines everyday controls, persistent sessions across pauses and
-restarts, diagnostics and reusable automations. The beta branch adds optional
+restarts, diagnostics and reusable automations, including optional
 weekly tariff scheduling without relying on an energy provider.
 
 ## At a glance
@@ -30,11 +30,12 @@ Real dashboard examples. Screenshots are in Spanish; entities follow your HA lan
 
 | Channel | Version | Purpose |
 | --- | --- | --- |
-| Stable | [1.3.3](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.3.3) | Monitoring, controls and sessions. |
-| Opt-in beta | [1.4.0b3](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.4.0b3) | Adds optional scheduling; test installations only. |
+| Stable | [1.4.0](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.4.0) | Monitoring, controls, sessions and optional scheduling. |
+| Previous stable | [1.3.3](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.3.3) | Rollback version without scheduling. |
 
-The beta does not replace the latest stable release. Features labelled beta below
-are experimental, not part of 1.3.3. See the [changelog](CHANGELOG.md).
+Scheduling is disabled by default. Automated checks do not certify physical
+charging behavior in every installation; supervise the first schedule changes.
+See the [changelog](CHANGELOG.md).
 Install through HACS as a **custom repository**; this project is not presented
 as included in the default HACS catalog.
 
@@ -45,11 +46,14 @@ as included in the default HACS catalog.
 | **Local control** | Pause, lock and current controls over local HTTP. No V2C Cloud account or Octopus/OCPP required. |
 | **Whole-session tracking** | Energy and active time across pauses, counter resets and HA restarts. |
 | **Communication and diagnostics** | Shared serialized requests, bounded retries, redacted diagnostics and IP reconfiguration without recreating the integration. |
-| **Optional extensions** | Importable blueprints, native/Mushroom dashboards and English, Spanish and French UI. Weekly tariff scheduling is beta-only. |
+| **Optional extensions** | Weekly tariff scheduling, importable blueprints, native/Mushroom dashboards and English, Spanish and French UI. |
 
 Fault tolerance does not eliminate network problems or guarantee connectivity.
 
 ## Requirements and compatibility
+
+Home Assistant **2026.3.1 or newer** is required. The declared minimum and the
+2026.10.4 baseline run full HA tests; 2026.11 has import-only smoke coverage.
 
 HA must reach the charger's local HTTP API. Reserve its address in your router
 and check `http://CHARGER_IP/RealTimeData` on the same network.
@@ -72,7 +76,7 @@ HA 2026.3 and later.
 1. Back up HA.
 2. Use the button or add `https://github.com/Carbanog/V2C_trydan` in HACS as a
    custom **Integration** repository.
-3. Download stable **1.3.3** and restart HA.
+3. Download stable **1.4.0** and restart HA.
 4. Open **Settings → Devices & services → Add integration → V2C Trydan**.
 5. Enter the charger's local IP address.
 
@@ -83,17 +87,23 @@ Avoid competing controllers/automations sending contradictory commands.
 
 ## Updates, beta testing and rollback
 
+IP setup/reconfiguration uses one request with a 10-second HTTP timeout. Normal
+polling retains its three-attempt/20-second policy. A command waiting over 10
+seconds for the shared connection is rejected **without being sent** and cannot
+execute later. Sent writes retain their separate 10-second timeout and are never
+retried blindly; a lost acknowledgement can still mean the command executed.
+State refreshes may be debounced. These are not guaranteed electrical stop times.
+
 Update through HACS and restart. Do not delete/recreate the integration:
 existing IDs, customizations and stored sessions are retained. Use **Reconfigure**
 if the IP changes. Reload after firmware upgrades to discover available optional fields.
 
-To try **1.4.0b3**, explicitly select it in HACS's re-download/version selector,
-showing prereleases if needed, on test HA only. Do not enable beta updates in
-production or let two HA instances govern the same charger.
+Future prereleases require explicit selection in HACS. Prefer an isolated test
+installation and never let two HA instances govern the same charger.
 
 To roll back, review the actual pause state, disable scheduling if it was enabled,
 download **1.3.3** and restart. Disabling/unloading does not automatically resume
-charging. Beta-only entities can remain unavailable after rollback; user registry
+charging. Scheduling entities can remain unavailable after rollback; user registry
 records are not automatically deleted.
 
 ## Entities and configuration
@@ -105,7 +115,7 @@ records are not automatically deleted.
 | Monitoring | Charging power/partial energy, charge state, house power, cable/charging states. |
 | Optional settings | Current limits, dynamic charging/mode, timer and dynamic pause. |
 | Optional diagnostics/measurements | Meter, firmware, network, Wi-Fi, raw states, measured L1 voltage/current. |
-| Beta scheduling | Mode, current tariff and status; only when enabled. |
+| Optional scheduling | Mode, current tariff and status; only when enabled. |
 
 New installs keep advanced settings, solar/home-battery data and many diagnostic
 entities disabled. Existing entity choices survive updates. Enable what you need
@@ -130,7 +140,7 @@ Display precision is two decimals; time is stored in seconds. If an older entity
 still displays seconds, choose hours in its settings without resetting its total.
 Energy erased by the charger while HA was offline cannot be reconstructed.
 
-## Tariff scheduling — 1.4 beta only
+## Optional charging schedules
 
 A separate, optional module, **disabled by default**, with no helpers or
 automations to create. Configure multiple blocks per day, different weekdays,
@@ -159,8 +169,12 @@ The next window previews tariff permission, not a guaranteed vehicle start.
 Do not combine with OCPP/Octopus or other charging schedules. Leave dynamic
 regulation and electrical protections enabled.
 
-[Full beta setup, physical-test and rollback guide](https://github.com/Carbanog/V2C_trydan/blob/v1.4.0b3/docs/scheduling.md).
-Promotion to stable is pending physical charging checks.
+[Full setup, physical-test and rollback guide](https://github.com/Carbanog/V2C_trydan/blob/v1.4.0/docs/scheduling.md).
+Physical tariff-boundary and manual-override checks remain necessary in your
+installation. No supervised physical verification is claimed by this release.
+
+Optional L1 capabilities are discovered on the first read at setup. Reload the
+integration after a firmware update to discover fields newly provided by the charger.
 
 ## Blueprints and automations
 
@@ -169,12 +183,16 @@ They are never automatically installed or enabled.
 
 **Session summary and notifications**
 
-[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.3%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
+[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
 
 [View YAML](blueprints/automation/session_summary.yaml). Runs start/end actions
 without repeating every OCPP pause. Finish actions can use `session_kwh`,
 `session_seconds`, `session_hours`, `session_duration`, `estimated_percent`,
 `estimated_cost` and `estimated_range_km`.
+
+The start action can wait several days after connection. Like other HA waits,
+it does not survive an HA restart or automation reload; this is not a persistent
+notification queue. Update/re-import an existing blueprint to receive fixes.
 
 Example finish action; replace the notification service:
 ```yaml
@@ -186,7 +204,7 @@ data:
 
 **High charging power alert**
 
-[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.3.3%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
+[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
 
 [View YAML](blueprints/automation/high_power_alert.yaml). Runs chosen actions
 after a power threshold is exceeded for a configured duration; exposes `measured_power`.
@@ -232,7 +250,7 @@ Known IP, SSID and hardware-ID fields are redacted from diagnostics, but review
 all logs and screenshots before publishing.
 
 There is no real vehicle SOC, kilometre charging target, PVPC integration or
-automatic price optimization. Beta scheduling is neither a safety mechanism
+automatic price optimization. Scheduling is neither a safety mechanism
 nor a guarantee of tariff compliance during HA/network downtime.
 
 ## Contributing and HACS readiness
@@ -245,7 +263,7 @@ are welcome. Add languages when there is demand and someone to maintain them.
 [Architecture and development](docs/architecture.md) ·
 [HACS catalog readiness checklist](docs/hacs-readiness.md).
 
-Checks include Ruff, pytest, hassfest and HACS. The beta branch also tests actual
+Checks include Ruff, pytest, hassfest and HACS. CI also tests actual
 HA lifecycle with a mocked charger; this does not replace physical verification.
 Default HACS catalog inclusion requires a separate submission and review.
 

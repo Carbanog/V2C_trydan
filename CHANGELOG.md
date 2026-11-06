@@ -2,6 +2,92 @@
 
 All notable changes to this project are documented here.
 
+## 1.4.0
+
+* Include optional weekly tariff scheduling in the stable release, disabled by
+  default. First activation starts Paused; Automatic and Charge now require user
+  intent. Existing schedules and session checkpoints are preserved.
+* No supervised physical scheduling test was performed for this release;
+  validate tariff boundaries and manual overrides in your installation.
+
+* Publish unknown firmware enum codes as unknown, retaining raw diagnostic values.
+  Reject fractional and malformed enum codes rather than assigning a false state.
+* Bound command queue waiting to 10 seconds before sending, separately from the
+  existing 10-second write timeout. Queue expiry never leaves a delayed command.
+  Normal polling retains three attempts, 20-second reads and serialized IO.
+* Use a single 10-second request for config-flow IP probes, not the normal poll retry policy.
+* Update the registered firmware version on observed changes without a reload,
+  preserving custom device names and keeping metadata when a field is missing.
+* Declare HA 2026.3.1 as the supported minimum and test its real HA environment
+  separately from 2026.10.4. HA 2026.11 remains an import-only smoke test.
+* No new tariff model, telemetry entities, light controls or session schema changes.
+
+## 1.4.0b5
+
+### Beta: audit corrections and regression coverage
+
+* Prerelease only; stable remains 1.3.3. Beta 4 stays withdrawn. Keep the native
+  beta 3 configuration forms and preserve existing schedules and sessions.
+
+* Preserve the last reliable cable connection in the plug binary sensor during
+  fault states, using the same persisted session state. Do not emit false unplug
+  or replug events on recovery. Session accumulation rules are unchanged.
+* Reconfigure the charger IP through the entry listener only, avoiding duplicate
+  reloads and the HA 2026.12 deprecated config-flow combination.
+* Remove the session blueprint's 24-hour first-charge timeout. HA restarts or
+  automation reloads still cancel its in-memory wait; update imported blueprints.
+* Validate current controls and legacy services against observed charger limits.
+* Export only reviewed diagnostic telemetry; omit unknown firmware/config fields.
+* Pin CI actions to verified revisions and add an HA 2026.11 import smoke test,
+  retaining the full HA 2026.10.4 baseline. Full 2026.11 integration tests await
+  compatible upstream fixtures; do not patch private HA internals to simulate them.
+* Document the device timer conflict (no pause OR resume), optional capability
+  discovery at startup, and blueprint lifecycle limitations.
+* No navigation redesign, session schema migration, new entities or stable release.
+
+## 1.4.0b3
+
+### Beta: edit time blocks in place
+
+* Add an Edit block option with prefilled days, start/end time and tariff.
+* Validate a replacement against the other blocks; reject overlaps without
+  discarding the original or adding a duplicate. Changes stay in the options
+  draft until the final summary is explicitly confirmed.
+* Share add/edit form validation and translated edit/remove labels in English,
+  Spanish and French. Existing schedules and unrelated options are preserved.
+* No date exceptions, charger-policy changes, new entities or storage migration.
+* Prerelease only; stable remains 1.3.3.
+
+## 1.4.0b2
+
+### Beta: scheduling visibility and review
+
+* Require explicit confirmation of a localized summary before applying options:
+  enabled state, blocks, allowed tariffs and all unassigned weekly intervals.
+* Show the next allowed tariff start as an attribute of Scheduling status while
+  Automatic is waiting, without adding another entity or promising an actual start.
+* Raise one translated HA Repairs warning if an attempted command remains
+  unconfirmed for at least 60 seconds. Clear on confirmation, observed unplug
+  or scheduler unload; never retry a command blindly or flood the UI.
+* Add coverage/preview/alert tests, real DST transition tests and real-HA tests
+  for summaries and translations in English, Spanish and French.
+* Remains prerelease only; 1.3.3 is still the stable production release.
+
+## 1.4.0b1
+
+### Beta: optional charging schedules
+
+* Separate weekly tariff policy, serialized command controller and HA lifecycle
+  adapter. Disabled by default; first activation starts Paused.
+* Native options menu for weekly blocks, allowed peak/shoulder/off-peak periods,
+  midnight-crossing intervals and explicit Save. Overlaps are rejected.
+* Automatic, Charge now until unplugged, and Paused modes; current tariff and
+  decision-status sensors appear only when enabled.
+* Persist mode and pending commands independently of energy/session storage.
+  Do not retry unconfirmed writes blindly or override locks/device timers.
+* Scheduling and real-HA regression tests; no charger firmware update.
+* Prerelease only: 1.3.3 remains the stable production release.
+
 ## 1.3.3
 
 ### Fixed

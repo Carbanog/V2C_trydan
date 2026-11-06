@@ -1,0 +1,3 @@
+# Import smoke test only: the fixture package still targets HA 2026.10.4.
+# No production dependency and no claim of full integration-test coverage.
+homeassistant==2026.11.0

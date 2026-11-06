@@ -35,6 +35,11 @@ from .coordinator import (
     V2CTrydanDataUpdateCoordinator,
     session_store_key,
 )
+from .scheduling.ha import STORE_VERSION as SCHEDULER_STORE_VERSION
+from .scheduling.ha import SchedulingManager
+from .scheduling.ha import store_key as scheduler_store_key
+from .scheduling.policy import OPTION_KEY, WeeklySchedule
+from .utils import validate_intensity
 
 PLATFORMS: tuple[Platform, ...] = (
     Platform.SENSOR,
@@ -162,6 +167,12 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         if field == "dynamic_power_mode" and value is None:
             value = call.data["DynamicPowerMode"]
 
+        if charger_key in {"Intensity", "MinIntensity", "MaxIntensity"}:
+            try:
+                validate_intensity(charger_key, value, coordinator.data)
+            except ValueError as err:
+                raise ServiceValidationError(str(err)) from err
+
         try:
             await coordinator.api.async_write(charger_key, value)
         except V2CTrydanError as err:
@@ -190,6 +201,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
 
+    schedule = WeeklySchedule.from_options(entry.options.get(OPTION_KEY))
+    if schedule.enabled:
+        coordinator.scheduler = SchedulingManager(hass, entry, coordinator, schedule)
+        await coordinator.scheduler.async_initialize()
+
     _migrate_legacy_registry_entries(hass, entry, coordinator.device_id)
     _remove_retired_beta_lights(hass, entry, coordinator.device_id)
     _migrate_config_entry_unique_id(hass, entry, coordinator.device_id)
@@ -206,13 +222,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    entry.async_on_unload(entry.add_update_listener(_async_options_updated))
+    if coordinator.scheduler is not None:
+        await coordinator.scheduler.async_start()
     return True
+
+
+async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Rebuild optional entities/subscriptions after a validated options change."""
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
+        if entry.runtime_data.scheduler is not None:
+            await entry.runtime_data.scheduler.async_stop()
         await entry.runtime_data.async_save_session_state()
     return unload_ok
 
@@ -226,6 +252,13 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
         atomic_writes=True,
     )
     await store.async_remove()
+    scheduler_store: Store[dict[str, object]] = Store(
+        hass,
+        SCHEDULER_STORE_VERSION,
+        scheduler_store_key(entry.entry_id),
+        atomic_writes=True,
+    )
+    await scheduler_store.async_remove()
 
 
 async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

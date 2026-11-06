@@ -1,0 +1,2 @@
+# Separate Linux CI environment: includes real Home Assistant and its test fixtures.
+pytest-homeassistant-custom-component==0.13.375

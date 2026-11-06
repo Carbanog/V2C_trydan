@@ -32,6 +32,59 @@ VALID_DATA = {
 VALID_PAYLOAD = json.dumps(VALID_DATA)
 
 
+async def test_configuration_probe_does_not_change_normal_poll_policy() -> None:
+    session = FakeSession(
+        (
+            TimeoutError(),
+            FakeResponse(),
+        )
+    )
+    api = V2CTrydanApi(session, "192.0.2.10")
+    with pytest.raises(V2CTrydanConnectionError, match="1 attempts"):
+        await api.async_get_realtime_data(attempts=1, request_timeout=10)
+    assert len(session.urls) == 1
+    assert session.options[0]["timeout"].total == 10
+    await api.async_get_realtime_data()
+    assert session.options[1]["timeout"].total == api_module.READ_TIMEOUT
+
+
+async def test_queued_command_timeout_never_sends_later(monkeypatch) -> None:
+    monkeypatch.setattr(api_module, "COMMAND_QUEUE_TIMEOUT", 0.01)
+    session = FakeSession((FakeResponse("OK"),))
+    api = V2CTrydanApi(session, "192.0.2.10")
+    await api._request_lock.acquire()
+    try:
+        with pytest.raises(V2CTrydanConnectionError, match="command was not sent"):
+            await api.async_write("Paused", 1)
+        assert not session.urls
+        assert api._request_lock.locked()
+    finally:
+        api._request_lock.release()
+    # No deferred task survives the timeout; a new explicit command still works.
+    await asyncio.sleep(0)
+    assert not session.urls
+    await api.async_write("Paused", 0)
+    assert session.urls == ["http://192.0.2.10/write/Paused=0"]
+
+
+async def test_cancelling_queued_command_does_not_release_another_request_lock() -> (
+    None
+):
+    session = FakeSession((FakeResponse("OK"),))
+    api = V2CTrydanApi(session, "192.0.2.10")
+    await api._request_lock.acquire()
+    command = asyncio.create_task(api.async_write("Paused", 1))
+    await asyncio.sleep(0)
+    command.cancel()
+    try:
+        with pytest.raises(asyncio.CancelledError):
+            await command
+        assert api._request_lock.locked()
+        assert not session.urls
+    finally:
+        api._request_lock.release()
+
+
 @pytest.fixture(autouse=True)
 def immediate_retries(monkeypatch: pytest.MonkeyPatch) -> None:
     """Avoid network backoff without replacing asyncio scheduling itself."""

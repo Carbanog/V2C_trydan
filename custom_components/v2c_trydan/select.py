@@ -9,8 +9,10 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
+from .api import V2CTrydanError
 from .coordinator import V2CTrydanDataUpdateCoordinator
-from .entity import V2CTrydanEntity
+from .entity import SchedulingEntity, V2CTrydanEntity
+from .scheduling.policy import MODES
 from .utils import value_as_int
 
 DYNAMIC_POWER_MODE_OPTIONS: tuple[str, ...] = (
@@ -31,6 +33,8 @@ async def async_setup_entry(
     """Set up the dynamic power mode selector."""
     coordinator: V2CTrydanDataUpdateCoordinator = config_entry.runtime_data
     async_add_entities((DynamicPowerModeSelect(coordinator),))
+    if coordinator.scheduler is not None:
+        async_add_entities((ChargingScheduleModeSelect(coordinator),))
 
 
 class DynamicPowerModeSelect(V2CTrydanEntity, SelectEntity):
@@ -62,3 +66,23 @@ class DynamicPowerModeSelect(V2CTrydanEntity, SelectEntity):
                 f"Unsupported dynamic power mode: {option}"
             ) from err
         await self._async_write("DynamicPowerMode", mode)
+
+
+class ChargingScheduleModeSelect(SchedulingEntity, SelectEntity):
+    """Optional local policy; it is not a firmware ChargeMode control."""
+
+    _attr_translation_key = "scheduling_mode"
+    _attr_options = MODES
+
+    def __init__(self, coordinator: V2CTrydanDataUpdateCoordinator) -> None:
+        super().__init__(coordinator, "scheduling_mode")
+
+    @property
+    def current_option(self) -> str:
+        return self.scheduler.controller.policy.state.mode
+
+    async def async_select_option(self, option: str) -> None:
+        try:
+            await self.scheduler.async_set_mode(option)
+        except (V2CTrydanError, ValueError) as err:
+            raise HomeAssistantError(str(err)) from err

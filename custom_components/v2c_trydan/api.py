@@ -7,7 +7,8 @@ import errno
 import json
 import logging
 import re
-from collections.abc import Mapping
+from collections.abc import AsyncIterator, Mapping
+from contextlib import asynccontextmanager
 from dataclasses import asdict, dataclass
 from time import monotonic
 from typing import Any
@@ -21,6 +22,7 @@ from aiohttp import (
 )
 
 from .const import (
+    COMMAND_QUEUE_TIMEOUT,
     COMMAND_TIMEOUT,
     READ_RETRY_DELAY,
     READ_RETRY_LIMIT,
@@ -202,15 +204,21 @@ class V2CTrydanApi:
         url_host = f"[{self.host}]" if ":" in self.host else self.host
         return f"http://{url_host}"
 
-    async def async_get_realtime_data(self) -> dict[str, Any]:
-        """Fetch all charger data, retrying transient connection failures."""
+    async def async_get_realtime_data(
+        self, *, attempts: int | None = None, request_timeout: float | None = None
+    ) -> dict[str, Any]:
+        """Fetch data; setup probes may opt into a shorter policy than normal polls."""
+        retry_limit = READ_RETRY_LIMIT if attempts is None else attempts
+        read_timeout = READ_TIMEOUT if request_timeout is None else request_timeout
+        if retry_limit < 1 or read_timeout <= 0:
+            raise ValueError("Read attempts and timeout must be positive")
         async with self._request_lock:
             started = monotonic()
-            for attempt in range(1, READ_RETRY_LIMIT + 1):
+            for attempt in range(1, retry_limit + 1):
                 try:
                     async with self._session.get(
                         f"{self.base_url}/RealTimeData",
-                        timeout=ClientTimeout(total=READ_TIMEOUT),
+                        timeout=ClientTimeout(total=read_timeout),
                         allow_redirects=False,
                     ) as response:
                         self._raise_for_status(response)
@@ -241,13 +249,13 @@ class V2CTrydanApi:
                     _LOGGER.debug(
                         "RealTimeData attempt %s/%s failed after %.1f seconds: %s",
                         attempt,
-                        READ_RETRY_LIMIT,
+                        retry_limit,
                         monotonic() - started,
                         _failure_reason(err),
                     )
                     if (
                         isinstance(err, V2CTrydanHttpError) and not err.retryable
-                    ) or attempt == READ_RETRY_LIMIT:
+                    ) or attempt == retry_limit:
                         result = self._record_read(started, attempt, err)
                         raise V2CTrydanConnectionError(
                             f"Read failed after {attempt} attempts in "
@@ -261,9 +269,24 @@ class V2CTrydanApi:
 
         raise AssertionError("Read retry limit must be positive")
 
+    @asynccontextmanager
+    async def _async_command_slot(self) -> AsyncIterator[None]:
+        """Bound queue time separately from an ambiguously acknowledged write."""
+        try:
+            async with asyncio.timeout(COMMAND_QUEUE_TIMEOUT):
+                await self._request_lock.acquire()
+        except TimeoutError as err:
+            raise V2CTrydanConnectionError(
+                "Charger busy: command was not sent before the queue timeout"
+            ) from err
+        try:
+            yield
+        finally:
+            self._request_lock.release()
+
     async def async_write(self, key: str, value: int) -> None:
         """Set one charger value and validate the command response."""
-        async with self._request_lock:
+        async with self._async_command_slot():
             try:
                 async with self._session.get(
                     f"{self.base_url}/write/{key}={value}",

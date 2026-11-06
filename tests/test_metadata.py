@@ -7,6 +7,7 @@ import json
 import re
 import struct
 from pathlib import Path
+from string import Formatter
 
 import pytest
 import yaml
@@ -93,6 +94,19 @@ def test_translation_files_have_the_same_keys(language: str) -> None:
             assert isinstance(value, str) and value.strip()
 
     assert_translated_text(translated)
+
+    def assert_placeholders_match(original: object, translation: object) -> None:
+        if isinstance(original, dict):
+            for key, value in original.items():
+                assert_placeholders_match(value, translation[key])
+        else:
+
+            def placeholders(value: str) -> set[str]:
+                return {field for _, field, _, _ in Formatter().parse(value) if field}
+
+            assert placeholders(original) == placeholders(translation)
+
+    assert_placeholders_match(english, translated)
 
 
 def test_service_translation_fields_match_service_metadata() -> None:
@@ -252,6 +266,13 @@ def test_manifest_version_matches_latest_changelog() -> None:
         if line.startswith("## ") and line != "## Unreleased"
     )
     assert manifest["version"] == latest_heading
+
+
+def test_supported_minimum_has_a_dedicated_ha_environment() -> None:
+    metadata = json.loads((ROOT / "hacs.json").read_text(encoding="utf-8"))
+    assert metadata["homeassistant"] == "2026.3.1"
+    minimum = (ROOT / "requirements_ha_min_test.txt").read_text(encoding="utf-8")
+    assert "pytest-homeassistant-custom-component==0.13.317" in minimum
 
 
 def test_retired_light_platform_is_not_loaded() -> None:

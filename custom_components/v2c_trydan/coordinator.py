@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import logging
 from time import monotonic
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
@@ -17,6 +18,9 @@ from homeassistant.helpers.update_coordinator import (
 from .api import V2CTrydanApi, V2CTrydanError, device_identifier
 from .const import DOMAIN, POLL_INTERVAL, SESSION_ACTIVE_TIME_KEY, SESSION_ENERGY_KEY
 from .session import SessionState, SessionTracker
+
+if TYPE_CHECKING:
+    from .scheduling.ha import SchedulingManager
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -41,7 +45,10 @@ class V2CTrydanDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     ) -> None:
         """Initialize the coordinator."""
         self.api = api
+        self.scheduler: SchedulingManager | None = None
         self.host = api.host
+        self._entry_id = entry.entry_id
+        self._last_firmware_version: str | None = None
         self.device_id = (
             entry.unique_id
             if entry.unique_id and entry.unique_id != api.host
@@ -71,6 +78,11 @@ class V2CTrydanDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._session_tracker = SessionTracker(SessionState.from_dict(stored_state))
         self._last_session_save = monotonic()
 
+    @property
+    def cable_connected(self) -> bool | None:
+        """Expose the same last reliable physical connection as the session tracker."""
+        return self._session_tracker.state.cable_connected
+
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch the complete realtime payload."""
         try:
@@ -83,6 +95,23 @@ class V2CTrydanDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if not self._device_id_initialized:
             self.device_id = device_identifier(data, self.device_id)
             self._device_id_initialized = True
+
+        firmware = data.get("FirmwareVersion")
+        if (
+            isinstance(firmware, str)
+            and firmware
+            and firmware != self._last_firmware_version
+        ):
+            # Update metadata only on a change, without another charger request
+            # or overwriting user-selected names and other device properties.
+            registry = dr.async_get(self.hass)
+            for device in dr.async_entries_for_config_entry(registry, self._entry_id):
+                if (
+                    DOMAIN,
+                    self.device_id,
+                ) in device.identifiers and device.sw_version != firmware:
+                    registry.async_update_device(device.id, sw_version=firmware)
+            self._last_firmware_version = firmware
 
         session_update = self._session_tracker.update(
             data.get("ChargeState"),

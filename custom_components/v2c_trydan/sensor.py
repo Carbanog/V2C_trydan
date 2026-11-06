@@ -26,8 +26,9 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .const import SESSION_ACTIVE_TIME_KEY, SESSION_ENERGY_KEY
 from .coordinator import V2CTrydanDataUpdateCoordinator
-from .entity import V2CTrydanEntity
-from .utils import value_as_float, value_as_int
+from .entity import SchedulingEntity, V2CTrydanEntity
+from .scheduling.policy import PERIODS
+from .utils import value_as_float
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -46,9 +47,21 @@ def _rounded_float(value: Any) -> int | None:
 
 def _integer_string(value: Any) -> str | None:
     """Return the integer value formatted for an enum sensor."""
-    converted = value_as_int(value)
-    return str(converted) if converted is not None else None
+    converted = value_as_float(value)
+    return (
+        str(int(converted))
+        if converted is not None and converted.is_integer()
+        else None
+    )
 
+
+def _enum_value(value: Any, options: list[str] | tuple[str, ...]) -> str | None:
+    """Keep unsupported firmware codes unknown instead of breaking HA state writes."""
+    converted = _integer_string(value)
+    return converted if converted in options else None
+
+
+_CHARGE_STATES = tuple(str(state) for state in range(7))
 
 _METER_ERROR_CODES: tuple[str, ...] = tuple(
     str(code)
@@ -132,8 +145,8 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         key="charge_state",
         translation_key="chargestate",
         device_class=SensorDeviceClass.ENUM,
-        options=[str(state) for state in range(7)],
-        value_fn=lambda data: _integer_string(data.get("ChargeState")),
+        options=list(_CHARGE_STATES),
+        value_fn=lambda data: _enum_value(data.get("ChargeState"), _CHARGE_STATES),
     ),
     V2CSensorEntityDescription(
         key="charge_time",
@@ -292,7 +305,7 @@ TRYDAN_SENSORS: tuple[V2CSensorEntityDescription, ...] = (
         entity_registry_enabled_default=False,
         device_class=SensorDeviceClass.ENUM,
         options=list(_METER_ERROR_CODES),
-        value_fn=lambda data: _integer_string(data.get("SlaveError")),
+        value_fn=lambda data: _enum_value(data.get("SlaveError"), _METER_ERROR_CODES),
     ),
     V2CSensorEntityDescription(
         key="timer",
@@ -363,6 +376,13 @@ async def async_setup_entry(
         if description.required_key is None
         or description.required_key in coordinator.data
     )
+    if coordinator.scheduler is not None:
+        async_add_entities(
+            (
+                SchedulingStatusSensor(coordinator, "scheduling_period"),
+                SchedulingStatusSensor(coordinator, "scheduling_status"),
+            )
+        )
 
 
 class V2CTrydanSensor(V2CTrydanEntity, SensorEntity):
@@ -383,3 +403,43 @@ class V2CTrydanSensor(V2CTrydanEntity, SensorEntity):
     def native_value(self) -> Any:
         """Return the state of the sensor."""
         return self.entity_description.value_fn(self.coordinator.data)
+
+
+class SchedulingStatusSensor(SchedulingEntity, SensorEntity):
+    """Expose the tariff and reason, not extra hardware telemetry."""
+
+    _attr_device_class = SensorDeviceClass.ENUM
+
+    def __init__(self, coordinator, key: str) -> None:
+        super().__init__(coordinator, key)
+        self._attr_translation_key = key
+        self._key = key
+        self._attr_options = (
+            [*PERIODS, "unassigned"]
+            if key == "scheduling_period"
+            else [
+                "disabled",
+                "unavailable",
+                "disconnected",
+                "charger_fault",
+                "incomplete_data",
+                "command_unconfirmed",
+                "locked",
+                "device_timer",
+                "manual_pause",
+                "charge_now",
+                "waiting_schedule",
+                "charging_allowed",
+            ]
+        )
+
+    @property
+    def native_value(self) -> str:
+        decision = self.scheduler.controller.decision
+        return decision.period if self._key == "scheduling_period" else decision.reason
+
+    @property
+    def extra_state_attributes(self) -> dict[str, str | None] | None:
+        if self._key != "scheduling_status":
+            return None
+        return {"next_allowed_start": self.scheduler.next_allowed_start}
