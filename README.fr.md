@@ -175,7 +175,7 @@ inaperçu. La prochaine plage n’est pas une garantie de démarrage.
 Ne combinez pas cette politique avec OCPP/Octopus ou d’autres horaires de charge.
 Gardez la régulation dynamique et les protections électriques actives.
 
-[Guide détaillé de la bêta en anglais](https://github.com/Carbanog/V2C_trydan/blob/v1.4.0/docs/scheduling.md).
+[Guide détaillé en anglais](https://github.com/Carbanog/V2C_trydan/blob/v1.4.0/docs/scheduling.md).
 Vérifiez les limites horaires et la pause manuelle sur votre installation. Cette
 publication ne prétend pas avoir effectué ces essais physiques supervisés.
 

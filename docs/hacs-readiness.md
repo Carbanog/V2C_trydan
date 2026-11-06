@@ -5,7 +5,7 @@ included in the default catalog is a separate process, not an automatic result
 of using HACS badges or passing CI. No catalog submission is authorized by this
 document. Review the live requirements again before submitting.
 
-## Baseline checked on 2026-10-31
+## Release checks — 2026-11-06
 
 * Public, non-archived GitHub repository, enabled issues, description and topics.
 * One runtime integration under `custom_components/v2c_trydan/`; valid manifest

@@ -169,7 +169,7 @@ The next window previews tariff permission, not a guaranteed vehicle start.
 Do not combine with OCPP/Octopus or other charging schedules. Leave dynamic
 regulation and electrical protections enabled.
 
-[Full beta setup, physical-test and rollback guide](https://github.com/Carbanog/V2C_trydan/blob/v1.4.0/docs/scheduling.md).
+[Full setup, physical-test and rollback guide](https://github.com/Carbanog/V2C_trydan/blob/v1.4.0/docs/scheduling.md).
 Physical tariff-boundary and manual-override checks remain necessary in your
 installation. No supervised physical verification is claimed by this release.
 

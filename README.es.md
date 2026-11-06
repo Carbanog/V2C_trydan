@@ -174,7 +174,7 @@ inadvertido. La próxima franja es una previsión, no una garantía de arranque.
 No combines esta política con OCPP/Octopus u otros horarios de carga, y mantén
 activas la regulación dinámica y las protecciones.
 
-[Guía completa de configuración, pruebas y recuperación de la beta](https://github.com/Carbanog/V2C_trydan/blob/v1.4.0/docs/scheduling.es.md).
+[Guía completa de configuración, pruebas y recuperación](https://github.com/Carbanog/V2C_trydan/blob/v1.4.0/docs/scheduling.es.md).
 Comprueba físicamente los límites horarios y la pausa manual en tu instalación.
 Esta publicación no afirma que se haya realizado esa verificación supervisada.
 
