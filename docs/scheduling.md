@@ -1,8 +1,8 @@
-# Optional charging schedules — 1.4.0
+# Optional charging schedules — 1.4.1
 
-Included in stable **1.4.0**, disabled by default. Requires HA **2026.3.1+**.
+Included in stable **1.4.1**, disabled by default. Requires HA **2026.3.1+**.
 It does not update charger firmware or change dynamic load protection. Back up,
-download 1.4.0 in HACS and restart. Supervise the first real charging transitions;
+download 1.4.1 in HACS and restart. Supervise the first real charging transitions;
 automated tests do not certify physical behavior in your installation. Never let
 two HA instances send commands to the same charger.
 
@@ -47,6 +47,19 @@ it may originate from a user, another controller or firmware. No automatic
 assumption is made about who requested it.
 
 ## Boundaries and failures
+
+Since 1.4.1, a command proven to expire in the queue **before sending** clears
+that attempt. A subsequent data/clock evaluation may issue a new command only if
+current mode, tariff and safety conditions still require it. The expired command
+never executes later, and there is no immediate retry loop. A sent command with
+a lost acknowledgement remains uncertain and is not blindly retried.
+
+An unresolved checkpoint already stored by 1.4.0 cannot be classified safely
+after the fact. Inspect the charger and explicitly select a mode once if already
+blocked; updating does not discard an uncertain command automatically.
+
+Paused actively maintains the pause: resuming from the V2C app may be reverted by
+HA. Disable this module to hand control back to another system.
 
 Only `Paused` is written. The policy never disables `Dynamic`, changes current,
 unlocks `Locked` or turns off `Timer`. Locks, active device timers, faults and

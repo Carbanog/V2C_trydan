@@ -7,6 +7,7 @@ from collections.abc import Awaitable, Callable
 from datetime import datetime
 from typing import Any
 
+from ..api import V2CTrydanCommandNotSentError
 from .policy import ChargingPolicy, Decision, SchedulerState
 
 
@@ -15,8 +16,9 @@ class SchedulingController:
 
     An acknowledgement can be lost after execution. Pending intent therefore
     survives exceptions/restarts and is reconciled with a fresh read, never
-    blindly retried. An explicit user mode selection can clear an unresolved
-    command, after the user has reviewed the charger state.
+    blindly retried. A proven pre-send queue expiry clears the checkpoint so a
+    later evaluation can retry using current data and permission. An explicit
+    user mode selection can clear an unresolved, potentially executed command.
     """
 
     def __init__(
@@ -64,12 +66,20 @@ class SchedulingController:
             await self._async_save_if_changed()
             if not self._active:
                 return
-            # Keep the pending checkpoint on any write failure or cancellation.
-            # A follow-up read may still prove that the command was applied.
+            # Retain uncertain writes/cancellations: the charger may have acted.
+            # Only the API's proven pre-send outcome is safe to evaluate again.
             try:
                 await self.write_pause(pause)
+            except V2CTrydanCommandNotSentError:
+                self.policy.state.pending_pause = None
+                self.decision = self.policy.evaluate(self.now(), self.snapshot())
+                await self._async_save_if_changed()
+                raise
             finally:
-                self.decision = Decision(self.decision.period, "command_unconfirmed")
+                if self.policy.state.pending_pause is not None:
+                    self.decision = Decision(
+                        self.decision.period, "command_unconfirmed"
+                    )
             if not self._active:
                 return
             await self.refresh()

@@ -1,12 +1,12 @@
-# Programación de carga — 1.4.0
+# Programación de carga — 1.4.1
 
-Función opcional de **1.4.0**, desactivada por defecto; requiere HA **2026.3.1+**.
+Función opcional de **1.4.1**, desactivada por defecto; requiere HA **2026.3.1+**.
 No actualiza el firmware del cargador ni cambia la carga dinámica.
 
 ## Instalación y primera comprobación
 
 1. Haz una copia de seguridad de HA.
-2. Abre la integración en HACS y descarga **1.4.0**.
+2. Abre la integración en HACS y descarga **1.4.1**.
 3. Reinicia HA. Comprueba la versión y que tus entidades/sesiones siguen presentes.
 4. Supervisa los primeros cambios reales de horario. Las pruebas automatizadas
    no certifican el comportamiento físico en tu instalación. Conserva 1.3.3 y
@@ -81,6 +81,20 @@ hay que seleccionar un modo para reanudar. No atribuye automáticamente el motiv
 a una persona concreta: también podría ser otro controlador o el propio firmware.
 
 ## Límites y fallos
+
+Desde 1.4.1, si una orden caduca en cola **antes de enviarse**, se descarta ese
+intento y el programador vuelve a evaluar en una actualización posterior de datos
+o reloj. Solo emite una nueva orden si el modo, horario y protecciones actuales
+lo permiten; no ejecuta después la orden caducada ni repite en un bucle inmediato.
+Esto no se aplica a una orden enviada con confirmación perdida: sigue siendo
+incierta y no se reintenta a ciegas.
+
+Si al actualizar ya había una «Orden sin confirmar» de 1.4.0, revisa el estado
+real del cargador y selecciona explícitamente un modo para desbloquearla. No se
+borra automáticamente: su origen no puede reconstruirse con seguridad.
+
+El modo Pausado mantiene la pausa: si reanudas desde la app V2C, HA puede volver
+a pausarla. Deshabilita este módulo si quieres devolver el control a otro sistema.
 
 La función solo escribe `Paused`, no `Dynamic`, intensidades, `Locked` o `Timer`.
 Si detecta el candado, un temporizador V2C activo, un fallo o datos incompletos,

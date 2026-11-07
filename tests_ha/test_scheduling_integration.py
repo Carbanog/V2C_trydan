@@ -10,7 +10,11 @@ from homeassistant.config_entries import ConfigEntryState
 from homeassistant.helpers import issue_registry as ir
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.v2c_trydan.api import V2CTrydanApi, V2CTrydanConnectionError
+from custom_components.v2c_trydan.api import (
+    V2CTrydanApi,
+    V2CTrydanCommandNotSentError,
+    V2CTrydanConnectionError,
+)
 from custom_components.v2c_trydan.scheduling.policy import WeeklySchedule
 from custom_components.v2c_trydan.scheduling.presentation import async_block_choices
 
@@ -91,6 +95,45 @@ async def test_disabled_has_no_scheduler_entities_or_commands(hass):
         assert not any(
             "scheduling" in state.entity_id for state in hass.states.async_all()
         )
+
+
+async def test_not_sent_command_retries_on_next_event_without_false_repair(hass):
+    configured = options()
+    configured["scheduling"]["allowed"] = []
+    async for entry, data, command in setup_charger(hass, configured):
+        coordinator = entry.runtime_data
+        manager = coordinator.scheduler
+        # Confirm the initial Paused state, then select Auto outside any allowed
+        # tariff. Starting from paused requires no command at this point.
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+        await manager.async_set_mode("automatic")
+        count = command.await_count
+        command.side_effect = V2CTrydanCommandNotSentError("test busy connection")
+        data["Paused"] = 0
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+        assert command.await_count == count + 1
+        assert manager.controller.policy.state.pending_pause is None
+        assert manager.controller.policy.state.mode == "automatic"
+        assert manager.controller.decision.reason == "waiting_schedule"
+        assert manager._alert.started is None
+        registry = ir.async_get(hass)
+        assert registry.async_get_issue(DOMAIN, manager._issue_id) is None
+
+        async def confirmed_write(key, value, target=data):
+            target[key] = value
+
+        command.side_effect = confirmed_write
+        # Simulate a subsequent clock notification, not a manual mode selection.
+        manager._request_evaluation()
+        await hass.async_block_till_done()
+        assert command.await_count == count + 2
+        assert data["Paused"] == 1
+        await coordinator.async_refresh()
+        await hass.async_block_till_done()
+        assert manager.controller.policy.state.pending_pause is None
+        assert registry.async_get_issue(DOMAIN, manager._issue_id) is None
 
 
 async def test_enabled_entities_pause_override_and_unload(hass):

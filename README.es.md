@@ -30,7 +30,7 @@ Paneles reales de ejemplo. Las entidades siguen el idioma configurado en HA.
 
 | Canal | Versión | Uso |
 | --- | --- | --- |
-| Estable | [1.4.0](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.4.0) | Monitorización, controles, sesiones y programación opcional. |
+| Estable | [1.4.1](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.4.1) | Monitorización, controles, sesiones y programación opcional. |
 | Estable anterior | [1.3.3](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.3.3) | Recuperación sin programación horaria. |
 
 La programación está desactivada por defecto. Las pruebas automáticas no certifican
@@ -78,7 +78,7 @@ o posterior para mostrarse mediante la API de marcas.
 1. Haz una copia de seguridad de HA.
 2. Usa el botón o añade `https://github.com/Carbanog/V2C_trydan` en HACS como
    repositorio personalizado de tipo **Integración**.
-3. Descarga la estable **1.4.0** y reinicia HA.
+3. Descarga la estable **1.4.1** y reinicia HA.
 4. Ve a **Ajustes → Dispositivos y servicios → Añadir integración → V2C Trydan**.
 5. Introduce la IP local del cargador.
 
@@ -88,6 +88,11 @@ No instales a la vez dos componentes que utilicen el dominio `v2c_trydan`.
 Evita controladores o automatizaciones que envíen órdenes contradictorias.
 
 ## Actualizar, probar una beta y volver atrás
+
+**Corrección 1.4.1:** el programador se recupera de órdenes que no llegaron a
+enviarse por cola ocupada y vuelve a decidir con el siguiente evento de datos/reloj.
+No reintenta órdenes de ejecución incierta. Si ya aparecía «Orden sin confirmar»
+antes de actualizar, revisa el cargador y selecciona explícitamente un modo una vez.
 
 El alta/cambio de IP hace una única petición HTTP con timeout de 10 segundos.
 El sondeo conserva tres intentos de 20 segundos. Una orden que espere más de
@@ -174,7 +179,7 @@ inadvertido. La próxima franja es una previsión, no una garantía de arranque.
 No combines esta política con OCPP/Octopus u otros horarios de carga, y mantén
 activas la regulación dinámica y las protecciones.
 
-[Guía completa de configuración, pruebas y recuperación](https://github.com/Carbanog/V2C_trydan/blob/v1.4.0/docs/scheduling.es.md).
+[Guía completa de configuración, pruebas y recuperación](https://github.com/Carbanog/V2C_trydan/blob/v1.4.1/docs/scheduling.es.md).
 Comprueba físicamente los límites horarios y la pausa manual en tu instalación.
 Esta publicación no afirma que se haya realizado esa verificación supervisada.
 
@@ -185,7 +190,7 @@ No se instalan ni activan automáticamente.
 
 **Resumen y avisos de sesión**
 
-[![Importar en Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
+[![Importar en Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.1%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
 
 [Ver YAML](blueprints/automation/session_summary.yaml). Avisa al comenzar y después
 de desconectar, sin duplicar avisos por cada pausa. Sus acciones pueden usar
@@ -206,7 +211,7 @@ data:
 
 **Alerta de potencia elevada**
 
-[![Importar en Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.0%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
+[![Importar en Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.1%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
 
 [Ver YAML](blueprints/automation/high_power_alert.yaml). Ejecuta acciones tras superar
 un umbral durante el tiempo elegido; permite usar `measured_power`.
