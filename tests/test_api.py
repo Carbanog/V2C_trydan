@@ -16,6 +16,7 @@ from custom_components.v2c_trydan import api as api_module
 from custom_components.v2c_trydan.api import (
     V2CTrydanApi,
     V2CTrydanCommandError,
+    V2CTrydanCommandNotSentError,
     V2CTrydanConnectionError,
     V2CTrydanInvalidResponseError,
     device_identifier,
@@ -54,7 +55,7 @@ async def test_queued_command_timeout_never_sends_later(monkeypatch) -> None:
     api = V2CTrydanApi(session, "192.0.2.10")
     await api._request_lock.acquire()
     try:
-        with pytest.raises(V2CTrydanConnectionError, match="command was not sent"):
+        with pytest.raises(V2CTrydanCommandNotSentError, match="command was not sent"):
             await api.async_write("Paused", 1)
         assert not session.urls
         assert api._request_lock.locked()

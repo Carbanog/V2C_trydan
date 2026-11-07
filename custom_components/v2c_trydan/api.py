@@ -47,6 +47,10 @@ class V2CTrydanConnectionError(V2CTrydanError):
     """Raised when the charger cannot be reached."""
 
 
+class V2CTrydanCommandNotSentError(V2CTrydanConnectionError):
+    """The command expired in the queue before any HTTP request was started."""
+
+
 class V2CTrydanHttpError(V2CTrydanConnectionError):
     """Preserve the status without exposing response bodies or request URLs."""
 
@@ -276,7 +280,7 @@ class V2CTrydanApi:
             async with asyncio.timeout(COMMAND_QUEUE_TIMEOUT):
                 await self._request_lock.acquire()
         except TimeoutError as err:
-            raise V2CTrydanConnectionError(
+            raise V2CTrydanCommandNotSentError(
                 "Charger busy: command was not sent before the queue timeout"
             ) from err
         try:

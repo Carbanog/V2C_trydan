@@ -2,6 +2,23 @@
 
 All notable changes to this project are documented here.
 
+## 1.4.1
+
+* Fix automatic scheduling becoming permanently blocked when a command expired
+  in the connection queue without being sent. A dedicated pre-send error clears
+  and persists that pending intent; a later data/clock evaluation can issue a new
+  command only if current mode, tariff and safety conditions still require it.
+* Keep the pending checkpoint and never blindly retry an uncertain write or a
+  lost acknowledgement. Checkpoint failures still prevent further writes.
+* Avoid immediate retry loops, unnecessary refreshes and misleading unconfirmed
+  command Repairs for a known-unsent command. Manual actions still report the error.
+* Add API/controller and real-HA regressions for recovery, persistence, changed
+  tariff permissions, ambiguous failures and safe retry after queue expiry.
+* Existing unresolved 1.4.0 checkpoints cannot be classified retrospectively;
+  inspect the charger and explicitly select a mode once if already blocked.
+* No session, options or entity migration; no new functionality. Supervised
+  physical scheduling checks remain necessary and are not claimed as performed.
+
 ## 1.4.0
 
 * Include optional weekly tariff scheduling in the stable release, disabled by

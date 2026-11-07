@@ -17,7 +17,7 @@ from homeassistant.helpers.event import async_track_time_change
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
 
-from ..api import V2CTrydanError
+from ..api import V2CTrydanCommandNotSentError, V2CTrydanError
 from ..const import DOMAIN
 from ..utils import cable_connected_from_charge_state
 from .alerts import CommandAlert
@@ -103,6 +103,13 @@ class SchedulingManager:
             self._dirty = False
             try:
                 await self.controller.async_evaluate()
+            except V2CTrydanCommandNotSentError:
+                # A fresh data/clock event can retry safely. Do not spin, refresh
+                # immediately, or emit a misleading lost-confirmation warning.
+                _LOGGER.debug(
+                    "Scheduled command was not sent while the connection was busy; "
+                    "will reconsider on the next data/clock update"
+                )
             except V2CTrydanError:
                 # The checkpoint retains the pending command. Do not repeatedly
                 # write or log the same failure on every data/clock notification.

@@ -8,6 +8,12 @@ from unittest.mock import AsyncMock
 
 import pytest
 
+from custom_components.v2c_trydan import api as api_module
+from custom_components.v2c_trydan.api import (
+    V2CTrydanApi,
+    V2CTrydanCommandNotSentError,
+    V2CTrydanConnectionError,
+)
 from custom_components.v2c_trydan.scheduling.alerts import CommandAlert
 from custom_components.v2c_trydan.scheduling.controller import SchedulingController
 from custom_components.v2c_trydan.scheduling.policy import (
@@ -16,6 +22,7 @@ from custom_components.v2c_trydan.scheduling.policy import (
     SchedulerState,
     WeeklySchedule,
 )
+from tests.test_api import FakeResponse, FakeSession
 
 MONDAY = datetime(2026, 11, 2, 7, 0)
 
@@ -246,6 +253,131 @@ async def test_controller_checkpoints_then_writes_once_and_confirms(runtime):
     assert controller.decision.reason == "charging_allowed"
     await controller.async_evaluate()
     assert writes == [False]
+
+
+@pytest.mark.parametrize("pause", [True, False])
+async def test_not_sent_intent_is_cleared_and_next_evaluation_retries_after_restore(
+    runtime, pause
+):
+    controller, data, writes, saves = runtime
+    data["Paused"] = int(not pause)
+    controller.now = lambda: MONDAY.replace(hour=9 if pause else 7)
+    controller.policy.set_mode("automatic", data)
+    successful_write = controller.write_pause
+    not_sent = AsyncMock(side_effect=V2CTrydanCommandNotSentError("not sent"))
+    controller.write_pause = not_sent
+    with pytest.raises(V2CTrydanCommandNotSentError):
+        await controller.async_evaluate()
+    not_sent.assert_awaited_once_with(pause)
+    controller.refresh.assert_not_awaited()
+    assert not writes
+    assert controller.policy.state.pending_pause is None
+    assert saves[-1]["pending_pause"] is None
+    assert controller.decision.reason != "command_unconfirmed"
+    # A restart uses the cleared durable state, not a stuck ambiguous command.
+    controller.restore(SchedulerState.from_dict(saves[-1]))
+    controller.write_pause = successful_write
+    await controller.async_evaluate()
+    assert writes == [pause]
+    assert controller.policy.state.mode == "automatic"
+    assert controller.policy.state.pending_pause is None
+
+
+async def test_not_sent_retry_rechecks_tariff_and_user_mode(runtime):
+    controller, data, writes, _saves = runtime
+    data["Paused"] = 0
+    controller.now = lambda: MONDAY.replace(hour=9)
+    controller.policy.set_mode("automatic", data)
+    successful_write = controller.write_pause
+    controller.write_pause = AsyncMock(side_effect=V2CTrydanCommandNotSentError("busy"))
+    with pytest.raises(V2CTrydanCommandNotSentError):
+        await controller.async_evaluate()
+    # Permission changed before the next event: do not resend the obsolete pause.
+    controller.now = lambda: MONDAY.replace(hour=7)
+    controller.write_pause = successful_write
+    await controller.async_evaluate()
+    assert not writes
+    assert controller.decision.reason == "charging_allowed"
+    await controller.async_evaluate("paused")
+    assert writes == [True]
+
+
+async def test_ambiguous_transport_failure_keeps_pending_intent(runtime):
+    controller, _data, _writes, saves = runtime
+    controller.write_pause = AsyncMock(
+        side_effect=V2CTrydanConnectionError("lost acknowledgement")
+    )
+    with pytest.raises(V2CTrydanConnectionError):
+        await controller.async_evaluate("automatic")
+    controller.restore(SchedulerState.from_dict(saves[-1]))
+    await controller.async_evaluate()
+    controller.write_pause.assert_awaited_once()
+    assert controller.policy.state.pending_pause is False
+    assert controller.decision.reason == "command_unconfirmed"
+
+
+async def test_failed_not_sent_checkpoint_prevents_retry_until_storage_recovers(
+    runtime,
+):
+    controller, data, writes, _saves = runtime
+    save = controller.save
+    successful_write = controller.write_pause
+    failed = False
+
+    async def not_sent(pause):
+        nonlocal failed
+        failed = True
+        raise V2CTrydanCommandNotSentError("busy")
+
+    async def unreliable_save(state):
+        if failed and state["pending_pause"] is None:
+            raise OSError("test storage failure")
+        await save(state)
+
+    controller.write_pause = not_sent
+    controller.save = unreliable_save
+    with pytest.raises(OSError):
+        await controller.async_evaluate("automatic")
+    controller.write_pause = successful_write
+    with pytest.raises(OSError):
+        await controller.async_evaluate()
+    assert not writes
+    controller.save = save
+    await controller.async_evaluate()
+    assert writes == [False]
+    assert data["Paused"] == 0
+
+
+async def test_real_api_queue_expiry_cannot_latch_automatic_scheduler(
+    runtime, monkeypatch
+):
+    controller, data, _writes, saves = runtime
+    monkeypatch.setattr(api_module, "COMMAND_QUEUE_TIMEOUT", 0.001)
+    session = FakeSession((FakeResponse("OK"),))
+    api = V2CTrydanApi(session, "192.0.2.10")
+    data["Paused"] = 0
+    controller.now = lambda: MONDAY.replace(hour=8)
+    controller.policy.set_mode("automatic", data)
+
+    async def write(pause):
+        await api.async_write("Paused", int(pause))
+        data["Paused"] = int(pause)
+
+    controller.write_pause = write
+    await api._request_lock.acquire()
+    try:
+        with pytest.raises(V2CTrydanCommandNotSentError):
+            await controller.async_evaluate()
+        assert not session.urls
+        assert saves[-1]["pending_pause"] is None
+    finally:
+        api._request_lock.release()
+    controller.now = lambda: MONDAY.replace(hour=8, minute=1)
+    await controller.async_evaluate()
+    assert session.urls == ["http://192.0.2.10/write/Paused=1"]
+    assert data["Paused"] == 1
+    assert controller.policy.state.mode == "automatic"
+    assert controller.policy.state.pending_pause is None
 
 
 async def test_lost_ack_is_not_blindly_retried_even_after_restart(runtime):
