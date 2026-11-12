@@ -273,6 +273,14 @@ Las comprobaciones incluyen Ruff, pytest, hassfest y HACS. CI añade
 pruebas con HA real y cargador simulado; no sustituyen pruebas físicas.
 La incorporación al catálogo HACS requiere una solicitud y revisión separadas.
 
+## Proyectos relacionados
+
+[quovadiskt/V2C_trydan](https://github.com/quovadiskt/V2C_trydan) es una alternativa
+independiente basada en la integración de Rain1971. Su enfoque es conservar los
+identificadores de entidad originales para las automatizaciones existentes.
+Ambos proyectos usan el dominio `v2c_trydan`: elige uno por instalación de Home
+Assistant en lugar de instalar los dos juntos.
+
 ## Licencia y créditos
 
 Proyecto independiente mantenido por [Carbanog](https://github.com/Carbanog),

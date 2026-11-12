@@ -282,6 +282,14 @@ Les contrôles incluent Ruff, pytest, hassfest et HACS. CI teste aussi
 le cycle HA réel avec une borne simulée ; cela ne remplace pas les essais physiques.
 L’inclusion dans le catalogue HACS nécessite une demande et une revue séparées.
 
+## Projets associés
+
+[quovadiskt/V2C_trydan](https://github.com/quovadiskt/V2C_trydan) est une alternative
+indépendante basée sur l’intégration de Rain1971. Elle vise à conserver les
+identifiants d’entité d’origine pour les automatisations existantes. Les deux
+projets utilisent le domaine `v2c_trydan` : choisissez-en un seul par installation
+de Home Assistant.
+
 ## Licence et crédits
 
 Projet indépendant maintenu par [Carbanog](https://github.com/Carbanog), sans

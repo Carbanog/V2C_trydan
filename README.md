@@ -272,6 +272,13 @@ Checks include Ruff, pytest, hassfest and HACS. CI also tests actual
 HA lifecycle with a mocked charger; this does not replace physical verification.
 Default HACS catalog inclusion requires a separate submission and review.
 
+## Related projects
+
+[quovadiskt/V2C_trydan](https://github.com/quovadiskt/V2C_trydan) is an independent
+alternative based on Rain1971's integration. It focuses on preserving the original
+entity IDs for existing automations. Both projects use the `v2c_trydan` domain;
+choose one per Home Assistant installation rather than installing both together.
+
 ## License and credits
 
 An independent project maintained by [Carbanog](https://github.com/Carbanog),
