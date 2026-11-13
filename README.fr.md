@@ -30,7 +30,7 @@ Exemples réels de tableaux de bord. Captures en espagnol ; les entités suivent
 
 | Canal | Version | Usage |
 | --- | --- | --- |
-| Stable | [1.4.1](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.4.1) | Suivi, commandes, sessions et programmation facultative. |
+| Stable | [1.4.2](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.4.2) | Suivi, commandes, sessions et programmation facultative. |
 | Stable précédente | [1.3.3](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.3.3) | Retour arrière sans programmation. |
 
 La programmation est désactivée par défaut. Les tests automatisés ne certifient
@@ -76,7 +76,7 @@ utilise l’API de marques disponible depuis HA 2026.3.
 1. Sauvegardez HA.
 2. Utilisez le bouton ou ajoutez `https://github.com/Carbanog/V2C_trydan` comme
    dépôt personnalisé de type **Intégration** dans HACS.
-3. Téléchargez la stable **1.4.1**, puis redémarrez HA.
+3. Téléchargez la stable **1.4.2**, puis redémarrez HA.
 4. Ouvrez **Paramètres → Appareils et services → Ajouter une intégration → V2C Trydan**.
 5. Saisissez l’adresse IP locale de la borne.
 
@@ -87,6 +87,11 @@ implémentations du domaine `v2c_trydan`. Évitez les contrôleurs concurrents
 envoyant des commandes contradictoires.
 
 ## Mises à jour, bêta et retour arrière
+
+**Correction 1.4.2 :** un débranchement confirmé efface la commande en attente
+de la connexion précédente. La décision est recalculée au rebranchement, pas
+lors d’une coupure réseau. Des indicateurs invalides signalent des données
+incomplètes et empêchent les commandes de pause ou de reprise.
 
 **Correction 1.4.1 :** après expiration en file avant tout envoi, le programmateur
 réévalue la décision lors d’une prochaine mise à jour des données ou de l’horloge.
@@ -180,7 +185,7 @@ inaperçu. La prochaine plage n’est pas une garantie de démarrage.
 Ne combinez pas cette politique avec OCPP/Octopus ou d’autres horaires de charge.
 Gardez la régulation dynamique et les protections électriques actives.
 
-[Guide détaillé en anglais](https://github.com/Carbanog/V2C_trydan/blob/v1.4.1/docs/scheduling.md).
+[Guide détaillé en anglais](https://github.com/Carbanog/V2C_trydan/blob/v1.4.2/docs/scheduling.md).
 Vérifiez les limites horaires et la pause manuelle sur votre installation. Cette
 publication ne prétend pas avoir effectué ces essais physiques supervisés.
 
@@ -196,7 +201,7 @@ Ils ne sont jamais installés ou activés automatiquement.
 
 **Résumé et notifications de session**
 
-[![Importer dans Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.1%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
+[![Importer dans Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.2%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
 
 [Voir le YAML](blueprints/automation/session_summary.yaml). Actions au démarrage et
 après débranchement, sans répéter chaque pause OCPP. Les actions de fin disposent
@@ -213,7 +218,7 @@ data:
 
 **Alerte de puissance élevée**
 
-[![Importer dans Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.1%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
+[![Importer dans Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.2%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
 
 [Voir le YAML](blueprints/automation/high_power_alert.yaml). Déclenche les actions
 après dépassement d’un seuil pendant la durée choisie ; fournit `measured_power`.

@@ -200,6 +200,9 @@ class ChargingPolicy:
             return Decision(period, "unavailable")
         connected = cable_connected_from_charge_state(data.get("ChargeState"))
         if connected is False:
+            # A confirmed unplug ends the scope of an uncertain command. Keep
+            # last_paused so an external pause can still be detected on reconnect.
+            self.state.pending_pause = None
             if self.state.mode == "charge_now" and self.state.force_connected:
                 self.state.mode = "automatic"
                 self.state.force_connected = False

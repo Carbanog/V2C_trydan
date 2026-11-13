@@ -201,9 +201,11 @@ def test_external_pause_latches_until_an_explicit_mode_selection():
     assert policy.evaluate(MONDAY, snapshot(Paused=1)).pause is False
 
 
-def test_unplug_does_not_erase_evidence_of_a_new_external_pause():
+@pytest.mark.parametrize("pending", [None, True])
+def test_unplug_does_not_erase_evidence_of_a_new_external_pause(pending):
     policy = ChargingPolicy(schedule(), SchedulerState(mode="automatic"))
     policy.evaluate(MONDAY, snapshot())
+    policy.state.pending_pause = pending
     policy.evaluate(MONDAY, snapshot(ChargeState=0))
     policy.evaluate(MONDAY, snapshot(Paused=1))
     assert policy.state.mode == "paused"
@@ -392,6 +394,55 @@ async def test_lost_ack_is_not_blindly_retried_even_after_restart(runtime):
     data["Paused"] = 0
     await controller.async_evaluate()
     assert controller.decision.reason == "charging_allowed"
+
+
+@pytest.mark.parametrize("pause", [True, False])
+async def test_unplug_clears_old_intent_and_reconnect_uses_new_tariff(runtime, pause):
+    controller, data, writes, saves = runtime
+    data["Paused"] = int(not pause)
+    controller.now = lambda: MONDAY.replace(hour=9 if pause else 7)
+    successful_write = controller.write_pause
+    uncertain_write = AsyncMock(side_effect=TimeoutError)
+    controller.write_pause = uncertain_write
+    with pytest.raises(TimeoutError):
+        await controller.async_evaluate("automatic")
+
+    connected_snapshot = controller.snapshot
+    controller.snapshot = lambda: None
+    await controller.async_evaluate()
+    assert controller.policy.state.pending_pause is pause
+    controller.snapshot = connected_snapshot
+    data["ChargeState"] = 4
+    await controller.async_evaluate()
+    assert controller.policy.state.pending_pause is pause
+
+    data["ChargeState"] = 0
+    await controller.async_evaluate()
+    assert controller.decision.reason == "disconnected"
+    assert saves[-1]["pending_pause"] is None
+    uncertain_write.assert_awaited_once_with(pause)
+
+    controller.restore(SchedulerState.from_dict(saves[-1]))
+    controller.write_pause = successful_write
+    data["ChargeState"] = 1
+    await controller.async_evaluate()
+    assert writes == [pause]
+    assert controller.policy.state.pending_pause is None
+    assert controller.policy.state.mode == "automatic"
+
+
+@pytest.mark.parametrize(
+    "field,value", [("Paused", 2), ("Locked", -1), ("Timer", float("nan"))]
+)
+@pytest.mark.parametrize("hour,paused", [(7, 1), (9, 0)])
+def test_invalid_scheduling_flags_never_authorize_writes(field, value, hour, paused):
+    data = snapshot(Paused=paused)
+    data[field] = value
+    policy = ChargingPolicy(schedule(), SchedulerState(mode="automatic"))
+    result = policy.evaluate(MONDAY.replace(hour=hour), data)
+    assert result.reason == "incomplete_data"
+    assert result.pause is None
+    assert policy.state.last_paused is None
 
 
 async def test_failed_checkpoint_prevents_any_command(runtime):

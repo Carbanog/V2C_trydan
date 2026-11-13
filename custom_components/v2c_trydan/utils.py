@@ -9,8 +9,10 @@ from .const import MAX_INTENSITY, MIN_INTENSITY
 
 
 def value_as_int(value: Any) -> int | None:
-    """Return an integer representation of a charger value."""
-    if value is None or isinstance(value, bool):
+    """Convert an integral charger value without truncating fractional states."""
+    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+        return None
+    if isinstance(value, float) and not value.is_integer():
         return None
     try:
         return int(value)
@@ -34,7 +36,7 @@ def value_as_bool(value: Any) -> bool | None:
     if isinstance(value, bool):
         return value
     if isinstance(value, (int, float)):
-        return bool(value)
+        return bool(value) if value in (0, 1) else None
     if isinstance(value, str):
         normalized = value.strip().lower()
         if normalized in {"1", "true", "on"}:

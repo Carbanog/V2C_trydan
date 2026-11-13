@@ -1,12 +1,12 @@
-# Programación de carga — 1.4.1
+# Programación de carga — 1.4.2
 
-Función opcional de **1.4.1**, desactivada por defecto; requiere HA **2026.3.1+**.
+Función opcional de **1.4.2**, desactivada por defecto; requiere HA **2026.3.1+**.
 No actualiza el firmware del cargador ni cambia la carga dinámica.
 
 ## Instalación y primera comprobación
 
 1. Haz una copia de seguridad de HA.
-2. Abre la integración en HACS y descarga **1.4.1**.
+2. Abre la integración en HACS y descarga **1.4.2**.
 3. Reinicia HA. Comprueba la versión y que tus entidades/sesiones siguen presentes.
 4. Supervisa los primeros cambios reales de horario. Las pruebas automatizadas
    no certifican el comportamiento físico en tu instalación. Conserva 1.3.3 y
@@ -81,6 +81,13 @@ hay que seleccionar un modo para reanudar. No atribuye automáticamente el motiv
 a una persona concreta: también podría ser otro controlador o el propio firmware.
 
 ## Límites y fallos
+
+Desde 1.4.2, un desenchufado confirmado cierra la orden pendiente de esa conexión.
+Al reconectar se vuelve a decidir con los datos actuales, sin repetir la orden
+anterior. Reinicios, fallos y pérdidas de red no cuentan como desenchufado. Se
+conserva la detección de pausas externas. Los indicadores de pausa, bloqueo o
+temporizador inválidos se tratan como datos incompletos y no permiten enviar
+órdenes; comprueba el estado real del cargador en ese caso.
 
 Desde 1.4.1, si una orden caduca en cola **antes de enviarse**, se descarta ese
 intento y el programador vuelve a evaluar en una actualización posterior de datos
