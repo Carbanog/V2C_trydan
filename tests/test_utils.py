@@ -55,6 +55,21 @@ def test_value_as_bool_handles_numeric_strings() -> None:
     assert value_as_bool("invalid") is None
 
 
+@pytest.mark.parametrize("value", [2, -1, 0.5, float("nan"), float("inf"), "2"])
+def test_value_as_bool_rejects_non_binary_flags(value):
+    assert value_as_bool(value) is None
+
+
+@pytest.mark.parametrize("value", [0, 1, 0.0, 1.0, True, False, "on", "off"])
+def test_value_as_bool_preserves_valid_flags(value):
+    assert value_as_bool(value) is (value in (1, "on"))
+
+
+@pytest.mark.parametrize("value", [1.9, -1.9, "1.9", float("nan")])
+def test_value_as_int_never_truncates_invalid_states(value):
+    assert value_as_int(value) is None
+
+
 def test_numeric_conversion_rejects_bool_and_invalid_values() -> None:
     """Invalid numeric values remain unknown instead of being fabricated."""
     assert value_as_int("16") == 16

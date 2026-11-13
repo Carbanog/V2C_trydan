@@ -1,8 +1,8 @@
-# Optional charging schedules — 1.4.1
+# Optional charging schedules — 1.4.2
 
-Included in stable **1.4.1**, disabled by default. Requires HA **2026.3.1+**.
+Included in stable **1.4.2**, disabled by default. Requires HA **2026.3.1+**.
 It does not update charger firmware or change dynamic load protection. Back up,
-download 1.4.1 in HACS and restart. Supervise the first real charging transitions;
+download 1.4.2 in HACS and restart. Supervise the first real charging transitions;
 automated tests do not certify physical behavior in your installation. Never let
 two HA instances send commands to the same charger.
 
@@ -47,6 +47,12 @@ it may originate from a user, another controller or firmware. No automatic
 assumption is made about who requested it.
 
 ## Boundaries and failures
+
+Since 1.4.2, a confirmed unplug ends the previous connection's pending command.
+Reconnect uses the current data and policy, not a replay of that command.
+Restarts, faults and network loss are not evidence of unplugging. External
+pause detection is preserved. Invalid pause, lock or timer flags report
+incomplete data and block writes; check the charger's actual state.
 
 Since 1.4.1, a command proven to expire in the queue **before sending** clears
 that attempt. A subsequent data/clock evaluation may issue a new command only if

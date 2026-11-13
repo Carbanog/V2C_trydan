@@ -263,8 +263,9 @@ async def test_summary_uses_translations_in_each_supported_language(
     assert result["description_placeholders"]["unassigned_minutes"] == "0"
 
 
-async def test_persistent_repair_alert_is_deduplicated_and_clears_on_confirmation(hass):
-    async for entry, data, _command in setup_charger(hass, options()):
+@pytest.mark.parametrize("resolution", ["confirmation", "unplug"])
+async def test_persistent_repair_alert_is_deduplicated_and_clears(hass, resolution):
+    async for entry, data, command in setup_charger(hass, options()):
         await entry.runtime_data.async_refresh()
         await hass.async_block_till_done()
         manager = entry.runtime_data.scheduler
@@ -290,10 +291,22 @@ async def test_persistent_repair_alert_is_deduplicated_and_clears_on_confirmatio
             assert registry.async_get_issue(DOMAIN, manager._issue_id) is not None
             await manager._async_update_presentation()
             assert create.call_count == 1
-            data["Paused"] = 0
+            if resolution == "unplug":
+                data["ChargeState"] = 0
+            else:
+                data["Paused"] = 0
             await entry.runtime_data.async_refresh()
             await hass.async_block_till_done()
             assert registry.async_get_issue(DOMAIN, manager._issue_id) is None
+            assert manager.controller.policy.state.pending_pause is None
+
+        if resolution == "unplug":
+            count = command.await_count
+            data["ChargeState"] = 1
+            await entry.runtime_data.async_refresh()
+            await hass.async_block_till_done()
+            assert command.await_count == count + 1
+            assert data["Paused"] == 0
 
 
 @pytest.mark.parametrize(

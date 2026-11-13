@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented here.
 
+## 1.4.2
+
+* A confirmed unplug now discards the previous connection's pending command and
+  saves that state before applying a fresh decision on reconnect. A communication
+  outage or charger fault does not discard an uncertain command. External pauses
+  and the existing limits on blind retries are preserved.
+* Reject malformed binary flags and fractional integer states instead of guessing
+  their meaning. Invalid scheduling inputs block writes as incomplete data;
+  otherwise valid telemetry continues to be processed.
+* Add regressions for lost confirmation, disconnect/reconnect, restored state,
+  malformed values and the HA Repairs lifecycle. No schema or session changes.
+
 ## 1.4.1
 
 * Fix automatic scheduling becoming permanently blocked when a command expired

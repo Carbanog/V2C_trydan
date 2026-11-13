@@ -30,7 +30,7 @@ Real dashboard examples. Screenshots are in Spanish; entities follow your HA lan
 
 | Channel | Version | Purpose |
 | --- | --- | --- |
-| Stable | [1.4.1](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.4.1) | Monitoring, controls, sessions and optional scheduling. |
+| Stable | [1.4.2](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.4.2) | Monitoring, controls, sessions and optional scheduling. |
 | Previous stable | [1.3.3](https://github.com/Carbanog/V2C_trydan/releases/tag/v1.3.3) | Rollback version without scheduling. |
 
 Scheduling is disabled by default. Automated checks do not certify physical
@@ -76,7 +76,7 @@ HA 2026.3 and later.
 1. Back up HA.
 2. Use the button or add `https://github.com/Carbanog/V2C_trydan` in HACS as a
    custom **Integration** repository.
-3. Download stable **1.4.1** and restart HA.
+3. Download stable **1.4.2** and restart HA.
 4. Open **Settings → Devices & services → Add integration → V2C Trydan**.
 5. Enter the charger's local IP address.
 
@@ -86,6 +86,11 @@ Do not install two implementations using the `v2c_trydan` domain side by side.
 Avoid competing controllers/automations sending contradictory commands.
 
 ## Updates, beta testing and rollback
+
+**1.4.2 fix:** a confirmed unplug clears the old connection's pending command;
+reconnecting starts a fresh decision. Communication loss does not count as
+unplugging. Invalid charger flags report incomplete data and block pause/resume
+writes rather than being interpreted as valid states.
 
 **1.4.1 fix:** the scheduler recovers from commands proven not to have been sent
 because the connection queue expired, re-evaluating on a later data/clock event.
@@ -174,7 +179,7 @@ The next window previews tariff permission, not a guaranteed vehicle start.
 Do not combine with OCPP/Octopus or other charging schedules. Leave dynamic
 regulation and electrical protections enabled.
 
-[Full setup, physical-test and rollback guide](https://github.com/Carbanog/V2C_trydan/blob/v1.4.1/docs/scheduling.md).
+[Full setup, physical-test and rollback guide](https://github.com/Carbanog/V2C_trydan/blob/v1.4.2/docs/scheduling.md).
 Physical tariff-boundary and manual-override checks remain necessary in your
 installation. No supervised physical verification is claimed by this release.
 
@@ -188,7 +193,7 @@ They are never automatically installed or enabled.
 
 **Session summary and notifications**
 
-[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.1%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
+[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.2%2Fblueprints%2Fautomation%2Fsession_summary.yaml)
 
 [View YAML](blueprints/automation/session_summary.yaml). Runs start/end actions
 without repeating every OCPP pause. Finish actions can use `session_kwh`,
@@ -209,7 +214,7 @@ data:
 
 **High charging power alert**
 
-[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.1%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
+[![Import into Home Assistant](https://my.home-assistant.io/badges/blueprint_import.svg)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https%3A%2F%2Fgithub.com%2FCarbanog%2FV2C_trydan%2Fblob%2Fv1.4.2%2Fblueprints%2Fautomation%2Fhigh_power_alert.yaml)
 
 [View YAML](blueprints/automation/high_power_alert.yaml). Runs chosen actions
 after a power threshold is exceeded for a configured duration; exposes `measured_power`.
